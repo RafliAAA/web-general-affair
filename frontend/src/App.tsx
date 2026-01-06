@@ -1,11 +1,19 @@
-import Sidebar from "./components/layout/Sidebar";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Dashboard from "../src/pages/Dashboard";
 
 function App() {
   return (
     <>
-      <Sidebar/>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Dashboard/>}></Route>
+          <Route path="/aset-perusahaan" element={<Dashboard/>}></Route>
+          <Route path="/aset-karyawan" element={<Dashboard/>}></Route>
+          <Route path="/kendaraan" element={<Dashboard/>}></Route>
+          <Route path="/ruangan" element={<Dashboard/>}></Route>
+        </Routes>
+      </BrowserRouter>
     </>
-
   );
 }
 
