@@ -1,0 +1,38 @@
+import prisma from "../../config/prisma";
+
+const createAsset = async (data: any) => {
+  return await prisma.asset.create({
+    data,
+  });
+};
+
+const findAllAssets = async (filter: any) => {
+  return await prisma.asset.findMany(filter);
+};
+
+const findAssetById = async (asset_id: string) => {
+  return await prisma.asset.findUnique({
+    where: { asset_id },
+  });
+};
+
+const updateAsset = async (asset_id: string, data: any) => {
+  return await prisma.asset.update({
+    where: { asset_id },
+    data,
+  });
+};
+
+const deleteAsset = async (asset_id: string) => {
+  return await prisma.asset.delete({
+    where: { asset_id },
+  });
+};
+
+export default {
+  createAsset,
+  findAllAssets,
+  findAssetById,
+  updateAsset,
+  deleteAsset,
+};
