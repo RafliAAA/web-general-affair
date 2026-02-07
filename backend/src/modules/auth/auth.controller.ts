@@ -31,7 +31,7 @@ const login = async (req: Request, res: Response) => {
 
     const { user, accessToken, refreshToken } = await authService.login(
       email,
-      password
+      password,
     );
 
     setCookies(res, accessToken, refreshToken);

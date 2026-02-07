@@ -27,27 +27,25 @@ const register = async (email: string, password: string) => {
 };
 
 const login = async (email: string, password: string) => {
-  const user = await authRepository.findUserByEmail(email); 
-    if (!user) throw new Error("Email not found");
+  const user = await authRepository.findUserByEmail(email);
+  if (!user) throw new Error("Email not found");
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) throw new Error("Email or password incorrect");
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) throw new Error("Email or password incorrect");
 
-    const {accessToken, refreshToken } = generateTokens(user);
+  const { accessToken, refreshToken } = generateTokens(user);
 
-    return {
-        user:{
-            id: user.user_id,
-            email: user.email,
-        },
-        accessToken,
-        refreshToken
-    }
-
-}
-
+  return {
+    user: {
+      id: user.user_id,
+      email: user.email,
+    },
+    accessToken,
+    refreshToken,
+  };
+};
 
 export default {
-    register,
-    login
-}
+  register,
+  login,
+};

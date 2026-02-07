@@ -25,3 +25,30 @@ model Asset {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+model Project {
+  project_id  String @id @default(uuid())
+  project_name String
+  start_date   DateTime
+  end_date     DateTime
+  status  String @default("Sedang berjalan")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Loan {
+  loan_id     String   @id @default(uuid())
+  user_id     String
+  asset_id    String
+  project_id  String
+  loan_date   DateTime @default(now())
+  return_date DateTime?
+  status      String   @default("dipinjam")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([asset_id])
+  @@index([project_id])
+}
+

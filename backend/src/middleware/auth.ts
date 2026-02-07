@@ -12,7 +12,7 @@ export interface AuthRequest extends Request {
 const protectRoute = async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const accessToken = req.cookies?.accessToken;
@@ -26,7 +26,7 @@ const protectRoute = async (
 
     const decoded = jwt.verify(
       accessToken,
-      process.env.ACCESS_TOKEN_SECRET as string
+      process.env.ACCESS_TOKEN_SECRET as string,
     ) as {
       user_id: string;
       email: string;
@@ -61,5 +61,5 @@ const protectRoute = async (
 };
 
 export default {
-    protectRoute,
-}
+  protectRoute,
+};
