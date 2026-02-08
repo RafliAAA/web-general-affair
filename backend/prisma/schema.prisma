@@ -13,6 +13,8 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  loans Loan[] 
 }
 
 model Asset {
@@ -24,6 +26,10 @@ model Asset {
   location      String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  loan Loan[]
+  
+  @@index([status])
 }
 
 model Project {
@@ -31,9 +37,11 @@ model Project {
   project_name String
   start_date   DateTime
   end_date     DateTime
-  status  String @default("Sedang berjalan")
+  status  String @default("ongoing")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  loans Loan[]   
 }
 
 model Loan {
@@ -43,12 +51,17 @@ model Loan {
   project_id  String
   loan_date   DateTime @default(now())
   return_date DateTime?
-  status      String   @default("dipinjam")
+  status      String   @default("pending")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  asset Asset @relation(fields: [asset_id], references: [asset_id]) 
+  user  User  @relation(fields: [user_id], references: [user_id])   
+  project Project @relation(fields: [project_id], references: [project_id]) 
 
   @@index([user_id])
   @@index([asset_id])
   @@index([project_id])
 }
+
 

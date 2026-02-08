@@ -125,10 +125,49 @@ const deleteAsset = async (req: Request, res: Response) => {
   }
 };
 
+const getAvailableAssets = async (req: Request, res: Response) => {
+  try {
+
+    const assets = await assetsService.getAvailableAssets();
+
+    return res.status(200).json({
+      success: true,
+      message: "Available assets fetched successfully",
+      data: assets,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch available assets",
+      error: error.message,
+    });
+  }
+};
+
+const getBorrowedAssets = async (req: Request, res: Response) => {
+  try {
+    const assets = await assetsService.getBorrowedAssets();
+
+    return res.status(200).json({
+      success: true,
+      message: "Borrowed assets fetched successfully",
+      data: assets,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch borrowed assets",
+      error: error.message,
+    });
+  }
+}
+
 export default {
   createAsset,
   getAllAssets,
   getAssetById,
   updateAsset,
   deleteAsset,
+  getAvailableAssets,
+  getBorrowedAssets,
 };

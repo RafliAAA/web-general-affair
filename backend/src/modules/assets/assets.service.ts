@@ -45,10 +45,24 @@ const deleteAsset = async (asset_id: string ) => {
     return asset;
 }
 
+const getAvailableAssets = async () => {
+  const assets = await assetsRepository.getAvailableAssets();
+  if (!assets) throw new Error("No available assets found");
+  return assets;
+}
+
+const getBorrowedAssets = async () => {
+  const assets = await assetsRepository.getBorrowedAssets();
+  if (!assets) throw new Error("No borrowed assets found");
+  return assets;
+}
+
 export default {
   createAsset,
   getAllAssets,
   getAssetById,
   updateAsset,
-  deleteAsset
+  deleteAsset,
+  getAvailableAssets,
+  getBorrowedAssets
 };

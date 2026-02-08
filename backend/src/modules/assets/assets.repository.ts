@@ -13,6 +13,13 @@ const findAllAssets = async (filter: any) => {
 const findAssetById = async (asset_id: string) => {
   return await prisma.asset.findUnique({
     where: { asset_id },
+    include: {
+      loan: {
+        include: {
+          user: true
+        }
+      }
+    }
   });
 };
 
@@ -29,10 +36,26 @@ const deleteAsset = async (asset_id: string) => {
   });
 };
 
+const getAvailableAssets = async () => {
+  return await prisma.asset.findMany({
+    where: {status: 'available'},
+    orderBy : { asset_name : 'asc' }
+  })
+}
+
+const getBorrowedAssets = async () => {
+  return await prisma.asset.findMany({
+    where: {status: 'borrowed'},
+    orderBy : { asset_name : 'asc' }
+  })
+}
+
 export default {
   createAsset,
   findAllAssets,
   findAssetById,
   updateAsset,
   deleteAsset,
+  getAvailableAssets,
+  getBorrowedAssets
 };
