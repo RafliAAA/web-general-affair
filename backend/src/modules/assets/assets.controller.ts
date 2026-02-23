@@ -127,7 +127,6 @@ const deleteAsset = async (req: Request, res: Response) => {
 
 const getAvailableAssets = async (req: Request, res: Response) => {
   try {
-
     const assets = await assetsService.getAvailableAssets();
 
     return res.status(200).json({
@@ -160,7 +159,7 @@ const getBorrowedAssets = async (req: Request, res: Response) => {
       error: error.message,
     });
   }
-}
+};
 
 export default {
   createAsset,
