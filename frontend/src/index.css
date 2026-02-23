@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
+
 @custom-variant dark (&:is(.dark *));
 
 
@@ -40,6 +42,7 @@
   --font-sans: sans-serif;
   --font-serif: serif;
   --font-mono: monospace;
+  --font-inter: "Inter", sans-serif;
   --radius: 0.5rem;
   --shadow-x: 0;
   --shadow-y: 0.25rem;
@@ -172,5 +175,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter);
   }
 }
