@@ -7,14 +7,32 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   user_id   String   @id @default(uuid())
   email     String   @unique
   password  String
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   loans Loan[] 
+  profile Profile?
+}
+
+model Profile {
+  profile_id String   @id @default(uuid())
+  user_id    String   @unique
+  name        String?
+  foto_profil String? 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 }
 
 model Asset {
@@ -41,27 +59,38 @@ model Project {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  loans Loan[]   
 }
 
 model Loan {
   loan_id     String   @id @default(uuid())
   user_id     String
   asset_id    String
-  project_id  String
   loan_date   DateTime @default(now())
-  return_date DateTime?
-  status      String   @default("pending")
+  status      String   @default("pending") // pending, approved, rejected
+  approved_by String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  asset Asset @relation(fields: [asset_id], references: [asset_id]) 
-  user  User  @relation(fields: [user_id], references: [user_id])   
-  project Project @relation(fields: [project_id], references: [project_id]) 
+  user  User  @relation(fields: [user_id], references: [user_id])
+  asset Asset @relation(fields: [asset_id], references: [asset_id])
 
-  @@index([user_id])
-  @@index([asset_id])
-  @@index([project_id])
+  returns Return[]
 }
+
+
+model Return {
+  return_id    String   @id @default(uuid())
+  loan_id      String
+  return_date  DateTime @default(now())
+  condition    String
+  notes        String?
+  approved_by  String?
+  createdAt    DateTime @default(now())
+
+  loan Loan @relation(fields: [loan_id], references: [loan_id])
+
+  @@index([loan_id])
+}
+
 
 
