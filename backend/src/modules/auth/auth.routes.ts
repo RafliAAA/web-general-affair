@@ -6,5 +6,8 @@ const router = express.Router();
 
 router.post("/register", authController.register, authMiddleware.protectRoute);
 router.post("/login", authController.login, authMiddleware.protectRoute);
+router.delete("/logout", authMiddleware.protectRoute, authController.logout);
+router.post("/refresh-token", authController.refreshAccessToken);
+router.get("/me", authMiddleware.protectRoute, authController.getProfile);
 
 export default router;
