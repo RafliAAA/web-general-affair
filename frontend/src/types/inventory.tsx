@@ -1,10 +1,12 @@
 export type AssetStatus = "available" | "borrowed" | "maintenance";
 export type RequestStatus = "pending" | "approved" | "rejected";
+export type ProjectStatus = "cancelled" | "in-progress" | "completed" | "on-hold";
 
 export interface Asset {
-  id: string;
-  name: string;
-  category: string;
+  asset_id: string;
+  asset_name: string;
+  serial_number: string;
+  asset_type: string;
   status: AssetStatus;
   location: string;
 }
@@ -47,4 +49,14 @@ export interface RoomBooking  {
   endTime: string;
   purpose: string;
   status: RequestStatus;
+}
+
+export interface Projects {
+  id: string;
+  name: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  status: ProjectStatus
+  priority: "low" | "medium" | "high";
 }
