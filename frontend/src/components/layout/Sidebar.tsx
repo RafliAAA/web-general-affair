@@ -7,9 +7,11 @@ import {
   FilePen,
   FileText,
   LayoutDashboard,
+  LucideBookUser,
   Package,
   Settings,
   Users,
+  Handshake,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -19,8 +21,11 @@ interface SidebarProps {
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Project", href: "/projects", icon: LucideBookUser },
   { name: "Aset Perusahaan", href: "/aset-perusahaan", icon: Package },
   { name: "Aset Karyawan", href: "/aset-karyawan", icon: Users },
+  { name: "Peminjaman", href: "/peminjaman", icon: Handshake },
+  { name: "Pengembalian", href: "/pengembalian", icon: Handshake },
   { name: "Ruangan", href: "/ruangan", icon: Calendar },
   { name: "Kendaraan", href: "/kendaraan", icon: Car },
   { name: "SOP GA", href: "/sop", icon: FileText },
@@ -44,7 +49,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
         className={cn(
           "fixed lg:static top-0 left-0 z-40 h-screen w-64 border-r border-slate-300 bg-white transform transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          "lg:translate-x-0" // sidebar selalu tampil di desktop
+          "lg:translate-x-0",
         )}
       >
         <div className="flex flex-col h-full">
@@ -65,9 +70,9 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-primary"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   )}
-                  onClick={closeSidebar} // tutup sidebar setelah klik di mobile
+                  onClick={closeSidebar}
                 >
                   <item.icon className="h-5 w-5" />
                   {item.name}
