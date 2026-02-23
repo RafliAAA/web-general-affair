@@ -6,7 +6,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 const register = async (data: {
   email: string;
   password: string;
-  nama: string;
+  name: string;
 }) => {
   const existingUser = await authRepository.findUserByEmail(data.email);
 
@@ -18,7 +18,9 @@ const register = async (data: {
     email: data.email,
     password: hashedPassword,
     profile: {
-      nama: data.nama,
+      create: {
+      name: data.name,
+      }
     },
   });
 
@@ -27,7 +29,7 @@ const register = async (data: {
   return {
     user: {
       email: data.email,
-      nama: data.nama || null,
+      name: data.name || null,
     },
     accessToken,
     refreshToken,
@@ -47,6 +49,7 @@ const login = async (email: string, password: string) => {
     user: {
       id: user.user_id,
       email: user.email,
+      name: user.profile?.name || null,
     },
     accessToken,
     refreshToken,
@@ -72,12 +75,13 @@ const refreshAccessToken = async (refreshToken: string) => {
   ) as JwtPayload;
 
   const accessToken = jwt.sign(
-    { id: decoded.id },
+    { user_id: decoded.user_id, email: decoded.email }, // konsisten dengan generateTokens
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "15m" },
   );
 
   return accessToken;
+
 };
 
 const getProfile = async (user_id: string) => {

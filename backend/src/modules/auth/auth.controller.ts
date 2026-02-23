@@ -4,9 +4,9 @@ import { Request, Response } from "express";
 
 const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, nama } = req.body;
+    const { email, password, name } = req.body;
 
-    const result = await authService.register({ email, password, nama });
+    const result = await authService.register({ email, password, name });
 
     const { accessToken, refreshToken, user } = result;
 
@@ -61,8 +61,11 @@ const refreshAccessToken = async (req: Request, res: Response) => {
       maxAge: 15 * 60 * 1000,
     });
 
+    console.log("Refresh token dipakai:", refreshToken);
+
     res.json({
       message: "Token refreshed successfully",
+      data: { accessToken },
     });
   } catch (error: any) {
     res.status(400).json({
@@ -111,11 +114,10 @@ const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-
 export default {
   register,
   login,
   logout,
   refreshAccessToken,
-  getProfile
+  getProfile,
 };
