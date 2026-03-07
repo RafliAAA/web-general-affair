@@ -6,7 +6,7 @@ export const companyAssets: Asset[] = [
     asset_name: 'MacBook Pro 14"',
     asset_type: 'Laptop',
     serial_number: 'MBP-2024-001',
-    status: 'available',
+    status: 'Tersedia',
     location: 'Gudang IT',
   },
   {
@@ -14,7 +14,7 @@ export const companyAssets: Asset[] = [
     asset_name: 'Dell Monitor 27"',
     asset_type: 'Monitor',
     serial_number: 'DM-2024-015',
-    status: 'borrowed',
+    status: 'Tersedia',
     location: 'Ruang Kerja A',
   },
   {
@@ -22,7 +22,7 @@ export const companyAssets: Asset[] = [
     asset_name: 'Proyektor Epson',
     asset_type: 'Proyektor',
     serial_number: 'EP-2023-003',
-    status: 'available',
+    status: 'Tersedia',
     location: 'Gudang Meeting',
   },
   {
@@ -38,7 +38,7 @@ export const companyAssets: Asset[] = [
     asset_name: 'iPad Pro 12.9"',
     asset_type: 'Tablet',
     serial_number: 'IPD-2024-012',
-    status: 'available',
+    status: 'Tersedia',
     location: 'Gudang IT',
   },
 ];
@@ -49,7 +49,7 @@ export const borrowedAssets: BorrowedAsset[] = [
     asset_name: 'Dell Monitor 27"',
     asset_type: 'Monitor',
     serial_number: 'DM-2024-015',
-    status: 'borrowed',
+    status: 'Dipinjam',
     location: 'Ruang Kerja A',
     borrowedBy: 'user-1',
     borrowedByName: 'Ahmad Rizki',
@@ -61,7 +61,7 @@ export const borrowedAssets: BorrowedAsset[] = [
     asset_name: 'ThinkPad X1 Carbon',
     asset_type: 'Laptop',
     serial_number: 'TP-2024-006',
-    status: 'borrowed',
+    status: 'Dipinjam',
     location: 'Remote',
     borrowedBy: 'user-2',
     borrowedByName: 'Siti Nurhaliza',

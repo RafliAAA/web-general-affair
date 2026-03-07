@@ -79,9 +79,9 @@ const ListAssets = ({ dataAssets, onCreate, onUpdate, onDelete }: Props) => {
                   <TableCell className="font-medium w-25">
                     <Badge
                       variant={
-                        asset.status === "available"
+                        asset.status === "Tersedia"
                           ? "success"
-                          : asset.status === "borrowed"
+                          : asset.status === "Dipinjam"
                             ? "secondary"
                             : asset.status === "maintenance"
                               ? "outline"
