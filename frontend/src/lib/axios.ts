@@ -18,7 +18,8 @@ api.interceptors.response.use(
         await api.post("/auth/refresh-token");
         return api(originalRequest);
       } catch (err) {
-        window.location.href = "/login";
+        const { useAuthStore } = await import("../features/auth/stores/useAuthStore");
+         useAuthStore.getState().forceLogout();
         return Promise.reject(err);}
     }
     return Promise.reject(error);

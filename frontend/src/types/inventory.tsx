@@ -1,4 +1,4 @@
-export type AssetStatus = "available" | "borrowed" | "maintenance";
+export type AssetStatus = "Tersedia" | "Dipinjam" | "maintenance";
 export type RequestStatus = "pending" | "approved" | "rejected";
 export type ProjectStatus = "cancelled" | "in-progress" | "completed" | "on-hold";
 

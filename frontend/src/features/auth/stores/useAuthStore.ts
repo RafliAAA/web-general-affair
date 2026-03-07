@@ -71,6 +71,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  forceLogout: () => {
+    set({ user: null });
+    // tidak ada toast, tidak ada request ke server
+  },
+
   checkAuth: async () => {
     set({ checkingAuth: true });
     try {
@@ -85,8 +90,4 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     }
   },
-
-  
-
- 
 }));
