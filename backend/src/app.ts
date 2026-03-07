@@ -5,6 +5,7 @@ import cors from "cors"
 
 import authRoutes from "./modules/auth/auth.routes";
 import assetsRoutes from "./modules/assets/assets.routes";
+import borrowRoutes from "./modules/borrow/borrow.routes";
 
 dotenv.config();
 
@@ -21,5 +22,6 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/assets", assetsRoutes);
+app.use("/api/borrow", borrowRoutes);
 
 export default app;

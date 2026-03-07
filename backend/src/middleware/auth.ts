@@ -2,11 +2,14 @@ import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import authRepository from "../modules/auth/auth.repository";
 
+interface User {
+  user_id: string;
+  email: string;
+  role?: string
+}
+ 
 export interface AuthRequest extends Request {
-  user?: {
-    user_id: string;
-    email: string;
-  };
+  user?: User
 }
 
 const protectRoute = async (
@@ -51,6 +54,8 @@ const protectRoute = async (
       user_id: user.user_id,
       email: user.email,
     };
+ 
+
     next();
   } catch (error) {
     return res.status(401).json({
