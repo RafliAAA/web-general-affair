@@ -5,13 +5,14 @@ import Spinner from "./components/layout/Spinner";
 import { useAuthStore } from "./features/auth/stores/useAuthStore";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Projects = lazy(() => import("./pages/projects/Projects"));
-const LoansPage = lazy(() => import("./pages/Loans"));
-const ReturnsPage = lazy(() => import("./pages/Returns"));
+// const Projects = lazy(() => import("./pages/projects/Projects"));
+// const LoansPage = lazy(() => import("./pages/Loans"));
+// const ReturnsPage = lazy(() => import("./pages/Returns"));
 const Assets = lazy(() => import("./features/assets/Assets"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./features/auth/pages/Login"));
 const Register = lazy(() => import("./features/auth/pages/Register"));
+const SOP = lazy(() => import("./features/SOP/pages/SOP"));
 
 function App() {
   const { user, checkAuth, checkingAuth } = useAuthStore();
@@ -31,13 +32,14 @@ function App() {
       <Suspense fallback={<Spinner />}>
         <Routes>
           <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
-          <Route path="/projects" element={user ? <Projects /> : <Navigate to="/login" />} />
+          {/* <Route path="/projects" element={user ? <Projects /> : <Navigate to="/login" />} />
           <Route path="/peminjaman" element={user ? <LoansPage /> : <Navigate to="/login" />} />
-          <Route path="/pengembalian" element={user ? <ReturnsPage /> : <Navigate to="/login" />} />
+          <Route path="/pengembalian" element={user ? <ReturnsPage /> : <Navigate to="/login" />} /> */}
           <Route path="/aset-perusahaan" element={user ? <Assets /> : <Navigate to="/login" />} />
           <Route path="/aset-karyawan" element={user ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/kendaraan" element={user ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/ruangan" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route path="/sop" element={user ? <SOP /> : <Navigate to="/login" />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/register" element={!user ? <Register /> : <Navigate to="/" />} />
           <Route path="*" element={<NotFound />} />

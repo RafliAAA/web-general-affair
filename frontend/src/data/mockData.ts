@@ -1,3 +1,4 @@
+import type { SOP } from '@/types/sop';
 import type { Asset, BorrowedAsset, BorrowRequest, Room, RoomBooking, Projects } from '../types/inventory';
 
 export const companyAssets: Asset[] = [
@@ -318,3 +319,120 @@ export const projects: Projects[] = [
 
   },
 ];
+
+export const categories = ["Aset", "Kendaraan", "Ruangan", "Umum", "Keamanan"];
+
+export const initialSOPs: SOP[] = [
+  {
+    id: "1",
+    title: "SOP Peminjaman Aset Perusahaan",
+    category: "Aset",
+    description:
+      "Prosedur standar untuk peminjaman aset perusahaan oleh karyawan.",
+    steps: [
+      {
+        order: 1,
+        description:
+          "Karyawan mengajukan permohonan peminjaman melalui sistem.",
+      },
+      {
+        order: 2,
+        description: "Admin General Affair menerima dan mereview permohonan.",
+      },
+      {
+        order: 3,
+        description: "Admin melakukan pengecekan ketersediaan aset.",
+      },
+      {
+        order: 4,
+        description:
+          "Jika disetujui, admin menyiapkan berita acara serah terima.",
+      },
+      {
+        order: 5,
+        description: "Karyawan menandatangani berita acara dan menerima aset.",
+      },
+      {
+        order: 6,
+        description: "Admin mencatat peminjaman dalam sistem inventaris.",
+      },
+    ],
+    createdAt: "2025-01-15",
+    updatedAt: "2025-03-10",
+  },
+  {
+    id: "2",
+    title: "SOP Booking Ruangan Meeting",
+    category: "Ruangan",
+    description: "Prosedur standar untuk booking ruangan meeting perusahaan.",
+    steps: [
+      {
+        order: 1,
+        description: "Karyawan mengecek ketersediaan ruangan melalui sistem.",
+      },
+      {
+        order: 2,
+        description: "Karyawan mengisi form booking dengan detail acara.",
+      },
+      {
+        order: 3,
+        description:
+          "Sistem mengkonfirmasi booking secara otomatis jika tersedia.",
+      },
+      { order: 4, description: "Karyawan menerima konfirmasi via notifikasi." },
+      {
+        order: 5,
+        description:
+          "Setelah selesai, karyawan memastikan ruangan dalam keadaan rapi.",
+      },
+    ],
+    createdAt: "2025-02-01",
+    updatedAt: "2025-02-20",
+  },
+  {
+    id: "3",
+    title: "SOP Peminjaman Kendaraan Dinas",
+    category: "Kendaraan",
+    description:
+      "Prosedur standar untuk peminjaman kendaraan dinas perusahaan.",
+    steps: [
+      {
+        order: 1,
+        description:
+          "Karyawan mengajukan permohonan peminjaman kendaraan minimal H-1.",
+      },
+      {
+        order: 2,
+        description: "Admin mengecek ketersediaan kendaraan dan supir.",
+      },
+      {
+        order: 3,
+        description: "Admin menyetujui dan menentukan kendaraan serta supir.",
+      },
+      {
+        order: 4,
+        description:
+          "Karyawan melakukan pengecekan kondisi kendaraan bersama supir.",
+      },
+      {
+        order: 5,
+        description:
+          "Setelah selesai, kendaraan dikembalikan dan dilakukan pengecekan ulang.",
+      },
+      {
+        order: 6,
+        description:
+          "Admin mencatat penggunaan BBM dan kilometer dalam sistem.",
+      },
+    ],
+    createdAt: "2025-01-20",
+    updatedAt: "2025-03-05",
+  },
+];
+
+export const emptySOP = {
+  title: "",
+  category: "",
+  description: "",
+  steps: [{ order: 1, description: "" }],
+};
