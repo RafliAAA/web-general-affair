@@ -14,7 +14,7 @@ const findAssetById = async (asset_id: string) => {
   return await prisma.asset.findUnique({
     where: { asset_id },
     include: {
-      loan: {
+      borrow: {
         include: {
           user: true
         }
@@ -38,14 +38,14 @@ const deleteAsset = async (asset_id: string) => {
 
 const getAvailableAssets = async () => {
   return await prisma.asset.findMany({
-    where: {status: 'available'},
+    where: {status: 'Tersedia'},
     orderBy : { asset_name : 'asc' }
   })
 }
 
 const getBorrowedAssets = async () => {
   return await prisma.asset.findMany({
-    where: {status: 'borrowed'},
+    where: {status: 'Dipinjam'},
     orderBy : { asset_name : 'asc' }
   })
 }
