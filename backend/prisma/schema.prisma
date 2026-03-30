@@ -17,6 +17,7 @@ enum BorrowStatus {
   Menunggu
   Disetujui
   Ditolak
+  Dibatalkan
   RETURNED
 }
 
