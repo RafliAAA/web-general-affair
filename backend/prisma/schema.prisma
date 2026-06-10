@@ -13,19 +13,20 @@ enum AssetStatus {
   Diperbaiki
 }
 
+enum AssetCondition {
+  Baik
+  Cukup
+  Rusak
+}
+
 enum BorrowStatus {
   Menunggu
   Disetujui
   Ditolak
   Dibatalkan
-  RETURNED
+  Dikembalikan
 }
 
-enum ReturnStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
 
 enum Role {
   USER
@@ -59,11 +60,16 @@ model Profile {
 
 model Asset {
   asset_id      String   @id @default(uuid())
+  asset_code    String   @unique
   serial_number String   @unique
   asset_name    String
   asset_type    String
+  purchase_date DateTime
+  photo         String?
   status        AssetStatus   @default(Tersedia)
+  condition     AssetCondition @default(Baik)
   location      String
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -101,10 +107,8 @@ model Borrow {
 model Return {
   return_id   String   @id @default(uuid())
   borrow_id   String   // fix dari loan_id
-  returned_by String?
   condition   String
   notes       String?
-  status      ReturnStatus  @default(PENDING) // tambah status
   approved_by String?
   return_date DateTime @default(now())
   createdAt   DateTime @default(now())
