@@ -3,15 +3,26 @@ import { Request, Response } from "express";
 
 const createAsset = async (req: Request, res: Response) => {
   try {
-    const { asset_name, serial_number, asset_type, status, location } =
-      req.body;
-    const assets = await assetsService.createAsset(
+    const {
       asset_name,
+      asset_code,
+      purchase_date,
+      warranty_date,
       serial_number,
       asset_type,
+      condition,
       status,
-      location,
-    );
+    } = req.body;
+    const assets = await assetsService.createAsset({
+      asset_name,
+      asset_code,
+      purchase_date: new Date(purchase_date),
+      warranty_date: new Date(warranty_date),
+      serial_number,
+      asset_type,
+      condition,
+      status,
+    });
     return res.status(201).json({
       success: true,
       message: "Asset created Successfully",

@@ -15,11 +15,23 @@ const findAssetById = async (asset_id: string) => {
     where: { asset_id },
     include: {
       borrow: {
+        orderBy: {
+          createdAt: "desc",
+        },
         include: {
-          user: true
-        }
-      }
-    }
+          user: {
+            select: {
+              profile: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          returns: true,
+        },
+      },
+    },
   });
 };
 
@@ -27,6 +39,25 @@ const updateAsset = async (asset_id: string, data: any) => {
   return await prisma.asset.update({
     where: { asset_id },
     data,
+    include: {
+      borrow: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          user: {
+            select: {
+              profile: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          returns: true,
+        },
+      },
+    },
   });
 };
 
