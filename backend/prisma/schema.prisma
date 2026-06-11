@@ -65,10 +65,10 @@ model Asset {
   asset_name    String
   asset_type    String
   purchase_date DateTime
+  warranty_date DateTime?
   photo         String?
   status        AssetStatus   @default(Tersedia)
   condition     AssetCondition @default(Baik)
-  location      String
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -93,6 +93,7 @@ model Borrow {
   borrow_id           String   @id @default(uuid())
   user_id             String
   asset_id            String
+  borrow_reason       String
   expected_return_date DateTime?
   status              BorrowStatus  @default(Menunggu)
   approved_by         String?
@@ -106,8 +107,8 @@ model Borrow {
 
 model Return {
   return_id   String   @id @default(uuid())
-  borrow_id   String   // fix dari loan_id
-  condition   String
+  borrow_id   String   @unique
+  return_condition   String
   notes       String?
   approved_by String?
   return_date DateTime @default(now())
