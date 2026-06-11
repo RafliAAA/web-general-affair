@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { toast } from "sonner";
-import { isAxiosError } from "axios"; // import type guard dari axios utama
+import { isAxiosError } from "axios"; 
 import type { AuthState, SignupPayload } from "../../../types/auth";
 import {
   signupApi,
@@ -73,7 +73,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   forceLogout: () => {
     set({ user: null });
-    // tidak ada toast, tidak ada request ke server
   },
 
   checkAuth: async () => {
