@@ -5,11 +5,11 @@ import authRepository from "../modules/auth/auth.repository";
 interface User {
   user_id: string;
   email: string;
-  role?: string
+  role?: string;
 }
- 
+
 export interface AuthRequest extends Request {
-  user?: User
+  user?: User;
 }
 
 const protectRoute = async (
@@ -53,8 +53,8 @@ const protectRoute = async (
     req.user = {
       user_id: user.user_id,
       email: user.email,
+      role: user.role,
     };
- 
 
     next();
   } catch (error) {
@@ -65,6 +65,18 @@ const protectRoute = async (
   }
 };
 
+const adminRoute = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.user && req.user.role === "ADMIN") {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied - admin only",
+    });
+  }
+};
+
 export default {
   protectRoute,
+  adminRoute,
 };
