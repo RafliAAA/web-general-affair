@@ -2,15 +2,10 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import LogoSyaamil from "../../assets/LogoSyaamil.png";
 import {
-  Calendar,
-  Car,
   FilePen,
-  FileText,
   LayoutDashboard,
-  LucideBookUser,
   Package,
   Settings,
-  Users,
   Handshake,
 } from "lucide-react";
 
@@ -21,14 +16,18 @@ interface SidebarProps {
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Project", href: "/projects", icon: LucideBookUser },
+  // { name: "Project", href: "/projects", icon: LucideBookUser },
   { name: "Aset Perusahaan", href: "/aset-perusahaan", icon: Package },
-  { name: "Aset Karyawan", href: "/aset-karyawan", icon: Users },
+  // { name: "Aset Karyawan", href: "/aset-karyawan", icon: Users },
+  { name: "Pengadaan", href: "/pengadaan", icon: Handshake },
+  { name: "Serah Terima", href: "/serah-terima", icon: Handshake },
   { name: "Peminjaman", href: "/peminjaman", icon: Handshake },
   { name: "Pengembalian", href: "/pengembalian", icon: Handshake },
-  { name: "Ruangan", href: "/ruangan", icon: Calendar },
-  { name: "Kendaraan", href: "/kendaraan", icon: Car },
-  { name: "SOP GA", href: "/sop", icon: FileText },
+  { name: "Pemeliharaan", href: "/pemeliharaan", icon: Handshake },
+  { name: "Penghapusan", href: "/penghapusan", icon: Handshake },
+  // { name: "Ruangan", href: "/ruangan", icon: Calendar },
+  // { name: "Kendaraan", href: "/kendaraan", icon: Car },
+  // { name: "SOP GA", href: "/sop", icon: FileText },
   { name: "Form Pengajuan", href: "/pengajuan", icon: FilePen },
 ];
 
@@ -37,7 +36,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
 
   return (
     <>
-      {/* Overlay untuk mobile */}
+      {/* mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -47,7 +46,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
 
       <aside
         className={cn(
-          "fixed lg:static top-0 left-0 z-40 h-screen w-64 border-r border-slate-300 bg-white transform transition-transform duration-300",
+          "fixed lg:static top-0 left-0 z-40 h-auto w-64 border-r border-slate-300 bg-white transform transition-transform duration-300",
           isOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0",
         )}
@@ -61,7 +60,10 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
           {/* Navigasi */}
           <nav className="flex-1 px-3 py-4 space-y-1">
             {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
+              const isActive =
+                item.href === "/"
+                  ? location.pathname === "/"
+                  : location.pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.name}

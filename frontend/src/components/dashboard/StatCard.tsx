@@ -41,8 +41,7 @@ export function StatCard({
                 trend.isPositive ? "text-success" : "text-destructive"
               )}
             >
-              {trend.isPositive ? "+" : ""}
-              {trend.value}% dari bulan lalu
+    
             </p>
           )}
         </div>
