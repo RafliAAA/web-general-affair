@@ -1,4 +1,4 @@
-import { MoreHorizontal, Search, SquarePen, Trash2 } from "lucide-react";
+import { EyeIcon, MoreHorizontal, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -17,19 +17,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import CreateAssetModal from "./CreateAssetModal";
-import UpdateAssetModal from "./UpdateAssetModal";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   dataAssets: Asset[];
   onCreate: (data: Asset) => void;
-  onUpdate: (id: string, data: Partial<Asset>) => void;
-  onDelete: (id: string) => void;
 }
 
-const ListAssets = ({ dataAssets, onCreate, onUpdate, onDelete }: Props) => {
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+const ListAssets = ({ dataAssets, onCreate }: Props) => {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -48,14 +45,14 @@ const ListAssets = ({ dataAssets, onCreate, onUpdate, onDelete }: Props) => {
       </div>
 
       {/* Table */}
-      <div className="rounded-md border bg-card shadow-sm overflow-x-auto">
+      <div className="rounded-lg border bg-card overflow-x-auto">
         <Table className="min-w-full text-sm ">
           <TableHeader>
             <TableRow>
               <TableHead className="font-medium ">Nama Aset</TableHead>
               <TableHead className="font-medium ">Kategori</TableHead>
               <TableHead className="font-medium ">Kode Aset</TableHead>
-              <TableHead className="font-medium ">Lokasi</TableHead>
+              <TableHead className="font-medium ">Kondisi</TableHead>
               <TableHead className="font-medium ">Status</TableHead>
               <TableHead className="font-medium "></TableHead>
             </TableRow>
@@ -63,7 +60,11 @@ const ListAssets = ({ dataAssets, onCreate, onUpdate, onDelete }: Props) => {
           <TableBody>
             {dataAssets.length > 0 ? (
               dataAssets.map((asset) => (
-                <TableRow key={asset.asset_id}>
+                <TableRow
+                  key={asset.asset_id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigate(`/aset-perusahaan/${asset.asset_id}`)}
+                >
                   <TableCell className="font-medium">
                     {asset.asset_name}
                   </TableCell>
@@ -74,7 +75,19 @@ const ListAssets = ({ dataAssets, onCreate, onUpdate, onDelete }: Props) => {
                     {asset.serial_number}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {asset.location}
+                    <Badge
+                      variant={
+                        asset.condition === "Baik"
+                          ? "success"
+                          : asset.condition === "Cukup Baik"
+                            ? "secondary"
+                            : asset.condition === "Rusak"
+                              ? "destructive"
+                              : "outline"
+                      }
+                    >
+                      {asset.condition}
+                    </Badge>
                   </TableCell>
                   <TableCell className="font-medium w-25">
                     <Badge
@@ -99,19 +112,8 @@ const ListAssets = ({ dataAssets, onCreate, onUpdate, onDelete }: Props) => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            setSelectedAsset(asset);
-                          }}
-                        >
-                          <SquarePen className="h-4 w-4 mr-2" /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-red-600"
-                          onClick={() => onDelete(asset.asset_id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" /> Hapus
+                        <DropdownMenuItem>
+                          <EyeIcon className="h-4 w-4 mr-2" /> Detail
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -130,14 +132,6 @@ const ListAssets = ({ dataAssets, onCreate, onUpdate, onDelete }: Props) => {
             )}
           </TableBody>
         </Table>
-
-        {selectedAsset && (
-          <UpdateAssetModal
-            asset={selectedAsset}
-            onUpdate={onUpdate}
-            onClose={() => setSelectedAsset(null)}
-          />
-        )}
       </div>
     </div>
   );

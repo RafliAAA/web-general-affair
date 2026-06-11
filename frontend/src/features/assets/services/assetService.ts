@@ -20,3 +20,8 @@ export const deleteAsset = async (id: string) => {
   const res = await api.delete(`/assets/${id}`);
   return res.data.data;
 };
+
+export const getAssetById = async (id: string) => {
+  const res = await api.get(`/assets/${id}`);
+  return res.data.data;
+};

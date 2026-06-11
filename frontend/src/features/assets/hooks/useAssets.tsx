@@ -6,7 +6,7 @@ import {
   updateAsset,
 } from "../services/assetService";
 import type { Asset } from "../../../types/inventory";
-
+import { toast } from "sonner";
 export const useAssets = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +22,10 @@ export const useAssets = () => {
     try {
       const newAsset = await createAsset(data);
       setAssets((prev) => [...prev, newAsset]);
+      toast.success("Aset berhasil ditambahkan");
     } catch (error) {
       console.error("Failed to create asset", error);
+      toast.error("Gagal menambahkan aset");
     }
   };
 
@@ -32,8 +34,10 @@ export const useAssets = () => {
       const updatedAsset = await updateAsset(id, data);
 
       setAssets((prev) => prev.map((a) => (a.asset_id === id ? updatedAsset : a)));
+      toast.success("Aset berhasil diperbarui");
     } catch (error) {
       console.error("Failed to update asset", error);
+      toast.error("Gagal memperbarui aset");
     }
   };
 
@@ -48,3 +52,4 @@ export const useAssets = () => {
 
   return { assets, loading, handleCreate, handleUpdate, handleDelete };
 };
+
