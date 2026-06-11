@@ -24,6 +24,13 @@ const getAllBorrowRequest = async () => {
   return borrows;
 };
 
+const getAllActiveBorrow = async () => {
+  const result = await borrowRepository.getAllActiveBorrow();
+
+  if (!result) throw new Error("Failed to fetch active borrows");
+  return result;
+};
+
 const getBorrowRequestByUserId = async (user_id: string) => {
   const borrows = await borrowRepository.getBorrowRequestByUserId(user_id);
 
@@ -47,11 +54,21 @@ const approveBorrowRequest = async (borrow_id: string, approved_by: string) => {
   return borrow;
 };
 
+const rejectBorrowRequest= async( borrow_id: string, approved_by: string) => {
+  const borrow = await borrowRepository.rejectBorrowRequest(borrow_id, approved_by);
+
+  if (!borrow) throw new Error("Failed to reject borrow request")
+
+    return borrow
+}
+
 export default {
   createBorrowRequest,
   cancelBorrowRequest,
   getAllBorrowRequest,
+  getAllActiveBorrow,
   getBorrowRequestByUserId,
   getMyBorrows,
   approveBorrowRequest,
+  rejectBorrowRequest,
 };
