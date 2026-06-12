@@ -89,6 +89,31 @@ model Project {
 
 }
 
+model Procurement {
+  procurement_id  String            @id @default(uuid())
+  pr_number       String            @unique
+  pr_date         DateTime
+  print_date      DateTime
+  due_date        DateTime
+  end_user        String
+  remarks         String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  items           ProcurementItem[]
+}
+
+model ProcurementItem {
+  procurement_item_id              String      @id @default(uuid())
+  procurement_id  String
+  part_number     String
+  description     String
+  quantity        Int
+  unit_of_measure String
+
+  procurement     Procurement @relation(fields: [procurement_id], references: [procurement_id], onDelete: Cascade)
+}
+
 model Borrow {
   borrow_id           String   @id @default(uuid())
   user_id             String
