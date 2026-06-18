@@ -27,6 +27,10 @@ enum BorrowStatus {
   Dikembalikan
 }
 
+enum DisposalMethod {
+  Jual
+  Hibah
+}
 
 enum Role {
   USER
@@ -72,14 +76,16 @@ model Asset {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
 
   borrow Borrow[]
+  disposal DisposalItem[]
   
   @@index([status])
 }
 
 model Project {
-  project_id  String @id @default(uuid())
+  project_id   String @id @default(uuid())
   project_name String
   start_date   DateTime
   end_date     DateTime
@@ -119,6 +125,7 @@ model Borrow {
   user_id             String
   asset_id            String
   borrow_reason       String
+  borrow_date         DateTime
   expected_return_date DateTime?
   status              BorrowStatus  @default(Menunggu)
   approved_by         String?
@@ -145,3 +152,32 @@ model Return {
   @@index([borrow_id])
 }
 
+
+model Disposal {
+  disposal_id    String @id @default(uuid())
+
+  memo_number    String @unique
+  memo_date      DateTime
+  subject        String
+  description    String
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  items          DisposalItem[]
+}
+
+model DisposalItem {
+  disposal_item_id String @id @default(uuid())
+  disposal_id      String
+  asset_id         String
+
+  notes            String?
+  method           DisposalMethod
+
+  disposal Disposal @relation(fields: [disposal_id],references: [disposal_id],onDelete: Cascade)
+  asset    Asset    @relation(fields: [asset_id], references: [asset_id])
+
+
+  @@unique([disposal_id, asset_id])
+}
