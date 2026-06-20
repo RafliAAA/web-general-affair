@@ -27,6 +27,15 @@ enum BorrowStatus {
   Dikembalikan
 }
 
+enum MaintenanceStatus {
+  MenungguVerifikasi    
+  MenungguDikerjakan    
+  SedangDikerjakan      
+  Selesai                
+  Ditolak               
+  TidakDapatDiperbaiki  
+}
+
 enum DisposalMethod {
   Jual
   Hibah
@@ -35,6 +44,7 @@ enum DisposalMethod {
 enum Role {
   USER
   ADMIN
+  IT
 }
 
 model User {
@@ -48,6 +58,11 @@ model User {
   borrows  Borrow[] 
   approvedBorrows Borrow[] @relation("BorrowApprover")
   approvedReturns Return[] @relation("ReturnApprover") 
+  reportedMaintenances Maintenance[] @relation("MaintenanceReporter")
+  verifiedMaintenances Maintenance[] @relation("MaintenanceVerifier")
+  handledMaintenances  Maintenance[] @relation("MaintenanceHandler")
+
+  actualizationForms   ActualizationForm[] @relation("ActualizationCreator")
   profile Profile?
 }
 
@@ -80,6 +95,7 @@ model Asset {
 
   borrow Borrow[]
   disposal DisposalItem[]
+  maintenances Maintenance[]
   
   @@index([status])
 }
@@ -152,12 +168,67 @@ model Return {
   @@index([borrow_id])
 }
 
+model Maintenance {
+  maintenance_id   String            @id @default(uuid())
+  asset_id         String
+  reported_by      String
+  description      String
+
+  status           MaintenanceStatus @default(MenungguVerifikasi)
+
+  verified_by      String?
+  rejection_reason String?
+  verified_at      DateTime?
+
+  taken_by         String?
+  taken_at         DateTime?
+  resolution_notes String?
+  completed_at     DateTime?
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  asset         Asset              @relation(fields: [asset_id], references: [asset_id])
+  reporter      User               @relation("MaintenanceReporter", fields: [reported_by], references: [user_id])
+  verifier      User?              @relation("MaintenanceVerifier", fields: [verified_by], references: [user_id])
+  handler       User?              @relation("MaintenanceHandler", fields: [taken_by], references: [user_id])
+  actualization ActualizationForm?
+
+  @@index([status])
+  @@index([asset_id])
+}
+
+model ActualizationForm {
+  actualization_id String   @id @default(uuid())
+  maintenance_id    String   @unique
+  form_number       String   @unique
+
+  user_name         String
+  form_date         DateTime
+  duration_minutes  Int
+
+  description       String
+  issue             String
+  handling          String
+  recommendation    String
+
+  created_by        String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  maintenance Maintenance @relation(fields: [maintenance_id], references: [maintenance_id])
+  creator     User        @relation("ActualizationCreator", fields: [created_by], references: [user_id])
+
+  @@index([maintenance_id])
+}
+
 
 model Disposal {
   disposal_id    String @id @default(uuid())
 
   memo_number    String @unique
   memo_date      DateTime
+
   subject        String
   description    String
 
@@ -174,6 +245,7 @@ model DisposalItem {
 
   notes            String?
   method           DisposalMethod
+
 
   disposal Disposal @relation(fields: [disposal_id],references: [disposal_id],onDelete: Cascade)
   asset    Asset    @relation(fields: [asset_id], references: [asset_id])
