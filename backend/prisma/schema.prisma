@@ -62,7 +62,6 @@ model User {
   verifiedMaintenances Maintenance[] @relation("MaintenanceVerifier")
   handledMaintenances  Maintenance[] @relation("MaintenanceHandler")
 
-  actualizationForms   ActualizationForm[] @relation("ActualizationCreator")
   profile Profile?
 }
 
@@ -212,12 +211,10 @@ model ActualizationForm {
   handling          String
   recommendation    String
 
-  created_by        String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   maintenance Maintenance @relation(fields: [maintenance_id], references: [maintenance_id])
-  creator     User        @relation("ActualizationCreator", fields: [created_by], references: [user_id])
 
   @@index([maintenance_id])
 }
