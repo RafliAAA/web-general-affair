@@ -19,6 +19,11 @@ enum AssetCondition {
   Rusak
 }
 
+enum HandoverStatus {
+  Aktif       
+  Dikembalikan 
+}
+
 enum BorrowStatus {
   Menunggu
   Disetujui
@@ -55,15 +60,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  handovers Handover[]
   borrows  Borrow[] 
   approvedBorrows Borrow[] @relation("BorrowApprover")
   approvedReturns Return[] @relation("ReturnApprover") 
   reportedMaintenances Maintenance[] @relation("MaintenanceReporter")
   verifiedMaintenances Maintenance[] @relation("MaintenanceVerifier")
   handledMaintenances  Maintenance[] @relation("MaintenanceHandler")
-  assignedAssets Asset[] @relation("AssetHolder")
-  
+
+  receivedHandovers Handover[] @relation("HandoverReceiver")
+  createdHandovers  Handover[] @relation("HandoverCreator")
+  returnedHandovers Handover[] @relation("HandoverReturner")
 
   profile Profile?
 }
@@ -95,10 +101,7 @@ model Asset {
   updatedAt     DateTime @updatedAt
   deletedAt     DateTime?
 
-  assigned_to String?
-
-  assignee User? @relation("AssetHolder",fields: [assigned_to],references: [user_id])
-  handoverItems HandoverItem[]
+  handoverItems HandoverItem[] 
   borrow Borrow[]
   disposal DisposalItem[]
   maintenances Maintenance[]
@@ -144,34 +147,37 @@ model ProcurementItem {
 }
 
 model Handover {
-  handover_id String @id @default(uuid())
-
-  user_id String
-
-  handover_number String @unique
+  handover_id   String         @id @default(uuid())
+  user_id       String         // karyawan penerima
+  created_by    String         // GA yang buat
   handover_date DateTime
+  notes         String?
+  status        HandoverStatus @default(Aktif)
 
-  entity String
-  directorate String
+  returned_at   DateTime?
+  return_notes  String?
+  returned_by   String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
-  user User @relation(fields: [user_id], references: [user_id])
+  items    HandoverItem[]
+  receiver User  @relation("HandoverReceiver", fields: [user_id], references: [user_id])
+  creator  User  @relation("HandoverCreator", fields: [created_by], references: [user_id])
+  returner User? @relation("HandoverReturner", fields: [returned_by], references: [user_id])
 
-  items HandoverItem[]
+  @@index([user_id])
+  @@index([status])
 }
 
 model HandoverItem {
   handover_item_id String @id @default(uuid())
-
-  handover_id String
-  asset_id String
-
-  notes String?
+  handover_id      String
+  asset_id         String
+  notes            String?
 
   handover Handover @relation(fields: [handover_id], references: [handover_id], onDelete: Cascade)
-  asset Asset @relation(fields: [asset_id], references: [asset_id])
+  asset    Asset    @relation(fields: [asset_id], references: [asset_id])
 
   @@unique([handover_id, asset_id])
 }
