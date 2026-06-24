@@ -55,12 +55,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  handovers Handover[]
   borrows  Borrow[] 
   approvedBorrows Borrow[] @relation("BorrowApprover")
   approvedReturns Return[] @relation("ReturnApprover") 
   reportedMaintenances Maintenance[] @relation("MaintenanceReporter")
   verifiedMaintenances Maintenance[] @relation("MaintenanceVerifier")
   handledMaintenances  Maintenance[] @relation("MaintenanceHandler")
+  assignedAssets Asset[] @relation("AssetHolder")
+  
 
   profile Profile?
 }
@@ -92,9 +95,14 @@ model Asset {
   updatedAt     DateTime @updatedAt
   deletedAt     DateTime?
 
+  assigned_to String?
+
+  assignee User? @relation("AssetHolder",fields: [assigned_to],references: [user_id])
+  handoverItems HandoverItem[]
   borrow Borrow[]
   disposal DisposalItem[]
   maintenances Maintenance[]
+  
   
   @@index([status])
 }
@@ -133,6 +141,39 @@ model ProcurementItem {
   unit_of_measure String
 
   procurement     Procurement @relation(fields: [procurement_id], references: [procurement_id], onDelete: Cascade)
+}
+
+model Handover {
+  handover_id String @id @default(uuid())
+
+  user_id String
+
+  handover_number String @unique
+  handover_date DateTime
+
+  entity String
+  directorate String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [user_id])
+
+  items HandoverItem[]
+}
+
+model HandoverItem {
+  handover_item_id String @id @default(uuid())
+
+  handover_id String
+  asset_id String
+
+  notes String?
+
+  handover Handover @relation(fields: [handover_id], references: [handover_id], onDelete: Cascade)
+  asset Asset @relation(fields: [asset_id], references: [asset_id])
+
+  @@unique([handover_id, asset_id])
 }
 
 model Borrow {
