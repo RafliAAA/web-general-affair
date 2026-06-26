@@ -11,6 +11,7 @@ enum AssetStatus {
   Tersedia
   Dipinjam
   Diperbaiki
+  Diserahkan
 }
 
 enum AssetCondition {
@@ -151,7 +152,8 @@ model Handover {
   user_id       String         // karyawan penerima
   created_by    String         // GA yang buat
   handover_date DateTime
-  notes         String?
+  entity        String
+  directorate   String
   status        HandoverStatus @default(Aktif)
 
   returned_at   DateTime?
