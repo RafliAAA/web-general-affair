@@ -1,4 +1,5 @@
 import { AuthRequest } from "../../middleware/auth";
+import { CreateBorrowSchema } from "./borrow.dto";
 import borrowService from "./borrow.service";
 import { Response } from "express";
 
@@ -6,13 +7,19 @@ const createBorrowRequest = async (req: AuthRequest, res: Response) => {
   try {
     const user_id = req.user?.user_id;
 
-    const { asset_id, borrow_reason, expected_return_date } = req.body; 
+    if(!user_id) {
+      return res.status(401).json({
+        success: false,
+        message: "User ID is required"
+      })
+    }
+
+    const data = CreateBorrowSchema.parse(req.body)
 
     const result = await borrowService.createBorrowRequest({
       user_id,
-      asset_id, 
-      borrow_reason,
-      expected_return_date: new Date(expected_return_date),
+      ...data,
+    
     });
 
     return res.status(201).json({
@@ -30,9 +37,16 @@ const createBorrowRequest = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
 const cancelBorrowRequest = async (req: AuthRequest, res: Response) => {
   try {
+    const user_id = req.user?.user_id
+
+    if (!user_id) {
+      return res.status(401).json({
+        success: false,
+        message: "User ID is required"
+      })
+    }
     const { borrow_id } = req.params;
 
     if (!borrow_id) {
@@ -42,7 +56,7 @@ const cancelBorrowRequest = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const result = await borrowService.cancelBorrowRequest(borrow_id);
+    const result = await borrowService.cancelBorrowRequest(user_id, borrow_id);
 
     return res.status(200).json({
       success: true,

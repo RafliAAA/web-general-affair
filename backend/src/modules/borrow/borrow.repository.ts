@@ -1,12 +1,8 @@
 import prisma from "../../config/prisma";
 import { AssetStatus, BorrowStatus } from "@prisma/client";
+import { CreateBorrowInput } from "./borrow.dto";
 
-const createBorrowRequest = async (data: {
-  asset_id: string;
-  user_id: string;
-  borrow_reason: string;
-  expected_return_date: Date;
-}) => {
+const createBorrowRequest = async (data: CreateBorrowInput) => {
   return await prisma.$transaction(async (tx) => {
     const asset = await tx.asset.findUnique({
       where: { asset_id: data.asset_id },
@@ -39,25 +35,22 @@ const createBorrowRequest = async (data: {
   });
 };
 
-const cancelBorrowRequest = async (borrow_id: string) => {
+const cancelBorrowRequest = async (user_id: string, borrow_id: string) => {
   return await prisma.$transaction(async (tx) => {
     const borrow = await tx.borrow.findUnique({
       where: { borrow_id },
     });
 
-    if (!borrow) throw new Error("Borrow not found");
+    if (!borrow) throw new Error("Borrow request not found");
+
+    if (borrow.user_id !== user_id) {
+      throw new Error("You are not authorized to cancel this request");
+    }
 
     if (borrow.status !== BorrowStatus.Menunggu) {
       throw new Error("Only pending borrow requests can be cancelled");
     }
 
-    // Update status aset kembali ke Tersedia
-    await tx.asset.update({
-      where: { asset_id: borrow.asset_id },
-      data: { status: AssetStatus.Tersedia },
-    });
-
-    // Update status borrow ke Dibatalkan
     return await tx.borrow.update({
       where: { borrow_id },
       data: { status: BorrowStatus.Dibatalkan },
@@ -120,7 +113,6 @@ const getBorrowRequestByUserId = async (user_id: string) => {
           asset_name: true,
           serial_number: true,
           asset_type: true,
-          location: true,
         },
       },
     },

@@ -1,17 +1,16 @@
+import { CreateBorrowInput } from "./borrow.dto";
 import borrowRepository from "./borrow.repository";
 
-const createBorrowRequest = async (data: any) => {
-  console.log("Data masuk ke service:", data);
+const createBorrowRequest = async (data: CreateBorrowInput) => {
   const borrow = await borrowRepository.createBorrowRequest(data);
-  console.log("Data masuk ke service:", data);
 
   if (!borrow) throw new Error("Failed to create borrow request");
 
   return borrow;
 };
 
-const cancelBorrowRequest = async (borrow_id: string) => {
-  const borrow = await borrowRepository.cancelBorrowRequest(borrow_id);
+const cancelBorrowRequest = async (user_id:string, borrow_id: string) => {
+  const borrow = await borrowRepository.cancelBorrowRequest(user_id, borrow_id);
 
   if (!borrow) throw new Error("Failed to delete borrow request");
   return borrow;
