@@ -3,7 +3,7 @@ import {
   getAvailableAssets,
   createBorrowRequest,
 } from "../services/borrowService";
-import type { Asset } from "../../../types/inventory";
+import type { Asset } from "../../../../types/inventory";
 import { toast } from "sonner";
 
 export const useAvailableAssets = () => {
@@ -20,12 +20,14 @@ export const useAvailableAssets = () => {
 
   const handleBorrowRequest = async (
     asset_id: string,
+    borrow_date: string,
     borrow_reason: string,
     expected_return_date: string,
   ) => {
     try {
       const result = await createBorrowRequest(
         asset_id,
+        borrow_date,
         borrow_reason,
         expected_return_date,
       );

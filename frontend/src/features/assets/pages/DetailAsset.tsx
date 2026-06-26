@@ -243,47 +243,53 @@ const DetailAsset = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {asset.borrow.map((b) => {
-                    const returnData = b.returns?.[0];
-                    return (
-                      <TableRow key={b.borrow_id}>
-                        <TableCell className="font-medium">
-                          {b.user?.profile?.name ?? "—"}
-                        </TableCell>
-                        <TableCell>{formatDate(b.createdAt)}</TableCell>
-                        <TableCell>
-                          {formatDate(b.expected_return_date)}
-                        </TableCell>
-                        <TableCell>
-                          {returnData
-                            ? formatDate(returnData.return_date)
-                            : "—"}
-                        </TableCell>
-                        <TableCell>
-                          {returnData?.return_condition ? (
-                            <Badge
-                              variant={
-                                returnData.return_condition === "Baik"
-                                  ? "success"
-                                  : returnData.return_condition === "Cukup Baik"
-                                    ? "outline"
-                                    : "destructive"
-                              }
-                            >
-                              {returnData.return_condition}
+                  {asset.borrow
+                    ?.filter(
+                      (b) =>
+                        b.status === "Disetujui" || b.status === "Dikembalikan",
+                    )
+                    .map((b) => {
+                      const returnData = b.returns?.[0];
+                      return (
+                        <TableRow key={b.borrow_id}>
+                          <TableCell className="font-medium">
+                            {b.user?.profile?.name ?? "—"}
+                          </TableCell>
+                          <TableCell>{formatDate(b.createdAt)}</TableCell>
+                          <TableCell>
+                            {formatDate(b.expected_return_date)}
+                          </TableCell>
+                          <TableCell>
+                            {returnData
+                              ? formatDate(returnData.return_date)
+                              : "—"}
+                          </TableCell>
+                          <TableCell>
+                            {returnData?.return_condition ? (
+                              <Badge
+                                variant={
+                                  returnData.return_condition === "Baik"
+                                    ? "success"
+                                    : returnData.return_condition ===
+                                        "Cukup Baik"
+                                      ? "outline"
+                                      : "destructive"
+                                }
+                              >
+                                {returnData.return_condition}
+                              </Badge>
+                            ) : (
+                              "—"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={borrowStatusVariant(b.status)}>
+                              {b.status}
                             </Badge>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={borrowStatusVariant(b.status)}>
-                            {b.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                 </TableBody>
               </Table>
             ) : (

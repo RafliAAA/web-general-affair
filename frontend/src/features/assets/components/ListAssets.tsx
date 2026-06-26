@@ -23,9 +23,10 @@ import { useNavigate } from "react-router-dom";
 interface Props {
   dataAssets: Asset[];
   onCreate: (data: Asset) => void;
+  onExportPdf: () => void;
 }
 
-const ListAssets = ({ dataAssets, onCreate }: Props) => {
+const ListAssets = ({ dataAssets, onCreate, onExportPdf }: Props) => {
   const navigate = useNavigate();
   return (
     <div className="space-y-6">
@@ -39,9 +40,13 @@ const ListAssets = ({ dataAssets, onCreate }: Props) => {
             className="pl-9 border border-secondary"
           />
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onExportPdf}>
+            Export PDF
+          </Button>
 
-        {/* Add Button */}
-        <CreateAssetModal onCreate={onCreate} />
+          <CreateAssetModal onCreate={onCreate} />
+        </div>
       </div>
 
       {/* Table */}
@@ -49,9 +54,9 @@ const ListAssets = ({ dataAssets, onCreate }: Props) => {
         <Table className="min-w-full text-sm ">
           <TableHeader>
             <TableRow>
+              <TableHead className="font-medium ">Kode Aset</TableHead>
               <TableHead className="font-medium ">Nama Aset</TableHead>
               <TableHead className="font-medium ">Kategori</TableHead>
-              <TableHead className="font-medium ">Kode Aset</TableHead>
               <TableHead className="font-medium ">Kondisi</TableHead>
               <TableHead className="font-medium ">Status</TableHead>
               <TableHead className="font-medium "></TableHead>
@@ -66,13 +71,13 @@ const ListAssets = ({ dataAssets, onCreate }: Props) => {
                   onClick={() => navigate(`/aset-perusahaan/${asset.asset_id}`)}
                 >
                   <TableCell className="font-medium">
+                    {asset.asset_code}
+                  </TableCell>
+                  <TableCell className="font-medium">
                     {asset.asset_name}
                   </TableCell>
                   <TableCell className="font-medium">
                     {asset.asset_type}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {asset.serial_number}
                   </TableCell>
                   <TableCell className="font-medium">
                     <Badge
@@ -96,9 +101,11 @@ const ListAssets = ({ dataAssets, onCreate }: Props) => {
                           ? "success"
                           : asset.status === "Dipinjam"
                             ? "secondary"
-                            : asset.status === "maintenance"
-                              ? "outline"
-                              : "destructive"
+                            : asset.status === "Diserahkan"
+                              ? "warning"
+                              : asset.status === "Diperbaiki"
+                                ? "outline"
+                                : "destructive"
                       }
                     >
                       {asset.status}

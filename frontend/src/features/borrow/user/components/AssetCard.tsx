@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { categoryIconMap, conditionVariant } from "@/lib/utils";
-import type { Asset } from "../../../types/inventory";
+import type { Asset } from "../../../../types/inventory";
 
 interface Props {
   asset: Asset;
@@ -9,7 +9,8 @@ interface Props {
 }
 
 const AssetCard = ({ asset, onSelect }: Props) => {
-  const Icon = categoryIconMap[asset.asset_type as keyof typeof categoryIconMap];
+  const Icon =
+    categoryIconMap[asset.asset_type as keyof typeof categoryIconMap];
 
   return (
     <div
@@ -26,7 +27,9 @@ const AssetCard = ({ asset, onSelect }: Props) => {
       </div>
       <div>
         <p className="text-sm font-medium leading-tight">{asset.asset_name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{asset.asset_code}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {asset.asset_code}
+        </p>
       </div>
       <Button size="sm" variant="outline" className="w-full text-xs">
         Pinjam
