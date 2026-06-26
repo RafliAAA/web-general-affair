@@ -2,7 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role?: string; // optional, kalau ada role
+  role?: string; 
 }
 
 export interface AuthState {
