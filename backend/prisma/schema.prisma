@@ -47,6 +47,18 @@ enum DisposalMethod {
   Hibah
 }
 
+enum RoomStatus {
+  Tersedia
+  TidakTersedia
+}
+
+enum BookingStatus {
+  Menunggu
+  Disetujui
+  Ditolak
+  Selesai
+}
+
 enum Role {
   USER
   ADMIN
@@ -71,6 +83,8 @@ model User {
   receivedHandovers Handover[] @relation("HandoverReceiver")
   createdHandovers  Handover[] @relation("HandoverCreator")
   returnedHandovers Handover[] @relation("HandoverReturner")
+  roomBookings RoomBooking[] @relation("BookingUser")
+  reviewedBookings RoomBooking[] @relation("BookingReviewer")
 
   profile Profile?
 }
@@ -299,3 +313,50 @@ model DisposalItem {
 
   @@unique([disposal_id, asset_id])
 }
+
+model Room {
+  room_id    String     @id @default(uuid())
+  name       String
+  capacity   Int
+  location   String
+  status     RoomStatus @default(Tersedia)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  deletedAt  DateTime?
+
+   facilities RoomFacility[]
+  bookings RoomBooking[]
+
+  
+}
+
+model RoomFacility {
+  facility_id String @id @default(uuid())
+  room_id     String
+  name        String
+
+  room Room @relation(fields: [room_id], references: [room_id], onDelete: Cascade)
+  
+  
+}
+
+model RoomBooking {
+  booking_id   String        @id @default(uuid())
+  room_id      String
+  user_id      String
+  reviewed_by  String?
+  purpose      String
+  date         DateTime
+  start_time   String        
+  end_time     String        
+  status       BookingStatus @default(Menunggu)
+  reject_notes String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  room     Room  @relation(fields: [room_id], references: [room_id])
+  user     User  @relation(fields: [user_id], references: [user_id], name: "BookingUser")
+  reviewer User? @relation(fields: [reviewed_by], references: [user_id], name: "BookingReviewer")
+}
+
+
