@@ -20,6 +20,12 @@ enum AssetCondition {
   Rusak
 }
 
+enum ProcurementStatus {
+  Menunggu
+  Disetujui
+  Ditolak
+}
+
 enum HandoverStatus {
   Aktif       
   Dikembalikan 
@@ -102,6 +108,7 @@ model Profile {
 
 model Asset {
   asset_id      String   @id @default(uuid())
+  procurement_item_id String?
   asset_code    String   @unique
   serial_number String   @unique
   asset_name    String
@@ -116,6 +123,8 @@ model Asset {
   updatedAt     DateTime @updatedAt
   deletedAt     DateTime?
 
+
+  procurementItem ProcurementItem? @relation(fields: [procurement_item_id], references: [procurement_item_id])
   handoverItems HandoverItem[] 
   borrow Borrow[]
   disposal DisposalItem[]
@@ -140,10 +149,11 @@ model Procurement {
   procurement_id  String            @id @default(uuid())
   pr_number       String            @unique
   pr_date         DateTime
-  print_date      DateTime
   due_date        DateTime
   end_user        String
   remarks         String?
+  status          ProcurementStatus            @default(Menunggu)
+
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -156,9 +166,11 @@ model ProcurementItem {
   part_number     String
   description     String
   quantity        Int
+  quantity_approved Int
   unit_of_measure String
 
   procurement     Procurement @relation(fields: [procurement_id], references: [procurement_id], onDelete: Cascade)
+  assets        Asset[] 
 }
 
 model Handover {
