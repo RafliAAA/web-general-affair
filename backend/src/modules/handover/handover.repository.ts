@@ -71,7 +71,11 @@ const getAllHandover = async () => {
             select: {
               asset_name: true,
               asset_code: true,
-              asset_type: true,
+              asset_category: {
+                select: {
+                  category_name: true,
+                },
+              },
             },
           },
         },
@@ -88,7 +92,21 @@ const getHandoverById = async (handover_id: string) => {
     where: { handover_id },
     include: {
       items: {
-        include: { asset: true },
+        include: {
+          asset: {
+            select: {
+              asset_name: true,
+              asset_code: true,
+              serial_number: true,
+              condition: true,
+              asset_category: {
+                select: {
+                  category_name: true,
+                },
+              },
+            },
+          },
+        },
       },
       receiver: { select: { profile: { select: { name: true } } } },
       creator: { select: { profile: { select: { name: true } } } },
@@ -130,10 +148,12 @@ const returnHandover = async (
     });
 
     if (!handover) throw new Error("Handover not found");
+
     if (handover.status !== HandoverStatus.Aktif) {
       throw new Error("Handover is already returned");
     }
 
+    // Update status handover
     const updated = await tx.handover.update({
       where: { handover_id },
       data: {
@@ -141,6 +161,18 @@ const returnHandover = async (
         returned_at: new Date(),
         returned_by,
         return_notes: data.return_notes ?? null,
+      },
+    });
+
+    // Update semua asset menjadi tersedia
+    await tx.asset.updateMany({
+      where: {
+        asset_id: {
+          in: handover.items.map((item) => item.asset_id),
+        },
+      },
+      data: {
+        status: AssetStatus.Tersedia,
       },
     });
 
