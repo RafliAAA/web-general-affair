@@ -4,7 +4,8 @@ import { Toaster } from "sonner";
 import Spinner from "./components/layout/Spinner";
 import { useAuthStore } from "./features/auth/stores/useAuthStore";
 
-const Dashboard = lazy(() => import("./pages/Dashboard"));
+
+const AdminDashboardPage = lazy(() => import("./features/dashboard/admin/pages/AdminDashboardPage"));
 // const Projects = lazy(() => import("./pages/projects/Projects"));
 // const LoansPage = lazy(() => import("./pages/Loans"));
 // const ReturnsPage = lazy(() => import("./pages/Returns"));
@@ -25,6 +26,10 @@ const AdminBorrowPage = lazy(
 );
 const Borrow = lazy(() => import("./features/borrow/user/pages/BorrowPage"));
 const ReturnPage = lazy(() => import("./features/return/pages/ReturnPage"));
+// const RoomPage = lazy(() => import("./features/rooms/pages/RoomPage"));
+// const UserBookingPage = lazy(() => import("./features/bookings/pages/UserBookingPage"))
+// const AdminBookingPage = lazy(() => import("./features/bookings/pages/AdminBookingPage"))
+// const DetailRoomPage = lazy(() => import("./features/rooms/pages/DetailRoomPage"));
 const MyMaintenancePage = lazy(() => import("./features/maintenance/user/pages/MyMaintenancePage"));
 const MaintenanceDetailPage = lazy(() => import("./features/maintenance/user/pages/MaintenanceDetailPage"));
 const AdminMaintenancePage = lazy(() => import("./features/maintenance/admin/pages/AllMaintenancePage"))
@@ -33,6 +38,8 @@ const ITMaintenancePage = lazy(() => import("./features/maintenance/IT/pages/ITM
 const  ITMaintenanceDetailPage = lazy(() => import("./features/maintenance/IT/pages/MaintenanceDetailITPage"))
 const DisposalPage = lazy(() => import("./features/disposal/pages/DisposalPage"))
 const DisposalDetailPage = lazy(() => import("./features/disposal/pages/DetailDisposalPage"))
+const UserManagementPage = lazy(() => import("./features/user/pages/UserPage"))
+
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./features/auth/pages/Login"));
 const Register = lazy(() => import("./features/auth/pages/Register"));
@@ -56,7 +63,7 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={user ? <Dashboard /> : <Navigate to="/login" />}
+            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
           />
           {/* <Route path="/projects" element={user ? <Projects /> : <Navigate to="/login" />} /> */}
           <Route
@@ -105,13 +112,29 @@ function App() {
             path="/aset-perusahaan/:id"
             element={user ? <AssetDetail /> : <Navigate to="/login" />}
           />
+          {/* <Route
+            path="/ruangan"
+            element={user ? <RoomPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/ruangan/:id"
+            element={user ? <DetailRoomPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/booking-ruangan"
+            element={user ? <UserBookingPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/approve-ruangan"
+            element={user ? <AdminBookingPage /> : <Navigate to="/login" />}
+          /> */}
           <Route
             path="/pengajuan"
             element={user ? <Borrow /> : <Navigate to="/login" />}
           />
           <Route
             path="/aset-karyawan"
-            element={user ? <Dashboard /> : <Navigate to="/login" />}
+            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
           />
           <Route
             path="/lapor-kerusakan"
@@ -139,11 +162,15 @@ function App() {
           />
           <Route
             path="/kendaraan"
-            element={user ? <Dashboard /> : <Navigate to="/login" />}
+            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
           />
           <Route
             path="/ruangan"
-            element={user ? <Dashboard /> : <Navigate to="/login" />}
+            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/management-users"
+            element={user ? <UserManagementPage /> : <Navigate to="/login" />}
           />
           <Route
             path="/sop"

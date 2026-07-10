@@ -14,6 +14,7 @@ import {
   Trash2,
   FilePen,
   Settings,
+  User,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -43,6 +44,14 @@ const navigation = [
   { name: "Penghapusan", href: "/penghapusan", icon: Trash2 },
 
   { name: "Form Pengajuan", href: "/pengajuan", icon: FilePen },
+
+  // { name: "Ruangan", href: "/ruangan", icon: FilePen },
+
+  // { name: "Peminjaman Ruangan", href: "/peminjaman-ruangan", icon: FilePen },
+
+  // { name: "Approve Peminjaman", href: "/approve-ruangan", icon: FilePen },
+
+  { name: "Manajemen User", href: "/management-users", icon: User },
 ];
 
 const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
