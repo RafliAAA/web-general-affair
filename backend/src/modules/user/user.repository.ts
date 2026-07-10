@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../../config/prisma";
 import type { CreateUserByAdminDTO, UpdateUserDTO } from "./user.dto";
 
@@ -31,8 +32,29 @@ const createUserByAdmin = async (data: CreateUserByAdminDTO) => {
   });
 };
 
-const getAllUsers = async () => {
-  return await prisma.user.findMany({
+
+const getAllUsers = async (search?: string) => {
+  const where: Prisma.UserWhereInput = {};
+
+  if (search) {
+    where.OR = [
+      {
+        email: {
+          contains: search,
+        },
+      },
+      {
+        profile: {
+          name: {
+            contains: search,
+          },
+        },
+      },
+    ];
+  }
+
+  return prisma.user.findMany({
+    where,
     include: {
       profile: {
         select: {
@@ -42,7 +64,9 @@ const getAllUsers = async () => {
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 };
 
@@ -87,5 +111,5 @@ export default {
   createUserByAdmin,
   getAllUsers,
   getUserById,
-//   updateUser,
+  // updateUser,
 };

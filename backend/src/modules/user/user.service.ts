@@ -14,8 +14,8 @@ const createUserByAdmin = async (data: CreateUserByAdminDTO) => {
   return secureUser;
 };
 
-const getAllUsers = async () => {
-  const users = await userRepository.getAllUsers();
+const getAllUsers = async (search?: string) => {
+  const users = await userRepository.getAllUsers(search);
   return users.map(({ password, ...secureUser }) => secureUser);
 };
 
