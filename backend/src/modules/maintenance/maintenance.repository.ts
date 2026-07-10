@@ -1,6 +1,10 @@
-// maintenance.repository.ts
 import prisma from "../../config/prisma";
-import { MaintenanceStatus, AssetStatus, BorrowStatus } from "@prisma/client";
+import {
+  MaintenanceStatus,
+  AssetStatus,
+  BorrowStatus,
+  HandoverStatus,
+} from "@prisma/client";
 import type {
   CreateMaintenanceDTO,
   VerifyMaintenanceDTO,
@@ -27,17 +31,18 @@ const createMaintenance = async (data: CreateMaintenanceDTO) => {
       },
     });
 
-    // TODO: cek dari serah terima aktif setelah model Handover dibuat
-    // const activeHandover = await tx.handover.findFirst({
-    //   where: {
-    //     asset_id: data.asset_id,
-    //     user_id: data.reported_by,
-    //     status: HandoverStatus.Aktif,
-    //   },
-    // });
-
-    const hasOwnership = !!activeBorrow; // nanti jadi: !!activeBorrow || !!activeHandover
-
+   const activeHandover = await tx.handover.findFirst({
+  where: {
+    user_id: data.reported_by,
+    status: HandoverStatus.Aktif,
+    items: {
+      some: {
+        asset_id: data.asset_id,
+      },
+    },
+  },
+});
+const hasOwnership = !!activeBorrow || !!activeHandover;
     if (!hasOwnership) {
       throw new Error("You can only report assets currently assigned to you");
     }
@@ -53,7 +58,7 @@ const createMaintenance = async (data: CreateMaintenanceDTO) => {
           ],
         },
       },
-    }); 
+    });
 
     if (existingActive) {
       throw new Error("Asset already has an active maintenance report");
@@ -107,7 +112,11 @@ const createMaintenance = async (data: CreateMaintenanceDTO) => {
 const getAllMaintenance = async () => {
   return await prisma.maintenance.findMany({
     include: {
-      asset: true,
+      asset: {
+        include: {
+          asset_category: true,
+        },
+      },
       reporter: {
         select: {
           user_id: true,
@@ -158,7 +167,14 @@ const getMyMaintenance = async (user_id: string) => {
   return await prisma.maintenance.findMany({
     where: { reported_by: user_id },
     include: {
-      asset: true,
+      asset: {
+        select: {
+          asset_id: true,
+          asset_name: true,
+          asset_code: true,
+          asset_category: true,
+        },
+      },
       reporter: { select: userSelect },
       verifier: { select: userSelect },
       handler: { select: userSelect },
@@ -187,7 +203,14 @@ const verifyMaintenance = async (data: VerifyMaintenanceDTO) => {
         verified_at: new Date(),
       },
       include: {
-        asset: true,
+        asset: {
+          select: {
+            asset_id: true,
+            asset_name: true,
+            asset_code: true,
+            asset_category: true,
+          },
+        },
         reporter: {
           select: {
             user_id: true,
@@ -234,10 +257,35 @@ const takeMaintenance = async (data: TakeMaintenanceDTO) => {
         taken_at: new Date(),
       },
       include: {
-        asset: true,
-        reporter: { select: { user_id: true, email: true, profile: { select: { name: true } } } },
-        verifier: { select: { user_id: true, email: true, profile: { select: { name: true } } } },
-        handler: { select: { user_id: true, email: true, profile: { select: { name: true } } } },
+        asset: {
+          select: {
+            asset_id: true,
+            asset_name: true,
+            asset_code: true,
+            asset_category: true,
+          },
+        },
+        reporter: {
+          select: {
+            user_id: true,
+            email: true,
+            profile: { select: { name: true } },
+          },
+        },
+        verifier: {
+          select: {
+            user_id: true,
+            email: true,
+            profile: { select: { name: true } },
+          },
+        },
+        handler: {
+          select: {
+            user_id: true,
+            email: true,
+            profile: { select: { name: true } },
+          },
+        },
       },
     });
   });
@@ -254,10 +302,26 @@ const completeMaintenance = async (data: CompleteMaintenanceDTO) => {
       throw new Error("Maintenance is not in progress");
     }
 
-    await tx.asset.update({
-      where: { asset_id: maintenance.asset_id },
-      data: { status: AssetStatus.Dipinjam },
-    });
+    const activeBorrow = await tx.borrow.findFirst({
+  where: { asset_id: maintenance.asset_id, status: BorrowStatus.Disetujui },
+});
+const activeHandover = await tx.handover.findFirst({
+  where: {
+    status: HandoverStatus.Aktif,
+    items: { some: { asset_id: maintenance.asset_id } },
+  },
+});
+
+const returnStatus = activeBorrow
+  ? AssetStatus.Dipinjam
+  : activeHandover
+    ? AssetStatus.Diserahkan
+    : AssetStatus.Tersedia;
+
+await tx.asset.update({
+  where: { asset_id: maintenance.asset_id },
+  data: { status: returnStatus },
+});
 
     return await tx.maintenance.update({
       where: { maintenance_id: data.maintenance_id },
@@ -267,7 +331,14 @@ const completeMaintenance = async (data: CompleteMaintenanceDTO) => {
         completed_at: new Date(),
       },
       include: {
-        asset: true,
+        asset: {
+          select: {
+            asset_id: true,
+            asset_name: true,
+            asset_code: true,
+            asset_category: true,
+          },
+        },
         reporter: {
           select: {
             user_id: true,
@@ -312,7 +383,9 @@ const cannotRepair = async (data: CannotRepairDTO) => {
 
     const now = new Date();
     const takenAt = maintenance.taken_at ?? now;
-    const duration_minutes = Math.round((now.getTime() - takenAt.getTime()) / 60000);
+    const duration_minutes = Math.round(
+      (now.getTime() - takenAt.getTime()) / 60000,
+    );
 
     await tx.actualizationForm.create({
       data: {
@@ -328,13 +401,28 @@ const cannotRepair = async (data: CannotRepairDTO) => {
       },
     });
 
-    await tx.asset.update({
-      where: { asset_id: maintenance.asset_id },
-      data: {
-        status: AssetStatus.Dipinjam,
-        condition: "Rusak",
-      },
-    });
+    const activeBorrow = await tx.borrow.findFirst({
+  where: { asset_id: maintenance.asset_id, status: BorrowStatus.Disetujui },
+});
+const activeHandover = await tx.handover.findFirst({
+  where: {
+    status: HandoverStatus.Aktif,
+    items: { some: { asset_id: maintenance.asset_id } },
+  },
+});
+
+const returnStatus = activeBorrow
+  ? AssetStatus.Dipinjam
+  : activeHandover
+    ? AssetStatus.Diserahkan
+    : AssetStatus.Tersedia;
+
+await tx.asset.update({
+  where: { asset_id: maintenance.asset_id },
+  data: { status: returnStatus,
+    condition: "Rusak"
+   },
+});
 
     return await tx.maintenance.update({
       where: { maintenance_id: data.maintenance_id },
@@ -344,9 +432,27 @@ const cannotRepair = async (data: CannotRepairDTO) => {
       },
       include: {
         asset: true,
-        reporter: { select: { user_id: true, email: true, profile: { select: { name: true } } } },
-        verifier: { select: { user_id: true, email: true, profile: { select: { name: true } } } },
-        handler: { select: { user_id: true, email: true, profile: { select: { name: true } } } },
+        reporter: {
+          select: {
+            user_id: true,
+            email: true,
+            profile: { select: { name: true } },
+          },
+        },
+        verifier: {
+          select: {
+            user_id: true,
+            email: true,
+            profile: { select: { name: true } },
+          },
+        },
+        handler: {
+          select: {
+            user_id: true,
+            email: true,
+            profile: { select: { name: true } },
+          },
+        },
       },
     });
   });
