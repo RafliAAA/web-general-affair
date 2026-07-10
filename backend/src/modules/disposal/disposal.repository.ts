@@ -1,3 +1,4 @@
+import { AssetStatus } from "@prisma/client";
 import prisma from "../../config/prisma";
 import { CreateDisposalInput } from "./disposal.dto";
 
@@ -29,6 +30,7 @@ const createDisposal = async (data: CreateDisposalInput) => {
       },
       data: {
         deletedAt: new Date(),
+        status: AssetStatus.Dihapus,
       },
     });
 
@@ -58,12 +60,16 @@ const getAllDisposals = async () => {
 const getDisposalById = async (disposal_id: string) => {
   return prisma.disposal.findUnique({
     where: {
-      disposal_id
+      disposal_id,
     },
     include: {
       items: {
         include: {
-          asset: true,
+          asset: {
+            include: {
+              asset_category: true,
+            },
+          },
         },
       },
     },
@@ -77,7 +83,7 @@ const updateDisposal = async (
   return prisma.$transaction(async (tx) => {
     const existingDisposal = await tx.disposal.findUnique({
       where: {
-        disposal_id
+        disposal_id,
       },
       include: {
         items: true,
@@ -97,20 +103,21 @@ const updateDisposal = async (
       },
       data: {
         deletedAt: null,
+        status: AssetStatus.Dihapus,
       },
     });
 
     // hapus item lama
     await tx.disposalItem.deleteMany({
       where: {
-        disposal_id
+        disposal_id,
       },
     });
 
     // update header
     await tx.disposal.update({
       where: {
-        disposal_id
+        disposal_id,
       },
       data: {
         memo_number: data.memo_number,
@@ -144,12 +151,16 @@ const updateDisposal = async (
 
     return tx.disposal.findUnique({
       where: {
-        disposal_id
+        disposal_id,
       },
       include: {
         items: {
           include: {
-            asset: true,
+            asset: {
+              include: {
+                asset_category: true,
+              },
+            },
           },
         },
       },
@@ -161,7 +172,7 @@ const deleteDisposal = async (disposal_id: string) => {
   return prisma.$transaction(async (tx) => {
     const disposal = await tx.disposal.findUnique({
       where: {
-        disposal_id
+        disposal_id,
       },
       include: {
         items: true,
@@ -187,7 +198,7 @@ const deleteDisposal = async (disposal_id: string) => {
     // hapus disposal
     return tx.disposal.delete({
       where: {
-        disposal_id
+        disposal_id,
       },
     });
   });
