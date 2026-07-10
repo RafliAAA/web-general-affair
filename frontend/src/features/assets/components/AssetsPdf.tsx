@@ -165,10 +165,14 @@ const AssetsPdf = ({ assets }: Props) => {
           {/* Table Header */}
           <View style={styles.headerRow}>
             <Text style={[styles.cellNo, styles.headerCell]}>No</Text>
-            <Text style={[styles.cellName, styles.headerCell]}>Nama Asset</Text>
             <Text style={[styles.cellCode, styles.headerCell]}>Kode</Text>
-            <Text style={[styles.cellCategory, styles.headerCell]}>Kategori</Text>
-            <Text style={[styles.cellCondition, styles.headerCell]}>Kondisi</Text>
+            <Text style={[styles.cellName, styles.headerCell]}>Nama Asset</Text>
+            <Text style={[styles.cellCategory, styles.headerCell]}>
+              Kategori
+            </Text>
+            <Text style={[styles.cellCondition, styles.headerCell]}>
+              Kondisi
+            </Text>
             <Text style={[styles.cellStatus, styles.headerCell]}>Status</Text>
           </View>
 
@@ -176,9 +180,11 @@ const AssetsPdf = ({ assets }: Props) => {
           {assets.map((asset, index) => (
             <View key={asset.asset_id} style={styles.row}>
               <Text style={styles.cellNo}>{index + 1}</Text>
-              <Text style={styles.cellName}>{asset.asset_name}</Text>
               <Text style={styles.cellCode}>{asset.asset_code}</Text>
-              <Text style={styles.cellCategory}>{asset.asset_type}</Text>
+              <Text style={styles.cellName}>{asset.asset_name}</Text>
+              <Text style={styles.cellCategory}>      
+                {asset.asset_category?.category_name ?? "—"}
+              </Text>
               <Text style={styles.cellCondition}>{asset.condition}</Text>
               <Text style={styles.cellStatus}>{asset.status}</Text>
             </View>

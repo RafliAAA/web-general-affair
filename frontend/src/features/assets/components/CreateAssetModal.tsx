@@ -17,21 +17,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../../lib/axios";
 import type { Asset } from "../../../types/inventory";
+import AddCategoryDialog from "./AddCategoryDialog";
+
+interface AssetCategory {
+  asset_category_id: string;
+  category_name: string;
+  category_code: string;
+}
 
 interface Props {
   onCreate: (data: Asset) => void;
 }
 
-const KATEGORI_OPTIONS = ["Laptop", "Handphone", "Kamera", "Mobil"];
 const KONDISI_OPTIONS = ["Baik", "Cukup", "Rusak"];
 
 const initialForm = {
   asset_name: "",
-  asset_code: "",
   serial_number: "",
-  asset_type: "",
+  asset_category_id: "",
   condition: "",
   purchase_date: "",
   warranty_date: "",
@@ -40,21 +46,37 @@ const initialForm = {
 const CreateAssetModal = ({ onCreate }: Props) => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [categories, setCategories] = useState<AssetCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const fetchCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const res = await api.get("/assets/categories");
+        setCategories(res.data.data);
+      } catch {
+        // silent fail
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, [open]);
 
   const isValid =
     form.asset_name &&
-    form.asset_code &&
     form.serial_number &&
-    form.asset_type &&
-    form.condition;
+    form.asset_category_id &&
+    form.condition &&
+    form.purchase_date;
 
   const handleSubmit = () => {
     if (!isValid) return;
     onCreate({
       ...form,
-      purchase_date: form.purchase_date
-        ? new Date(form.purchase_date).toISOString()
-        : null,
+      purchase_date: new Date(form.purchase_date).toISOString(),
       warranty_date: form.warranty_date
         ? new Date(form.warranty_date).toISOString()
         : null,
@@ -93,47 +115,55 @@ const CreateAssetModal = ({ onCreate }: Props) => {
             />
           </div>
 
-          {/* Kode Aset & Serial Number */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">Kode aset</Label>
-              <Input
-                placeholder="AST-00001"
-                value={form.asset_code}
-                onChange={(e) => handleChange("asset_code", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">
-                Serial number
-              </Label>
-              <Input
-                placeholder="ABC-123456"
-                value={form.serial_number}
-                onChange={(e) => handleChange("serial_number", e.target.value)}
-              />
-            </div>
+          {/* Serial Number */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">
+              Serial number
+            </Label>
+            <Input
+              placeholder="ABC-123456"
+              value={form.serial_number}
+              onChange={(e) => handleChange("serial_number", e.target.value)}
+            />
           </div>
 
           {/* Kategori & Kondisi */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">Kategori</Label>
-              <Select
-                value={form.asset_type}
-                onValueChange={(val) => handleChange("asset_type", val)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih kategori" />
-                </SelectTrigger>
-                <SelectContent>
-                  {KATEGORI_OPTIONS.map((k) => (
-                    <SelectItem key={k} value={k}>
-                      {k}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2">
+                <Select
+                  value={form.asset_category_id}
+                  onValueChange={(val) =>
+                    handleChange("asset_category_id", val)
+                  }
+                  disabled={isLoadingCategories}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue
+                      placeholder={
+                        isLoadingCategories ? "Memuat..." : "Pilih kategori"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem
+                        key={cat.asset_category_id}
+                        value={cat.asset_category_id}
+                      >
+                        {cat.category_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <AddCategoryDialog
+                  onCreated={(newCat) => {
+                    setCategories((prev) => [...prev, newCat]);
+                    handleChange("asset_category_id", newCat.asset_category_id);
+                  }}
+                />
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">Kondisi</Label>
@@ -158,8 +188,7 @@ const CreateAssetModal = ({ onCreate }: Props) => {
           {/* Tanggal Pembelian */}
           <div className="space-y-1.5">
             <Label className="text-sm text-muted-foreground">
-              Tanggal pembelian{" "}
-              <span className="text-muted-foreground/60">(opsional)</span>
+              Tanggal pembelian
             </Label>
             <Input
               type="date"
@@ -167,19 +196,19 @@ const CreateAssetModal = ({ onCreate }: Props) => {
               onChange={(e) => handleChange("purchase_date", e.target.value)}
             />
           </div>
-        </div>
 
-        {/* Tanggal Garansi */}
-        <div className="space-y-1.5">
-          <Label className="text-sm text-muted-foreground">
-            Tanggal garansi{" "}
-            <span className="text-muted-foreground/60">(opsional)</span>
-          </Label>
-          <Input
-            type="date"
-            value={form.warranty_date}
-            onChange={(e) => handleChange("warranty_date", e.target.value)}
-          />
+          {/* Tanggal Garansi */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">
+              Tanggal garansi{" "}
+              <span className="text-muted-foreground/60">(opsional)</span>
+            </Label>
+            <Input
+              type="date"
+              value={form.warranty_date}
+              onChange={(e) => handleChange("warranty_date", e.target.value)}
+            />
+          </div>
         </div>
 
         <DialogFooter className="gap-2">

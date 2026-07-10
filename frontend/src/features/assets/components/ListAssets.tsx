@@ -16,31 +16,81 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import CreateAssetModal from "./CreateAssetModal";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import type { AssetMeta } from "../hooks/useAssets";
 
 interface Props {
   dataAssets: Asset[];
+  meta: AssetMeta | null;
+  search: string;
+  page: number;
+  statusFilter: string;
+  onStatusChange: (value: string) => void;
   onCreate: (data: Asset) => void;
   onExportPdf: () => void;
+  onSearchChange: (value: string) => void;
+  onPageChange: (page: number) => void;
 }
 
-const ListAssets = ({ dataAssets, onCreate, onExportPdf }: Props) => {
+const ListAssets = ({
+  dataAssets,
+  meta,
+  search,
+  page,
+  statusFilter,
+  onStatusChange,
+  onCreate,
+  onExportPdf,
+  onSearchChange,
+  onPageChange,
+}: Props) => {
   const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-row items-center justify-between">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="flex items-center justify-between  flex-wrap">
+        <div className="relative max-w-md w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Cari aset..."
-            className="pl-9 border border-secondary"
+            className="pl-9"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Select
+              value={statusFilter || "Semua"}
+              onValueChange={(value) =>
+                onStatusChange(value === "Semua" ? "" : value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filter Status" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Semua">Semua Status</SelectItem>
+                <SelectItem value="Tersedia">Tersedia</SelectItem>
+                <SelectItem value="Dipinjam">Dipinjam</SelectItem>
+                <SelectItem value="Diperbaiki">Diperbaiki</SelectItem>
+                <SelectItem value="Diserahkan">Diserahkan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <Button variant="outline" onClick={onExportPdf}>
             Export PDF
           </Button>
@@ -51,15 +101,15 @@ const ListAssets = ({ dataAssets, onCreate, onExportPdf }: Props) => {
 
       {/* Table */}
       <div className="rounded-lg border bg-card overflow-x-auto">
-        <Table className="min-w-full text-sm ">
+        <Table className="min-w-full text-sm">
           <TableHeader>
             <TableRow>
-              <TableHead className="font-medium ">Kode Aset</TableHead>
-              <TableHead className="font-medium ">Nama Aset</TableHead>
-              <TableHead className="font-medium ">Kategori</TableHead>
-              <TableHead className="font-medium ">Kondisi</TableHead>
-              <TableHead className="font-medium ">Status</TableHead>
-              <TableHead className="font-medium "></TableHead>
+              <TableHead className="font-medium">Kode Aset</TableHead>
+              <TableHead className="font-medium">Nama Aset</TableHead>
+              <TableHead className="font-medium">Kategori</TableHead>
+              <TableHead className="font-medium">Kondisi</TableHead>
+              <TableHead className="font-medium">Status</TableHead>
+              <TableHead className="font-medium"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -77,7 +127,7 @@ const ListAssets = ({ dataAssets, onCreate, onExportPdf }: Props) => {
                     {asset.asset_name}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {asset.asset_type}
+                    {asset.asset_category?.category_name ?? "—"}
                   </TableCell>
                   <TableCell className="font-medium">
                     <Badge
@@ -100,18 +150,23 @@ const ListAssets = ({ dataAssets, onCreate, onExportPdf }: Props) => {
                         asset.status === "Tersedia"
                           ? "success"
                           : asset.status === "Dipinjam"
-                            ? "secondary"
+                            ? "info"
                             : asset.status === "Diserahkan"
-                              ? "warning"
+                              ? "secondary"
                               : asset.status === "Diperbaiki"
-                                ? "outline"
-                                : "destructive"
+                                ? "warning"
+                                : asset.status === "Dihapus"
+                                  ? "destructive"
+                                  : "outline"
                       }
                     >
                       {asset.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center w-25">
+                  <TableCell
+                    className="text-center w-25"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
@@ -119,7 +174,11 @@ const ListAssets = ({ dataAssets, onCreate, onExportPdf }: Props) => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate(`/aset-perusahaan/${asset.asset_id}`)
+                          }
+                        >
                           <EyeIcon className="h-4 w-4 mr-2" /> Detail
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -140,6 +199,36 @@ const ListAssets = ({ dataAssets, onCreate, onExportPdf }: Props) => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {meta && meta.totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Menampilkan {dataAssets.length} dari {meta.total} aset
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === 1}
+              onClick={() => onPageChange(page - 1)}
+            >
+              Sebelumnya
+            </Button>
+            <span className="text-sm px-2">
+              {page} / {meta.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page === meta.totalPages}
+              onClick={() => onPageChange(page + 1)}
+            >
+              Selanjutnya
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

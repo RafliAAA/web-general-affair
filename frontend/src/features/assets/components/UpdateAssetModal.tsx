@@ -15,8 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../../lib/axios";
 import type { Asset } from "../../../types/inventory";
+
+interface AssetCategory {
+  asset_category_id: string;
+  category_name: string;
+  category_code: string;
+}
 
 interface Props {
   asset: Asset;
@@ -24,15 +31,16 @@ interface Props {
   onClose: () => void;
 }
 
-const KATEGORI_OPTIONS = ["Laptop", "Handphone", "Kamera", "Mobil"];
 const KONDISI_OPTIONS = ["Baik", "Cukup", "Rusak"];
 
 const UpdateAssetModal = ({ asset, onUpdate, onClose }: Props) => {
+  const [categories, setCategories] = useState<AssetCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
   const [form, setForm] = useState({
     asset_name: asset.asset_name,
-    asset_code: asset.asset_code,
     serial_number: asset.serial_number,
-    asset_type: asset.asset_type,
+    asset_category_id: asset.asset_category_id || "",
     condition: asset.condition,
     warranty_date: asset.warranty_date
       ? new Date(asset.warranty_date).toISOString().split("T")[0]
@@ -42,11 +50,25 @@ const UpdateAssetModal = ({ asset, onUpdate, onClose }: Props) => {
       : "",
   });
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const res = await api.get("/assets/categories");
+        setCategories(res.data.data);
+      } catch {
+        // silent fail
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const isValid =
     form.asset_name &&
-    form.asset_code &&
     form.serial_number &&
-    form.asset_type &&
+    form.asset_category_id &&
     form.condition;
 
   const handleChange = (field: string, value: string) => {
@@ -85,26 +107,14 @@ const UpdateAssetModal = ({ asset, onUpdate, onClose }: Props) => {
             />
           </div>
 
-          {/* Kode Aset & Serial Number */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">Kode aset</Label>
-              <Input
-                placeholder="AST-00001"
-                value={form.asset_code}
-                onChange={(e) => handleChange("asset_code", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">
-                Serial number
-              </Label>
-              <Input
-                placeholder="ABC-123456"
-                value={form.serial_number}
-                onChange={(e) => handleChange("serial_number", e.target.value)}
-              />
-            </div>
+          {/* Serial Number */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">Serial number</Label>
+            <Input
+              placeholder="ABC-123456"
+              value={form.serial_number}
+              onChange={(e) => handleChange("serial_number", e.target.value)}
+            />
           </div>
 
           {/* Kategori & Kondisi */}
@@ -112,16 +122,24 @@ const UpdateAssetModal = ({ asset, onUpdate, onClose }: Props) => {
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">Kategori</Label>
               <Select
-                value={form.asset_type}
-                onValueChange={(val) => handleChange("asset_type", val)}
+                value={form.asset_category_id}
+                onValueChange={(val) => handleChange("asset_category_id", val)}
+                disabled={isLoadingCategories}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Pilih kategori" />
+                  <SelectValue
+                    placeholder={
+                      isLoadingCategories ? "Memuat..." : "Pilih kategori"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {KATEGORI_OPTIONS.map((k) => (
-                    <SelectItem key={k} value={k}>
-                      {k}
+                  {categories.map((cat) => (
+                    <SelectItem
+                      key={cat.asset_category_id}
+                      value={cat.asset_category_id}
+                    >
+                      {cat.category_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

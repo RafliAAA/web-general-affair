@@ -40,12 +40,14 @@ const statusVariant = (status: string) => {
   switch (status) {
     case "Tersedia":
       return "success";
-    case "Dipinjam":
+    case "Diserahkan":
       return "secondary";
+    case "Dipinjam":
+      return "warning";
     case "Diperbaiki":
-      return "outline";
-    default:
       return "destructive";
+    default:
+      return "outline";
   }
 };
 
@@ -107,7 +109,8 @@ const DetailAsset = () => {
             <div>
               <h1 className="text-xl font-medium">{asset.asset_name}</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {asset.asset_code} . {asset.asset_type}
+                {asset.asset_code} .        {asset.asset_category?.category_name ?? "—"}
+
               </p>
             </div>
             <div className="flex gap-2">
@@ -137,7 +140,7 @@ const DetailAsset = () => {
                   label: "Serial number",
                   value: asset.serial_number,
                 },
-                { icon: Package, label: "Kategori", value: asset.asset_type },
+                { icon: Package, label: "Kategori", value: asset.asset_category?.category_name ?? "—" },
                 {
                   icon: User,
                   label: "Pengguna saat ini",
