@@ -45,7 +45,7 @@ const BorrowModal = ({ asset, onConfirm, onClose, loading }: Props) => {
           <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
             <p className="text-sm font-medium">{asset.asset_name}</p>
             <p className="text-xs text-muted-foreground">
-              {asset.asset_code} · {asset.asset_type}
+              {asset.asset_code} · {asset.asset_category?.category_name || "—"}
             </p>
             <div className="flex items-center gap-2 pt-1">
               <span className="text-xs text-muted-foreground">Kondisi</span>

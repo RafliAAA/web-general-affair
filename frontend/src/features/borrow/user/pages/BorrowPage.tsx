@@ -22,7 +22,7 @@ const BorrowPage = () => {
     const matchSearch =
       a.asset_name.toLowerCase().includes(search.toLowerCase()) ||
       a.asset_code.toLowerCase().includes(search.toLowerCase());
-    const matchKategori = kategori === "Semua" || a.asset_type === kategori;
+    const matchKategori = kategori === "Semua" || a.asset_category?.category_name === kategori;
     return matchSearch && matchKategori;
   });
 

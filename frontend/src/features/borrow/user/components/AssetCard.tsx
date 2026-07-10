@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { categoryIconMap, conditionVariant } from "@/lib/utils";
 import type { Asset } from "../../../../types/inventory";
+import { Package } from "lucide-react";
 
 interface Props {
   asset: Asset;
@@ -9,8 +10,10 @@ interface Props {
 }
 
 const AssetCard = ({ asset, onSelect }: Props) => {
-  const Icon =
-    categoryIconMap[asset.asset_type as keyof typeof categoryIconMap];
+   const Icon =
+     categoryIconMap[
+       asset.asset_category?.category_name as keyof typeof categoryIconMap
+     ] ?? Package;
 
   return (
     <div

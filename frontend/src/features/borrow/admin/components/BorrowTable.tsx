@@ -66,7 +66,7 @@ const BorrowTable = ({ borrows, onApprove, onReject }: Props) => {
               {b.user?.profile?.name ?? "—"}
             </TableCell>
             <TableCell>{b.asset.asset_name}</TableCell>
-            <TableCell>{b.asset.asset_type}</TableCell>
+            <TableCell>{b.asset.asset_category?.category_name || "—"}</TableCell>
             <TableCell className="max-w-48 truncate">{b.borrow_reason}</TableCell>
             <TableCell>{formatDate(b.expected_return_date)}</TableCell>
             <TableCell>
