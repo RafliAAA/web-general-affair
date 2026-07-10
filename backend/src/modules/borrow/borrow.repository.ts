@@ -67,8 +67,12 @@ const getAllBorrowRequest = async () => {
       asset: {
         select: {
           asset_name: true,
-          serial_number: true,
-          asset_type: true,
+          asset_code: true,
+          asset_category: {
+            select: {
+              category_name: true,
+            },
+          },
         },
       },
       user: {
@@ -90,8 +94,12 @@ const getAllActiveBorrow = async () => {
       asset: {
         select: {
           asset_name: true,
-          serial_number: true,
-          asset_type: true,
+          asset_code: true,
+          asset_category: {
+            select: {
+              category_name: true,
+            },
+          },
         },
       },
       user: {
