@@ -1,3 +1,4 @@
+import { AuthRequest } from "../../middleware/auth";
 import assetsService from "./assets.service";
 import { Request, Response } from "express";
 
@@ -9,7 +10,7 @@ const createAsset = async (req: Request, res: Response) => {
       purchase_date,
       warranty_date,
       serial_number,
-      asset_type,
+      asset_category_id,
       condition,
       status,
     } = req.body;
@@ -19,7 +20,7 @@ const createAsset = async (req: Request, res: Response) => {
       purchase_date: new Date(purchase_date),
       warranty_date: new Date(warranty_date),
       serial_number,
-      asset_type,
+      asset_category_id,
       condition,
       status,
     });
@@ -39,12 +40,27 @@ const createAsset = async (req: Request, res: Response) => {
 
 const getAllAssets = async (req: Request, res: Response) => {
   try {
-    const filter = req.query;
-    const assets = await assetsService.getAllAssets(filter);
+    const {
+      search,
+      status,
+      asset_type,
+      page = "1",
+      limit = "8",
+    } = req.query;
+
+    const result = await assetsService.getAllAssets({
+      search,
+      status,
+      asset_type,
+      page: Number(page),
+      limit: Number(limit),
+    });
+
     return res.status(200).json({
       success: true,
       message: "Assets fetched successfully",
-      data: assets,
+      data: result.data,   
+      meta: result.meta,   
     });
   } catch (error: any) {
     return res.status(500).json({
@@ -172,6 +188,157 @@ const getBorrowedAssets = async (req: Request, res: Response) => {
   }
 };
 
+const getMyAssets = async (req: AuthRequest, res: Response ) => {
+  try {
+    const user_id = req.user?.user_id;
+
+    const excludeMaintenance = req.query.excludeMaintenance === "true"
+    
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required"
+      })
+    }
+
+    const result = await assetsService.getMyAssets(user_id, excludeMaintenance)
+
+    return res.status(200).json({
+      success: true,
+      message: "My assets fetched successfully",
+      data: result
+    })
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch my assets",
+      error: error.message,
+    });
+  }
+}
+
+const findAllCategories = async (req: Request, res: Response) => {
+  try {
+    const result = await assetsService.findAllCategories();
+
+    return res.status(200).json({
+      success: true,
+      message: "Categories fetched successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch categories",
+      error: error.message,
+    });
+  }
+};
+
+const findCategoryById = async (req: Request, res: Response) => {
+  try {
+    const { asset_category_id } = req.params;
+
+     if (!asset_category_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Category ID is required"
+      })
+    }
+
+    const result = await assetsService.findCategoryById(asset_category_id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Category fetched successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch category",
+      error: error.message,
+    });
+  }
+};
+
+const createCategory = async (req: Request, res: Response) => {
+  try {
+    const { category_name, category_code } = req.body;
+
+    const result = await assetsService.createCategory({ category_name, category_code });
+
+    return res.status(201).json({
+      success: true,
+      message: "Category created successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create category",
+      error: error.message,
+    });
+  }
+};
+
+const updateCategory = async (req: Request, res: Response) => {
+  try {
+    const { asset_category_id } = req.params;
+
+    const { category_name, category_code } = req.body;
+
+     if (!asset_category_id) {
+       return res.status(400).json({
+         success: false,
+         message: "Category ID is required",
+       });
+     }
+
+    const result = await assetsService.updateCategory(asset_category_id, { category_name, category_code });
+
+    return res.status(200).json({
+      success: true,
+      message: "Category updated successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update category",
+      error: error.message,
+    });
+  }
+}
+
+const deleteCategory = async (req: Request, res: Response) => {
+  try {
+    const { asset_category_id } = req.params;
+
+    if (!asset_category_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Category ID is required"
+      })
+    }
+
+    const result = await assetsService.deleteCategory(asset_category_id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Category deleted successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete category",
+      error: error.message,
+    });
+  }
+}
+
 export default {
   createAsset,
   getAllAssets,
@@ -180,4 +347,10 @@ export default {
   deleteAsset,
   getAvailableAssets,
   getBorrowedAssets,
+  getMyAssets,
+  findAllCategories,
+  findCategoryById,
+  createCategory,
+  updateCategory,
+  deleteCategory,
 };

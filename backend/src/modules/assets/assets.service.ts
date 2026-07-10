@@ -6,7 +6,7 @@ const createAsset = async (data: {
   purchase_date: Date;
   warranty_date: Date;
   serial_number: string;
-  asset_type: string;
+  asset_category_id: string;
   condition: string;
   status: string;
 
@@ -57,6 +57,43 @@ const getBorrowedAssets = async () => {
   return assets;
 };
 
+const getMyAssets = async(user_id: string, excludeMaintenance: boolean) => {
+  const assets = await assetsRepository.getMyAssets(user_id, excludeMaintenance)
+
+  if(!assets) throw new Error("No assets found for this user")
+  return assets
+}
+
+const findAllCategories = async () => {
+  const categories = await assetsRepository.findAllCategories();
+  if (!categories) throw new Error("No categories found");
+  return categories;
+}
+
+const findCategoryById = async (asset_category_id: string) => {
+  const category = await assetsRepository.findCategoryById(asset_category_id);
+  if (!category) throw new Error("Category not found");
+  return category;
+}
+
+const createCategory = async (data: { category_name: string; category_code: string }) => {
+  const category = await assetsRepository.createCategory(data);
+  if (!category) throw new Error("Failed to create category");
+  return category;
+}
+
+const updateCategory = async (asset_category_id: string, data: { category_name?: string; category_code?: string }) => {
+  const category = await assetsRepository.updateCategory(asset_category_id, data);
+  if (!category) throw new Error("Failed to update category");
+  return category;
+}
+
+const deleteCategory = async (asset_category_id: string) => {
+  const category = await assetsRepository.deleteCategory(asset_category_id);
+  if (!category) throw new Error("Failed to delete category");
+  return category;
+}
+
 export default {
   createAsset,
   getAllAssets,
@@ -65,4 +102,10 @@ export default {
   deleteAsset,
   getAvailableAssets,
   getBorrowedAssets,
+  getMyAssets,
+  findAllCategories,
+  findCategoryById,
+  createCategory,
+  updateCategory,
+  deleteCategory,
 };
