@@ -12,6 +12,7 @@ enum AssetStatus {
   Dipinjam
   Diperbaiki
   Diserahkan
+  Dihapus
 }
 
 enum AssetCondition {
@@ -112,7 +113,8 @@ model Asset {
   asset_code    String   @unique
   serial_number String   @unique
   asset_name    String
-  asset_type    String
+  asset_category    AssetCategory? @relation(fields: [asset_category_id], references: [asset_category_id])
+  asset_category_id String?
   purchase_date DateTime
   warranty_date DateTime?
   photo         String?
@@ -129,9 +131,15 @@ model Asset {
   borrow Borrow[]
   disposal DisposalItem[]
   maintenances Maintenance[]
-  
-  
   @@index([status])
+}
+
+model AssetCategory {
+  asset_category_id String @id @default(uuid())
+  category_name     String @unique
+  category_code     String @unique
+
+  assets Asset[]
 }
 
 model Project {
