@@ -18,9 +18,10 @@ import type {
 
 interface Props {
   procurement: Procurement;
+  // Menggunakan Omit untuk memastikan payload yang dikirim bersih dari print_date jika typenya belum di-update
   onUpdate: (
     id: string,
-    payload: Partial<CreateProcurementPayload>,
+    payload: Partial<Omit<CreateProcurementPayload, "print_date">>,
   ) => Promise<unknown>;
   onClose: () => void;
 }
@@ -29,10 +30,10 @@ const toDateInput = (dateStr: string) =>
   new Date(dateStr).toISOString().split("T")[0];
 
 const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
-  const [form, setForm] = useState<CreateProcurementPayload>({
+  const [form, setForm] = useState<Omit<CreateProcurementPayload, "print_date">>({
     pr_number: procurement.pr_number,
     pr_date: toDateInput(procurement.pr_date),
-    print_date: toDateInput(procurement.print_date),
+    // print_date DIHAPUS dari inisialisasi state edit
     due_date: toDateInput(procurement.due_date),
     end_user: procurement.end_user,
     remarks: procurement.remarks,
@@ -47,18 +48,18 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
   });
   const [loading, setLoading] = useState(false);
 
+  // DIUBAH: Pengecekan form.print_date dihapus dari penentuan validitas form
   const isValid =
     form.pr_date &&
-    form.print_date &&
     form.due_date &&
     form.end_user &&
     form.items.length > 0 &&
     form.items.every(
-      (i) => i.part_number && i.description && i.unit_of_measure,
+      (i) => i.part_number && i.description && i.unit_of_measure && i.quantity > 0,
     );
 
   const handleChange = (
-    field: keyof CreateProcurementPayload,
+    field: keyof Omit<CreateProcurementPayload, "print_date">,
     value: string,
   ) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -71,7 +72,7 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
   ) => {
     setForm((prev) => {
       const items = [...prev.items];
-      items[index] = { ...items[index], [field]: value };
+      items[index] = { ...items[index], [field]: value } as typeof items[0];
       return { ...prev, items };
     });
   };
@@ -130,7 +131,8 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          {/* DIUBAH: Grid diubah dari grid-cols-3 menjadi grid-cols-2 karena input Tanggal Cetak dihapus */}
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">
                 Tanggal PR
@@ -139,16 +141,6 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
                 type="date"
                 value={form.pr_date}
                 onChange={(e) => handleChange("pr_date", e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">
-                Tanggal cetak
-              </Label>
-              <Input
-                type="date"
-                value={form.print_date}
-                onChange={(e) => handleChange("print_date", e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
@@ -170,7 +162,7 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
             </Label>
             <Textarea
               placeholder="Keterangan pengadaan..."
-              value={form.remarks}
+              value={form.remarks || ""}
               onChange={(e) => handleChange("remarks", e.target.value)}
               rows={2}
             />

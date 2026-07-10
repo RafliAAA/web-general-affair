@@ -246,7 +246,7 @@ const DetailDisposalPage = () => {
                         {item.asset.asset_name}
                       </TableCell>
                       <TableCell>{item.asset.asset_code}</TableCell>
-                      <TableCell>{item.asset.asset_type}</TableCell>
+                      <TableCell>{item.asset.asset_category?.category_name || "—"}</TableCell>
                       <TableCell>
                         <Badge
                           variant={methodVariant(item.method)}

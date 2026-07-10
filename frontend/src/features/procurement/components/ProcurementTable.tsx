@@ -51,6 +51,7 @@ const ProcurementTable = ({ procurements, onEdit, onDelete }: Props) => {
           <TableHead>PR Date</TableHead>
           <TableHead>Due Date</TableHead>
           <TableHead>Remarks</TableHead>
+          <TableHead>Status</TableHead>
           <TableHead></TableHead>
         </TableRow>
       </TableHeader>
@@ -67,6 +68,9 @@ const ProcurementTable = ({ procurements, onEdit, onDelete }: Props) => {
             <TableCell>{formatDate(p.due_date)}</TableCell>
             <TableCell className="max-w-48 truncate text-muted-foreground text-sm">
               {p.remarks || "—"}
+            </TableCell>
+            <TableCell className="max-w-48 truncate text-muted-foreground text-sm">
+              {p.status || "—"}
             </TableCell>
             <TableCell
               className="text-center"

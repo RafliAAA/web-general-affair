@@ -35,7 +35,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useAssets } from "../hooks/useAssets";
-import { useUsers } from "../hooks/useUsers";
+import { useEffect, useState } from "react";
+import { useUserSearch } from "../../../user/hooks/useUserSearch";
 import type { CreateHandoverPayload } from "@/types/handover";
 
 const itemSchema = z.object({
@@ -67,8 +68,9 @@ const HandoverFormDialog = ({
   isSubmitting,
 }: HandoverFormDialogProps) => {
   const { assets, isLoading: isLoadingAssets } = useAssets();
-  const { users, isLoading: isLoadingUsers } = useUsers();
-
+  const { users, isSearching: isLoadingUsers, searchUsers } = useUserSearch();
+  const [userKeyword, setUserKeyword] = useState("");
+  const [userPopoverOpen, setUserPopoverOpen] = useState(false);
   const form = useForm<HandoverFormValues>({
     resolver: zodResolver(handoverSchema),
     defaultValues: {
@@ -79,6 +81,12 @@ const HandoverFormDialog = ({
       items: [{ asset_id: "", notes: "" }],
     },
   });
+
+  useEffect(() => {
+    if (userKeyword.trim().length >= 2) {
+      searchUsers(userKeyword);
+    }
+  }, [userKeyword, searchUsers]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -115,7 +123,6 @@ const HandoverFormDialog = ({
           >
             {/* Info Utama */}
             <div className="grid grid-cols-2 gap-4">
-
               {/* Penerima — Combobox */}
               <FormField
                 control={form.control}
@@ -123,7 +130,10 @@ const HandoverFormDialog = ({
                 render={({ field }) => (
                   <FormItem className="col-span-2">
                     <FormLabel>Penerima</FormLabel>
-                    <Popover>
+                    <Popover
+                      open={userPopoverOpen}
+                      onOpenChange={setUserPopoverOpen}
+                    >
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -146,36 +156,53 @@ const HandoverFormDialog = ({
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Cari nama atau email..." />
+                          <CommandInput
+                            placeholder="Cari nama karyawan..."
+                            value={userKeyword}
+                            onValueChange={setUserKeyword}
+                          />
                           <CommandList>
-                            <CommandEmpty>Karyawan tidak ditemukan</CommandEmpty>
-                            <CommandGroup>
-                              {users.map((user) => {
-                                const isSelected = field.value === user.user_id;
-                                return (
-                                  <CommandItem
-                                    key={user.user_id}
-                                    value={`${user.profile?.name ?? ""} ${user.email}`}
-                                    onSelect={() => field.onChange(user.user_id)}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        isSelected ? "opacity-100" : "opacity-0",
-                                      )}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">
-                                        {user.profile?.name ?? "—"}
-                                      </p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {user.email} · {user.role}
-                                      </p>
-                                    </div>
-                                  </CommandItem>
-                                );
-                              })}
-                            </CommandGroup>
+                            {isLoadingUsers ? (
+                              <div className="py-6 text-center text-sm text-muted-foreground">
+                                Mencari...
+                              </div>
+                            ) : (
+                              <>
+
+                                <CommandGroup>
+                                  {users.map((user) => {
+                                    const isSelected =
+                                      field.value === user.user_id;
+                                    return (
+                                      <CommandItem
+                                        key={user.user_id}
+                                        value={`${user.profile?.name ?? ""} ${user.email}`}
+                                        onSelect={() =>
+                                          field.onChange(user.user_id)
+                                        }
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            isSelected
+                                              ? "opacity-100"
+                                              : "opacity-0",
+                                          )}
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium truncate">
+                                            {user.profile?.name ?? "—"}
+                                          </p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {user.email} · {user.role}
+                                          </p>
+                                        </div>
+                                      </CommandItem>
+                                    );
+                                  })}
+                                </CommandGroup>
+                              </>
+                            )}
                           </CommandList>
                         </Command>
                       </PopoverContent>
@@ -302,13 +329,18 @@ const HandoverFormDialog = ({
                               <Command>
                                 <CommandInput placeholder="Cari nama atau kode aset..." />
                                 <CommandList>
-                                  <CommandEmpty>Aset tidak ditemukan</CommandEmpty>
+                                  <CommandEmpty>
+                                    Aset tidak ditemukan
+                                  </CommandEmpty>
                                   <CommandGroup>
                                     {assets.map((asset) => {
-                                      const isSelected = field.value === asset.asset_id;
+                                      const isSelected =
+                                        field.value === asset.asset_id;
                                       const isUsedElsewhere =
                                         !isSelected &&
-                                        selectedAssetIds.includes(asset.asset_id);
+                                        selectedAssetIds.includes(
+                                          asset.asset_id,
+                                        );
                                       return (
                                         <CommandItem
                                           key={asset.asset_id}
@@ -320,13 +352,16 @@ const HandoverFormDialog = ({
                                           }}
                                           disabled={isUsedElsewhere}
                                           className={cn(
-                                            isUsedElsewhere && "opacity-40 cursor-not-allowed",
+                                            isUsedElsewhere &&
+                                              "opacity-40 cursor-not-allowed",
                                           )}
                                         >
                                           <Check
                                             className={cn(
                                               "mr-2 h-4 w-4",
-                                              isSelected ? "opacity-100" : "opacity-0",
+                                              isSelected
+                                                ? "opacity-100"
+                                                : "opacity-0",
                                             )}
                                           />
                                           <div className="flex-1 min-w-0">
@@ -334,7 +369,9 @@ const HandoverFormDialog = ({
                                               {asset.asset_name}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                              {asset.asset_code} · {asset.asset_type} · {asset.condition}
+                                              {asset.asset_code} ·{" "}
+                                              {asset.asset_type} ·{" "}
+                                              {asset.condition}
                                             </p>
                                           </div>
                                           {isUsedElsewhere && (
@@ -360,17 +397,23 @@ const HandoverFormDialog = ({
                       <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-background border text-xs text-muted-foreground">
                         <span>
                           S/N:{" "}
-                          <span className="font-mono">{selectedAsset.serial_number}</span>
+                          <span className="font-mono">
+                            {selectedAsset.serial_number}
+                          </span>
                         </span>
                         <span>·</span>
                         <span>
                           Kondisi:{" "}
-                          <span className="font-medium text-foreground">{selectedAsset.condition}</span>
+                          <span className="font-medium text-foreground">
+                            {selectedAsset.condition}
+                          </span>
                         </span>
                         <span>·</span>
                         <span>
                           Status:{" "}
-                          <span className="font-medium text-foreground">{selectedAsset.status}</span>
+                          <span className="font-medium text-foreground">
+                            {selectedAsset.status}
+                          </span>
                         </span>
                       </div>
                     )}

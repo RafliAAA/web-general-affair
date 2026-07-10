@@ -1,7 +1,9 @@
-import type { CreateProcurementPayload, Procurement } from "@/types/procurement";
+import type {
+  CreateProcurementPayload,
+  Procurement,
+} from "@/types/procurement";
 import api from "../../../lib/axios";
-
-
+import type { UserOption } from "@/features/handover/admin/hooks/useUsers";
 
 export const getProcurements = async (): Promise<Procurement[]> => {
   const res = await api.get("/procurement");
@@ -32,7 +34,7 @@ export const deleteProcurement = async (id: string): Promise<void> => {
   await api.delete(`/procurement/${id}`);
 };
 
-export const exportProcurementPDF = async (id: string): Promise<string> => {
-  const res = await api.get(`/procurement/${id}/export`);
-  return res.data.data.url;
+export const getUsers = async (): Promise<UserOption[]> => {
+  const res = await api.get("/users");
+  return res.data.data;
 };

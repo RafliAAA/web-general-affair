@@ -43,7 +43,7 @@ const AdminHandoverDetailSheet = ({
     <Sheet open={!!handoverId} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
         <SheetHeader className="mb-4">
-          <SheetTitle>Detail Handover</SheetTitle>
+          <SheetTitle>Detail Serah Terima</SheetTitle>
           <SheetDescription>
             Informasi lengkap serah terima aset
           </SheetDescription>
@@ -68,7 +68,7 @@ const AdminHandoverDetailSheet = ({
 
             <div className="grid grid-cols-2 gap-4">
               <LabelValue
-                label="Tanggal Handover"
+                label="Tanggal Serah Terima"
                 value={fmt(handover.handover_date)}
               />
               <LabelValue label="Entity" value={handover.entity} />

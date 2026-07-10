@@ -53,7 +53,7 @@ const ReturnTable = ({ borrows, onReturn }: Props) => {
               {b.user?.profile?.name ?? "—"}
             </TableCell>
             <TableCell>{b.asset.asset_name}</TableCell>
-            <TableCell>{b.asset.asset_type}</TableCell>
+            <TableCell>{b.asset.asset_category?.category_name || "—"}</TableCell>
             <TableCell>{b.asset.serial_number}</TableCell>
             <TableCell>{formatDate(b.createdAt)}</TableCell>
             <TableCell>{formatDate(b.expected_return_date)}</TableCell>

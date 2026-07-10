@@ -22,6 +22,7 @@ import {
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useHandoverDetail } from "../hooks/useHandoverDetail";
 import ReturnHandoverModal from "../components/ReturnHandoverDialog";
+import HandoverStatusBadge from "../components/HandoverStatusBadge";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -99,11 +100,13 @@ const DetailSkeleton = () => (
 
 const DetailHandoverPage = () => {
   const { id } = useParams<{ id: string }>();
+
   const navigate = useNavigate();
   const { handover, loading, error, handleReturn } = useHandoverDetail(id);
   const [returnOpen, setReturnOpen] = useState(false);
   const [returning, setReturning] = useState(false);
 
+  if (!id) return null;
   const handleConfirmReturn = async (return_notes?: string) => {
     try {
       setReturning(true);
@@ -151,11 +154,8 @@ const DetailHandoverPage = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge
-                variant={handover.status === "Aktif" ? "success" : "secondary"}
-              >
-                {handover.status}
-              </Badge>
+              <HandoverStatusBadge status={handover.status} />
+
               {handover.status === "Aktif" && (
                 <Button
                   variant="outline"
@@ -163,7 +163,7 @@ const DetailHandoverPage = () => {
                   onClick={() => setReturnOpen(true)}
                 >
                   <CornerDownLeft className="h-4 w-4 mr-1.5" />
-                  Kembalikan
+                  Kembalikan Aset
                 </Button>
               )}
             </div>
@@ -258,7 +258,7 @@ const DetailHandoverPage = () => {
                       <TableCell className="font-mono text-xs">
                         {item.asset.serial_number}
                       </TableCell>
-                      <TableCell>{item.asset.asset_type}</TableCell>
+                      <TableCell>{item.asset.asset_category?.category_name || "—"}</TableCell>
                       <TableCell>{item.asset.condition}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {item.notes || "—"}

@@ -11,9 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Search, Check } from "lucide-react";
-import api from "../../../../lib/axios";
-import type { BorrowResponse, CreateMaintenancePayload, MaintenanceResponse } from "@/types/maintenance";
-import type { BorrowedAsset } from "@/types/inventory";
+import type { CreateMaintenancePayload } from "@/types/maintenance";
+import { useMyAssets } from "@/features/assets/hooks/useMyAssets";
 
 
 
@@ -23,61 +22,22 @@ interface Props {
   onSubmit: (payload: CreateMaintenancePayload) => Promise<unknown>;
 }
 
-
-
 const CreateMaintenanceModal = ({ open, onClose, onSubmit }: Props) => {
-  const [assets, setAssets] = useState<BorrowedAsset[]>([]);
-  const [loadingAssets, setLoadingAssets] = useState(false);
+  const { assets, loading: loadingAssets } = useMyAssets(true);
+
   const [search, setSearch] = useState("");
   const [assetId, setAssetId] = useState("");
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
- useEffect(() => {
+useEffect(() => {
   if (!open) return;
-  setLoadingAssets(true);
-  setAssets([]);
+
   setAssetId("");
   setSearch("");
   setDescription("");
-
-  const fetchAssets = async () => {
-    try {
-      const [borrowRes, maintenanceRes] = await Promise.all([
-        api.get("/borrow/me"),
-        api.get("/maintenance/me"),
-      ]);
-
-      const approved = (borrowRes.data.data ?? []).filter(
-        (b: BorrowResponse) => b.status === "Disetujui",
-      );
-
-      const activeAssetIds = new Set(
-        (maintenanceRes.data.data ?? [])
-          .filter((m: MaintenanceResponse) =>
-            ["MenungguVerifikasi", "MenungguDikerjakan", "SedangDikerjakan"].includes(m.status),
-          )
-          .map((m: MaintenanceResponse) => m.asset_id),
-      );
-
-      setAssets(
-        approved
-          .filter((b: BorrowResponse) => !activeAssetIds.has(b.asset_id))
-          .map((b: BorrowResponse) => ({
-            asset_id: b.asset_id,
-            asset_name: b.asset.asset_name,
-            asset_type: b.asset.asset_type,
-          })),
-      );
-    } catch (err) {
-      console.error("Failed to fetch assets", err);
-    } finally {
-      setLoadingAssets(false);
-    }
-  };
-
-  fetchAssets();
 }, [open]);
+
 
   const filtered = assets.filter((a) =>
     a.asset_name.toLowerCase().includes(search.toLowerCase()),
@@ -95,13 +55,13 @@ const CreateMaintenanceModal = ({ open, onClose, onSubmit }: Props) => {
   const handleSubmit = async () => {
     if (!isValid) return;
     try {
-      setLoading(true);
+      setSubmitting(true);
       await onSubmit({ asset_id: assetId, description });
       handleClose();
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+        setSubmitting(false);
     }
   };
 
@@ -137,7 +97,7 @@ const CreateMaintenanceModal = ({ open, onClose, onSubmit }: Props) => {
               ) : filtered.length === 0 ? (
                 <div className="py-8 text-center text-sm text-muted-foreground">
                   {assets.length === 0
-                    ? "Tidak ada aset yang sedang dipinjam"
+                    ? "Anda belum memiliki aset"
                     : "Aset tidak ditemukan"}
                 </div>
               ) : (
@@ -156,7 +116,7 @@ const CreateMaintenanceModal = ({ open, onClose, onSubmit }: Props) => {
                       <div>
                         <p className="text-sm font-medium">{a.asset_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {a.asset_type}
+                           {a.asset_category?.category_name ?? "—"}
                         </p>
                       </div>
                       {selected && (
@@ -188,16 +148,16 @@ const CreateMaintenanceModal = ({ open, onClose, onSubmit }: Props) => {
             variant="outline"
             size="sm"
             onClick={handleClose}
-            disabled={loading}
+            disabled={submitting}
           >
             Batal
           </Button>
           <Button
             size="sm"
-            disabled={!isValid || loading || loadingAssets}
+            disabled={!isValid || submitting || loadingAssets}
             onClick={handleSubmit}
           >
-            {loading ? "Melaporkan..." : "Lapor"}
+            {submitting ? "Melaporkan..." : "Lapor"}
           </Button>
         </DialogFooter>
       </DialogContent>

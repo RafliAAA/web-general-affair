@@ -208,8 +208,8 @@ const ProcurementPDF = ({ procurement }: Props) => {
               <Text style={styles.prInfoLabel}>Print Date</Text>
               <Text style={styles.prInfoColon}>:</Text>
               <Text style={styles.prInfoValue}>
-                {formatDate(procurement.print_date)}
-              </Text>
+                {formatDate(new Date().toISOString())}
+              </Text>{" "}
             </View>
           </View>
         </View>

@@ -192,12 +192,7 @@ const DetailProcurementPage = () => {
                 icon={Calendar}
                 label="Tanggal PR"
                 value={formatDate(procurement.pr_date)}
-              />
-              <InfoRow
-                icon={Calendar}
-                label="Tanggal cetak"
-                value={formatDate(procurement.print_date)}
-              />
+              />             
               <InfoRow
                 icon={Calendar}
                 label="Jatuh tempo"

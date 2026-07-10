@@ -239,7 +239,7 @@ const AddDisposalItemModal = ({
                           {asset.asset_name}
                         </TableCell>
                         <TableCell>{asset.asset_code}</TableCell>
-                        <TableCell>{asset.asset_type}</TableCell>
+                        <TableCell>{asset.asset_category?.category_name || "—"}</TableCell>
                         <TableCell>
                           <Badge
                             variant={conditionVariant(asset.condition)}
@@ -271,7 +271,6 @@ const AddDisposalItemModal = ({
           </div>
         )}
 
-        {/* ── STEP 2: Konfigurasi metode ── */}
         {step === "configure" && (
           <div className="space-y-3 py-2">
             <Button
