@@ -8,7 +8,8 @@ export interface Asset {
   asset_code: string;        
   asset_name: string;
   serial_number: string;
-  asset_type: string;
+  asset_category_id?: string | null;
+  asset_category?: AssetCategory | null;
   status: AssetStatus;
   condition: string;         
   purchase_date: string | null;  
@@ -19,6 +20,13 @@ export interface Asset {
   borrow: Borrow[];        
 }
 
+export interface AssetCategory {
+  asset_category_id: string;
+  category_name: string;
+  category_code: string;
+}
+
+
 export interface Borrow {
   borrow_id: string;
   user_id: string;
@@ -28,6 +36,13 @@ export interface Borrow {
   status: string;
   approved_by: string | null;
   createdAt: string;
+  asset?: {                      
+    asset_name: string;
+    asset_code: string;
+    asset_category?: {
+      category_name: string;
+    } | null;
+  };
   user?: {
     profile?: {
       name: string;
@@ -61,25 +76,6 @@ export interface BorrowRequest {
   reason: string;
 }
 
-export interface Room {
-  id: string;
-  name: string;
-  capacity: number;
-  facilities: string[];
-}
-
-export interface RoomBooking  {
-  id: string;
-  roomId: string;
-  roomName: string;
-  bookedBy: string;
-  bookedByName: string;
-  date: Date;
-  startTime: string;
-  endTime: string;
-  purpose: string;
-  status: RequestStatus;
-}
 
 export interface Projects {
   id: string;

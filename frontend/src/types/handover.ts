@@ -3,7 +3,9 @@ export interface HandoverAsset {
   asset_code: string;
   serial_number?: string;
   asset_name: string;
-  asset_type: string;
+  asset_category?: {       
+    category_name: string;
+  } | null
   purchase_date?: string;
   warranty_date?: string;
   photo?: string | null;
