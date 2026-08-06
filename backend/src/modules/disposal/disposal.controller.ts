@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { CreateDisposalSchema } from "./disposal.dto";
+import {
+  AddDisposalItemsSchema,
+  CreateDisposalSchema,
+  UpdateDisposalHeaderSchema,
+} from "./disposal.dto";
 import disposalService from "./disposal.service";
 
 const createDisposal = async (req: Request, res: Response) => {
@@ -122,10 +126,106 @@ const deleteDisposal = async (req: Request, res: Response) => {
   }
 };
 
+const updateDisposalHeader = async (req: Request, res: Response) => {
+  try {
+    const { disposal_id } = req.params;
+
+    if (!disposal_id) {
+      return res.status(404).json({
+        success: false,
+        message: "Disposal ID is required",
+      });
+    }
+
+    const data = UpdateDisposalHeaderSchema.parse(req.body);
+    const result = await disposalService.updateDisposalHeader(
+      disposal_id,
+      data,
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Disposal header updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update disposal header",
+      error: (error as Error).message,
+    });
+  }
+};
+
+const addDisposalItems = async (req: Request, res: Response) => {
+  try {
+    const { disposal_id } = req.params;
+
+    if (!disposal_id) {
+      return res.status(404).json({
+        success: false,
+        message: "Disposal ID is required",
+      });
+    }
+
+    const data = AddDisposalItemsSchema.parse(req.body);
+    const result = await disposalService.addDisposalItems(disposal_id, data);
+    return res.status(201).json({
+      success: true,
+      message: "Items added successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add items",
+      error: (error as Error).message,
+    });
+  }
+};
+
+const removeDisposalItem = async (req: Request, res: Response) => {
+  try {
+    const { disposal_id, asset_id } = req.params;
+
+    if (!disposal_id) {
+      return res.status(404).json({
+        success: false,
+        message: "Disposal ID is required",
+      });
+    }
+
+    if (!asset_id) {
+      return res.status(404).json({
+        success: false,
+        message: "Disposal ID is required",
+      });
+    }
+
+    const result = await disposalService.removeDisposalItem(
+      disposal_id,
+      asset_id,
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Item removed successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to remove item",
+      error: (error as Error).message,
+    });
+  }
+};
+
 export default {
   createDisposal,
   getAllDisposals,
   getDisposalById,
   updateDisposal,
   deleteDisposal,
+  updateDisposalHeader,
+  addDisposalItems,
+  removeDisposalItem,
 };

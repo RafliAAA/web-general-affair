@@ -1,14 +1,20 @@
 import { AssetStatus } from "@prisma/client";
 import prisma from "../../config/prisma";
-import { CreateDisposalInput } from "./disposal.dto";
+import { AddDisposalItemsInput, CreateDisposalInput, UpdateDisposalHeaderInput } from "./disposal.dto";
+import { generateMemoNumber } from "../../helper/generate.code";
 
 const createDisposal = async (data: CreateDisposalInput) => {
   return prisma.$transaction(async (tx) => {
+    const memo_number = await generateMemoNumber(tx)
+
     const disposal = await tx.disposal.create({
       data: {
-        memo_number: data.memo_number,
+        memo_number,
         memo_date: data.memo_date,
         subject: data.subject,
+        from: data.from,
+        to: data.to,
+        cc: data.cc,
         description: data.description,
       },
     });
@@ -120,9 +126,11 @@ const updateDisposal = async (
         disposal_id,
       },
       data: {
-        memo_number: data.memo_number,
         memo_date: data.memo_date,
         subject: data.subject,
+        from: data.from,
+        to: data.to,
+        cc: data.cc,
         description: data.description,
       },
     });
@@ -204,10 +212,106 @@ const deleteDisposal = async (disposal_id: string) => {
   });
 };
 
+
+const updateDisposalHeader = async (
+  disposal_id: string,
+  data: UpdateDisposalHeaderInput,
+) => {
+  const disposal = await prisma.disposal.findUnique({ where: { disposal_id } });
+  if (!disposal) throw new Error("Disposal not found");
+
+  return await prisma.disposal.update({
+    where: { disposal_id },
+    data: {
+      memo_date: data.memo_date,
+      subject: data.subject,
+      from: data.from,
+      to: data.to,
+      cc: data.cc,
+      description: data.description,
+    },
+  });
+};
+
+const addDisposalItems = async (
+  disposal_id: string,
+  data: AddDisposalItemsInput,
+) => {
+  return await prisma.$transaction(async (tx) => {
+    const disposal = await tx.disposal.findUnique({ where: { disposal_id } });
+    if (!disposal) throw new Error("Disposal not found");
+
+    await tx.disposalItem.createMany({
+      data: data.items.map((item) => ({
+        disposal_id,
+        asset_id: item.asset_id,
+        method: item.method,
+        notes: item.notes,
+      })),
+    });
+
+    await tx.asset.updateMany({
+      where: {
+        asset_id: { in: data.items.map((item) => item.asset_id) },
+      },
+      data: {
+        deletedAt: new Date(),
+        status: AssetStatus.Dihapus,
+      },
+    });
+
+    return await tx.disposal.findUnique({
+      where: { disposal_id },
+      include: {
+        items: {
+          include: {
+            asset: { include: { asset_category: true } },
+          },
+        },
+      },
+    });
+  });
+};
+
+const removeDisposalItem = async (disposal_id: string, asset_id: string) => {
+  return await prisma.$transaction(async (tx) => {
+    const item = await tx.disposalItem.findFirst({
+      where: { disposal_id, asset_id },
+    });
+    if (!item) throw new Error("Item not found");
+
+    await tx.disposalItem.delete({
+      where: { disposal_item_id: item.disposal_item_id },
+    });
+
+    await tx.asset.update({
+      where: { asset_id },
+      data: {
+        deletedAt: null,
+        status: AssetStatus.Tersedia,
+      },
+    });
+
+    return await tx.disposal.findUnique({
+      where: { disposal_id },
+      include: {
+        items: {
+          include: {
+            asset: { include: { asset_category: true } },
+          },
+        },
+      },
+    });
+  });
+};
+
 export default {
   createDisposal,
   getAllDisposals,
   getDisposalById,
   updateDisposal,
   deleteDisposal,
+  updateDisposalHeader,
+  addDisposalItems,
+  removeDisposalItem,
 };
