@@ -267,7 +267,7 @@ const DetailHandoverPage = () => {
             open={returnOpen}
             handoverId={id}
             onClose={() => setReturnOpen(false)}
-            onSubmit={async (handover_id, payload) => {
+            onSubmit={async (_handover_id, payload) => {
               try {
                 setReturning(true);
                 await handleReturn(payload);

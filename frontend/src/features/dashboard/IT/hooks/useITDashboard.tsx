@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   getITDashboard,
   type ITDashboardData,
-} from "../services/itDashboardService";
+} from "../services/ITDashboardService";
 
 export const useITDashboard = () => {
   const [data, setData] = useState<ITDashboardData | null>(null);
