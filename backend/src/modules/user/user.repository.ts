@@ -101,14 +101,16 @@ const updateUser = async (user_id: string, data: UpdateUserDTO) => {
     return await tx.user.update({
       where: { user_id },
       data: {
-        email: data.email,
-        password: data.password,
-        role: data.role,
+        ...(data.email ? { email: data.email } : {}),
+        ...(data.password ? { password: data.password } : {}),
+        ...(data.role ? { role: data.role } : {}),
         profile: {
           update: {
-            name: data.name,
-            entity_id: data.entity_id || null,
-            directorate_id: data.directorate_id || null,
+            ...(data.name ? { name: data.name } : {}),
+            ...(data.entity_id ? { entity_id: data.entity_id } : {}),
+            ...(data.directorate_id
+              ? { directorate_id: data.directorate_id }
+              : {}),
           },
         },
       },

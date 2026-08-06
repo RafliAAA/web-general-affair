@@ -133,7 +133,6 @@ const getHandoverByUser = async (user_id: string) => {
             select: {
               asset_name: true,
               asset_code: true,
-              asset_type: true,
               condition: true,
             },
           },

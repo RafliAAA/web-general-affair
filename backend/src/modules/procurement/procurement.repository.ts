@@ -81,7 +81,7 @@ const updateProcurement = async (
       where: { procurement_id },
       data: {
         ...procurementData,
-        status,
+        ...(status ? { status } : {}),
       },
     });
 
