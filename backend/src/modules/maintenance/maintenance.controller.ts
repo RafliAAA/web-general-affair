@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
 import maintenanceService from "./maintenance.service";
 import {
-    cannotRepairSchema,
-    completeMaintenanceSchema,
+  cannotRepairSchema,
+  completeMaintenanceSchema,
   createMaintenanceSchema,
   takeMaintenanceSchema,
   verifyMaintenanceSchema,
 } from "./maintenance.dto";
 import { AuthRequest } from "../../middleware/auth";
+import notificationService from "../notifications/notification.service"; // Import notif service
 
 const createMaintenance = async (req: AuthRequest, res: Response) => {
   try {
@@ -23,6 +24,14 @@ const createMaintenance = async (req: AuthRequest, res: Response) => {
     }
 
     const result = await maintenanceService.createMaintenance(data);
+
+    await notificationService.sendNotificationToRoles({
+      roles: ["ADMIN"],
+      title: "Laporan Kerusakan Baru",
+      message: `Ada laporan kerusakan aset baru yang perlu diverifikasi.`,
+      type: "MAINTENANCE_REPORT",
+      link: "/pemeliharaan",
+    });
 
     return res.status(200).json({
       success: true,
@@ -118,6 +127,16 @@ const verifyMaintenance = async (req: AuthRequest, res: Response) => {
       verified_by,
     });
     const result = await maintenanceService.verifyMaintenance(data);
+
+    await notificationService.sendNotification({
+      user_id: result.reported_by,
+      title: "Laporan Diverifikasi",
+      message: `Laporan kerusakan aset Anda telah diverifikasi dan akan diperbaiki.`,
+      type: "MAINTENANCE_STATUS",
+      link: "/lapor-kerusakan",
+      sendEmailFlag: false,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Maintenance verified successfully",
@@ -140,6 +159,17 @@ const takeMaintenance = async (req: AuthRequest, res: Response) => {
       taken_by,
     });
     const result = await maintenanceService.takeMaintenance(data);
+
+    // 3. KIRIM NOTIF KE USER (Aset sedang diperbaiki)
+    await notificationService.sendNotification({
+      user_id: result.reported_by,
+      title: "Aset Sedang Diperbaiki",
+      message: `Aset yang Anda laporkan sedang dalam proses perbaikan.`,
+      type: "MAINTENANCE_STATUS",
+      link: "/lapor-kerusakan",
+      sendEmailFlag: false,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Maintenance taken successfully",
@@ -161,6 +191,17 @@ const completeMaintenance = async (req: AuthRequest, res: Response) => {
       resolution_notes: req.body.resolution_notes,
     });
     const result = await maintenanceService.completeMaintenance(data);
+
+    // 4. KIRIM NOTIF KE USER (Perbaikan selesai)
+    await notificationService.sendNotification({
+      user_id: result.reported_by,
+      title: "Perbaikan Selesai",
+      message: `Perbaikan aset yang Anda laporkan telah selesai dilakukan.`,
+      type: "MAINTENANCE_STATUS",
+      link: "/lapor-kerusakan",
+      sendEmailFlag: true,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Maintenance completed successfully",
@@ -170,6 +211,39 @@ const completeMaintenance = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({
       success: false,
       message: "Failed to complete maintenance",
+      error: (error as Error).message,
+    });
+  }
+};
+
+const completeMaintenanceExternal = async (req: AuthRequest, res: Response) => {
+  try {
+    const data = completeMaintenanceSchema.parse({
+      maintenance_id: req.params.maintenance_id,
+      resolution_notes: req.body.resolution_notes,
+    });
+
+    const result = await maintenanceService.completeMaintenanceExternal(data);
+
+    // KIRIM NOTIF KE USER (Perbaikan selesai oleh vendor)
+    await notificationService.sendNotification({
+      user_id: result.reported_by,
+      title: "Perbaikan Selesai",
+      message: `Perbaikan aset yang Anda laporkan telah selesai dilakukan oleh vendor eksternal.`,
+      type: "MAINTENANCE_STATUS",
+      link: "/lapor-kerusakan",
+      sendEmailFlag: true,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "External maintenance completed successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to complete external maintenance",
       error: (error as Error).message,
     });
   }
@@ -190,6 +264,15 @@ const cannotRepair = async (req: AuthRequest, res: Response) => {
 
     const result = await maintenanceService.cannotRepair(data);
 
+    await notificationService.sendNotification({
+      user_id: result.reported_by,
+      title: "Aset Tidak Dapat Diperbaiki",
+      message: `Aset yang Anda laporkan memerlukan perbaikan lebih lanjut oleh vendor eksternal. Tim General Affair akan segera mengoordinasikan proses perbaikan tersebut. Mohon menunggu.`,
+      type: "MAINTENANCE_STATUS",
+      link: "/lapor-kerusakan",
+      sendEmailFlag: true,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Maintenance marked as cannot repair",
@@ -208,11 +291,11 @@ const getActualizationForm = async (req: Request, res: Response) => {
   try {
     const { maintenance_id } = req.params;
 
-    if(!maintenance_id) { 
+    if (!maintenance_id) {
       return res.status(400).json({
         success: false,
-        message : "Maintenance ID is required"
-      })
+        message: "Maintenance ID is required",
+      });
     }
     const result =
       await maintenanceService.getActualizationForm(maintenance_id);
@@ -238,6 +321,7 @@ export default {
   verifyMaintenance,
   takeMaintenance,
   completeMaintenance,
+  completeMaintenanceExternal,
   cannotRepair,
-  getActualizationForm
+  getActualizationForm,
 };

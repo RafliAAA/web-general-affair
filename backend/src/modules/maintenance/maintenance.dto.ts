@@ -29,7 +29,6 @@ export const completeMaintenanceSchema = z.object({
 
 export const cannotRepairSchema = z.object({
   maintenance_id: z.string().uuid(),
-  form_number: z.string().min(1),
   description: z.string().min(1),
   issue: z.string().min(1),
   handling: z.string().min(1),

@@ -16,6 +16,7 @@ router.get(
 router.patch("/:maintenance_id/verify", authMiddleware.protectRoute, maintenanceController.verifyMaintenance)
 router.patch("/:maintenance_id/take", authMiddleware.protectRoute, maintenanceController.takeMaintenance)
 router.patch("/:maintenance_id/complete", authMiddleware.protectRoute, maintenanceController.completeMaintenance)
+router.patch("/:maintenance_id/complete-external", authMiddleware.protectRoute, maintenanceController.completeMaintenanceExternal)
 router.patch("/:maintenance_id/cannot-repair", authMiddleware.protectRoute, maintenanceController.cannotRepair)
 
 export default router

@@ -54,6 +54,12 @@ const completeMaintenance = async (data: CompleteMaintenanceDTO) => {
   return maintenance;
 };
 
+const completeMaintenanceExternal = async(data: CompleteMaintenanceDTO) => {
+  const maintenance = await maintenanceRepository.completeMaintenanceExternal(data)
+  if (!maintenance) throw new Error("Failed to complete maintenance")
+  return maintenance
+}
+
 const cannotRepair = async (data: CannotRepairDTO) => {
   const maintenance = await maintenanceRepository.cannotRepair(data);
   if (!maintenance) throw new Error("Failed to update maintenance");
@@ -74,6 +80,7 @@ export default {
   verifyMaintenance,
   takeMaintenance,
   completeMaintenance,
+  completeMaintenanceExternal,
   cannotRepair,
   getActualizationForm
 };

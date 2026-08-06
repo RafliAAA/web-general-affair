@@ -13,6 +13,7 @@ import type {
   CompleteMaintenanceDTO,
   CannotRepairDTO,
 } from "./maintenance.dto";
+import { generateActualizationFormNumber } from "../../helper/generate.code";
 
 const createMaintenance = async (data: CreateMaintenanceDTO) => {
   return await prisma.$transaction(async (tx) => {
@@ -290,6 +291,7 @@ const takeMaintenance = async (data: TakeMaintenanceDTO) => {
     });
   });
 };
+
 const completeMaintenance = async (data: CompleteMaintenanceDTO) => {
   return await prisma.$transaction(async (tx) => {
     const maintenance = await tx.maintenance.findUnique({
@@ -303,25 +305,29 @@ const completeMaintenance = async (data: CompleteMaintenanceDTO) => {
     }
 
     const activeBorrow = await tx.borrow.findFirst({
-  where: { asset_id: maintenance.asset_id, status: BorrowStatus.Disetujui },
-});
-const activeHandover = await tx.handover.findFirst({
-  where: {
-    status: HandoverStatus.Aktif,
-    items: { some: { asset_id: maintenance.asset_id } },
-  },
-});
+      where: { asset_id: maintenance.asset_id, status: BorrowStatus.Disetujui },
+    });
+    const activeHandover = await tx.handover.findFirst({
+      where: {
+        status: HandoverStatus.Aktif,
+        items: { some: { asset_id: maintenance.asset_id } },
+      },
+    });
 
-const returnStatus = activeBorrow
-  ? AssetStatus.Dipinjam
-  : activeHandover
-    ? AssetStatus.Diserahkan
-    : AssetStatus.Tersedia;
+    const returnStatus = activeBorrow
+      ? AssetStatus.Dipinjam
+      : activeHandover
+        ? AssetStatus.Diserahkan
+        : AssetStatus.Tersedia;
 
-await tx.asset.update({
-  where: { asset_id: maintenance.asset_id },
-  data: { status: returnStatus },
-});
+    // UBAH DI SINI: Kondisi kembali jadi "Baik"
+    await tx.asset.update({
+      where: { asset_id: maintenance.asset_id },
+      data: {
+        status: returnStatus,
+        condition: "Baik",
+      },
+    });
 
     return await tx.maintenance.update({
       where: { maintenance_id: data.maintenance_id },
@@ -331,35 +337,10 @@ await tx.asset.update({
         completed_at: new Date(),
       },
       include: {
-        asset: {
-          select: {
-            asset_id: true,
-            asset_name: true,
-            asset_code: true,
-            asset_category: true,
-          },
-        },
-        reporter: {
-          select: {
-            user_id: true,
-            email: true,
-            profile: { select: { name: true } },
-          },
-        },
-        verifier: {
-          select: {
-            user_id: true,
-            email: true,
-            profile: { select: { name: true } },
-          },
-        },
-        handler: {
-          select: {
-            user_id: true,
-            email: true,
-            profile: { select: { name: true } },
-          },
-        },
+        asset: true,
+        reporter: { select: { profile: { select: { name: true } } } },
+        verifier: { select: { profile: { select: { name: true } } } },
+        handler: { select: { profile: { select: { name: true } } } },
       },
     });
   });
@@ -387,10 +368,12 @@ const cannotRepair = async (data: CannotRepairDTO) => {
       (now.getTime() - takenAt.getTime()) / 60000,
     );
 
+     const generatedFormNumber = await generateActualizationFormNumber(tx);
+
     await tx.actualizationForm.create({
       data: {
         maintenance_id: data.maintenance_id,
-        form_number: data.form_number,
+        form_number: generatedFormNumber,
         user_name: profile?.name ?? "IT",
         form_date: now,
         duration_minutes,
@@ -401,36 +384,78 @@ const cannotRepair = async (data: CannotRepairDTO) => {
       },
     });
 
-    const activeBorrow = await tx.borrow.findFirst({
-  where: { asset_id: maintenance.asset_id, status: BorrowStatus.Disetujui },
-});
-const activeHandover = await tx.handover.findFirst({
-  where: {
-    status: HandoverStatus.Aktif,
-    items: { some: { asset_id: maintenance.asset_id } },
-  },
-});
-
-const returnStatus = activeBorrow
-  ? AssetStatus.Dipinjam
-  : activeHandover
-    ? AssetStatus.Diserahkan
-    : AssetStatus.Tersedia;
-
-await tx.asset.update({
-  where: { asset_id: maintenance.asset_id },
-  data: { status: returnStatus,
-    condition: "Rusak"
-   },
-});
+    await tx.asset.update({
+      where: { asset_id: maintenance.asset_id },
+      data: {
+        status: AssetStatus.Diperbaiki,
+        condition: "Rusak",
+      },
+    });
 
     return await tx.maintenance.update({
       where: { maintenance_id: data.maintenance_id },
       data: {
         status: MaintenanceStatus.TidakDapatDiperbaiki,
-        completed_at: now,
       },
       include: {
+        asset: true,
+        reporter: { select: { profile: { select: { name: true } } } },
+        verifier: { select: { profile: { select: { name: true } } } },
+        handler: { select: { profile: { select: { name: true } } } },
+      },
+    });
+  });
+};
+
+// DTO-nya bisa pakai CompleteMaintenanceDTO yang sama
+const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
+  return await prisma.$transaction(async (tx) => {
+    const maintenance = await tx.maintenance.findUnique({
+      where: { maintenance_id: data.maintenance_id },
+    });
+
+    if (!maintenance) throw new Error("Maintenance not found");
+
+    // HANYA BISA SELESAIKAN KALAU STATUSNYA TIDAK DAPAT DIPERBAIKI (DARI VENDOR)
+    if (maintenance.status !== MaintenanceStatus.TidakDapatDiperbaiki) {
+      throw new Error("This maintenance is not waiting for external repair");
+    }
+
+    // Cek kepemilikan aset
+    const activeBorrow = await tx.borrow.findFirst({
+      where: { asset_id: maintenance.asset_id, status: BorrowStatus.Disetujui },
+    });
+    const activeHandover = await tx.handover.findFirst({
+      where: {
+        status: HandoverStatus.Aktif,
+        items: { some: { asset_id: maintenance.asset_id } },
+      },
+    });
+
+    const returnStatus = activeBorrow
+      ? AssetStatus.Dipinjam
+      : activeHandover
+        ? AssetStatus.Diserahkan
+        : AssetStatus.Tersedia;
+
+    // Update Aset: Kembali ke pemilik, kondisi Baik
+    await tx.asset.update({
+      where: { asset_id: maintenance.asset_id },
+      data: { 
+        status: returnStatus,
+        condition: "Baik"
+      },
+    });
+
+    // Update Maintenance: Selesai
+    return await tx.maintenance.update({
+      where: { maintenance_id: data.maintenance_id },
+      data: {
+        status: MaintenanceStatus.Selesai,
+        resolution_notes: data.resolution_notes, // GA bisa ngisi: "Diperbaiki vendor PT XXX"
+        completed_at: new Date(),
+      },
+       include: {
         asset: true,
         reporter: {
           select: {
@@ -472,6 +497,7 @@ export default {
   verifyMaintenance,
   takeMaintenance,
   completeMaintenance,
+  completeMaintenanceExternal,
   cannotRepair,
   getActualizationForm,
 };
