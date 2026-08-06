@@ -27,23 +27,31 @@ const getUserById = async (user_id: string) => {
   return secureUser;
 };
 
-// const updateUser = async (user_id: string, data: UpdateUserDTO) => {
-//   const updateData: any = { ...data };
+const updateUser = async (user_id: string, data: UpdateUserDTO) => {
+  const updateData: any = { ...data };
 
-//   // Jika admin melakukan update password, hash dulu password barunya
-//   if (data.password) {
-//     updateData.password = await bcrypt.hash(data.password, 10);
-//   }
+  if (data.password) {
+    updateData.password = await bcrypt.hash(data.password, 10);
+  }
 
-//   const user = await userRepository.updateUser(user_id, updateData);
+  const user = await userRepository.updateUser(user_id, updateData);
 
-//   const { password, ...secureUser } = user;
-//   return secureUser;
-// };
+  const { password, ...secureUser } = user;
+  return secureUser;
+};
+
+const deleteUser = async( user_id: string) => {
+  const user = await userRepository.deleteUser(user_id)
+
+  if(!user) throw new Error("User not found")
+
+  return user
+}
 
 export default {
   createUserByAdmin,
   getAllUsers,
   getUserById,
-//   updateUser,
+  updateUser,
+  deleteUser,
 };

@@ -6,6 +6,8 @@ export const CreateUserByAdminSchema = z.object({
   password: z.string().min(6, "Password minimal 6 karakter"),
   role: z.enum(Role),
   name: z.string().min(1, "Nama karyawan harus diisi"),
+  entity_id: z.string().uuid().optional().or(z.literal("")),     
+  directorate_id: z.string().uuid().optional().or(z.literal("")),
 });
 
 export const UpdateUserSchema = z.object({
@@ -13,7 +15,8 @@ export const UpdateUserSchema = z.object({
   password: z.string().min(6).optional(),
   role: z.enum(Role).optional(),
   name: z.string().min(1).optional(),
-  foto_profil: z.url().optional(),
+  entity_id: z.string().uuid().optional().or(z.literal("")),      
+  directorate_id: z.string().uuid().optional().or(z.literal("")),
 });
 
 export type CreateUserByAdminDTO = z.infer<typeof CreateUserByAdminSchema>;

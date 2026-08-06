@@ -8,6 +8,7 @@ const router = express.Router();
 router.post("/", authMIddleware.protectRoute, userController.createUserByAdmin);
 router.get("/", authMIddleware.protectRoute, userController.getAllUsers);
 router.get("/:user_id", authMIddleware.protectRoute, userController.getUserById);
-// router.put("/:id", authMIddleware.protectRoute, userController.updateUser);
+router.patch("/:user_id", authMIddleware.protectRoute, userController.updateUser);
+router.delete("/:user_id", authMIddleware.protectRoute, userController.deleteUser);
 
 export default router;
