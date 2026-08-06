@@ -1,5 +1,4 @@
 import { useState } from "react";
-import  DashboardLayout from "@/components/layout/DashboardLayout";
 import {
   Card,
   CardContent,
@@ -168,7 +167,7 @@ export default function SOP() {
   };
 
   return (
-    <DashboardLayout title="SOP General Affair">
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -424,6 +423,6 @@ export default function SOP() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </DashboardLayout>
+    </>
   );
 }

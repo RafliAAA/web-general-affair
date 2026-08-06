@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import SOPHeader from "../components/SOPHeader";
 import SOPFilters from "../components/SOPFilters";
 import SOPList from "../components/SOPList";
@@ -29,7 +28,7 @@ export default function SOP() {
   } = useSOPs();
 
   return (
-    <DashboardLayout title="SOP General Affair">
+    <>
       <div className="space-y-6">
         <SOPHeader onAdd={openCreate} />
 
@@ -65,6 +64,6 @@ export default function SOP() {
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
       />
-    </DashboardLayout>
+    </>
   );
 }
