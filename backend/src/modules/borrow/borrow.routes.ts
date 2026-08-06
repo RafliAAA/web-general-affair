@@ -1,16 +1,19 @@
-import express from "express"
+import express from "express";
 import authMiddleware from "../../middleware/auth";
 import borrowController from "./borrow.controller";
 
-const router = express.Router()
+const router = express.Router();
 
-router.get("/", authMiddleware.protectRoute, borrowController.getAllBorrowRequest)
-router.get("/active", authMiddleware.protectRoute, borrowController.getAllActiveBorrow)
-router.post("/",  authMiddleware.protectRoute, borrowController.createBorrowRequest)
-router.get("/:user_id", authMiddleware.protectRoute, borrowController.getBorrowRequestByUserId)
-router.get("/me", authMiddleware.protectRoute, borrowController.getMyBorrows)
-router.patch("/:borrow_id", authMiddleware.protectRoute, borrowController.cancelBorrowRequest)
-router.patch("/approve/:borrow_id", authMiddleware.protectRoute, borrowController.approveBorrowRequest)
-router.patch("/reject/:borrow_id", authMiddleware.protectRoute, borrowController.rejectBorrowRequest)
+router.get("/", authMiddleware.protectRoute, borrowController.getAllBorrowRequest);
+router.get("/active", authMiddleware.protectRoute, borrowController.getAllActiveBorrow);
+router.get("/me", authMiddleware.protectRoute, borrowController.getMyBorrows);
+router.post("/", authMiddleware.protectRoute, borrowController.createBorrowRequest);
 
-export default router
+
+router.get("/:borrow_id", authMiddleware.protectRoute, borrowController.getBorrowById);
+
+router.patch("/:borrow_id/cancel", authMiddleware.protectRoute, borrowController.cancelBorrowRequest);
+router.patch("/:borrow_id/approve", authMiddleware.protectRoute, borrowController.approveBorrowRequest);
+router.patch("/:borrow_id/reject", authMiddleware.protectRoute, borrowController.rejectBorrowRequest);
+
+export default router;

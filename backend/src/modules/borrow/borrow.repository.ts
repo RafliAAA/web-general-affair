@@ -30,7 +30,15 @@ const createBorrowRequest = async (data: CreateBorrowInput) => {
     }
 
     return await tx.borrow.create({
-      data,
+      data: {
+        user_id: data.user_id,
+        asset_id: data.asset_id,
+        borrow_reason: data.borrow_reason,
+        borrow_date: data.borrow_date,
+        expected_return_date: data.expected_return_date,
+        recipient_type: data.recipient_type || "Personal",
+        directorate_id: data.directorate_id || null,
+      },
     });
   });
 };
@@ -60,14 +68,12 @@ const cancelBorrowRequest = async (user_id: string, borrow_id: string) => {
 
 const getAllBorrowRequest = async () => {
   return await prisma.borrow.findMany({
-    where: {
-      status: BorrowStatus.Menunggu,
-    },
     include: {
       asset: {
         select: {
           asset_name: true,
           asset_code: true,
+          serial_number: true,
           asset_category: {
             select: {
               category_name: true,
@@ -80,8 +86,35 @@ const getAllBorrowRequest = async () => {
           profile: { select: { name: true } },
         },
       },
+      // TAMBAHKAN INI agar divisi peminjam ikut terambil
+      directorate: true,
     },
     orderBy: { createdAt: "desc" },
+  });
+};
+
+const getBorrowById = async (borrow_id: string) => {
+  return await prisma.borrow.findUnique({
+    where: { borrow_id },
+    include: {
+      asset: {
+        select: {
+          asset_name: true,
+          asset_code: true,
+          serial_number: true,
+          asset_category: { select: { category_name: true } },
+        },
+      },
+      user: {
+        select: { profile: { select: { name: true } } },
+      },
+      approver: {
+        select: { profile: { select: { name: true } } },
+      },
+      returns: true,
+      // TAMBAHKAN INI
+      directorate: true,
+    },
   });
 };
 
@@ -107,6 +140,8 @@ const getAllActiveBorrow = async () => {
           profile: { select: { name: true } },
         },
       },
+      // TAMBAHKAN INI
+      directorate: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -120,7 +155,8 @@ const getBorrowRequestByUserId = async (user_id: string) => {
         select: {
           asset_name: true,
           serial_number: true,
-          asset_type: true,
+          asset_code: true,
+          asset_category: { select: { category_name: true } },
         },
       },
     },
@@ -139,8 +175,7 @@ const getMyBorrows = async (user_id: string) => {
         select: {
           asset_name: true,
           serial_number: true,
-          asset_type: true,
-          location: true,
+          asset_category: { select: { category_name: true } },
         },
       },
     },
@@ -207,4 +242,5 @@ export default {
   getMyBorrows,
   approveBorrowRequest,
   rejectBorrowRequest,
+  getBorrowById,
 };

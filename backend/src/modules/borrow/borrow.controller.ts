@@ -1,7 +1,8 @@
 import { AuthRequest } from "../../middleware/auth";
+import notificationService from "../notifications/notification.service";
 import { CreateBorrowSchema } from "./borrow.dto";
 import borrowService from "./borrow.service";
-import { Response } from "express";
+import { Request, Response } from "express";
 
 const createBorrowRequest = async (req: AuthRequest, res: Response) => {
   try {
@@ -20,6 +21,14 @@ const createBorrowRequest = async (req: AuthRequest, res: Response) => {
       user_id,
       ...data,
     
+    });
+
+    await notificationService.sendNotificationToRoles({
+      roles: ["ADMIN"],
+      title: "Pengajuan Peminjaman Baru",
+      message: `Ada pengajuan peminjaman aset baru yang perlu ditinjau.`,
+      type: "BORROW_REQUEST",
+      link: "/borrow-requests",
     });
 
     return res.status(201).json({
@@ -87,6 +96,38 @@ const getAllBorrowRequest = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve borrow requests",
+      error: error.message,
+    });
+  }
+};
+
+const getBorrowById = async (req: Request, res: Response) => {
+  try {
+    const { borrow_id } = req.params;
+
+    if (!borrow_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Borrow ID is required" });
+    }
+
+    const result = await borrowService.getBorrowById(borrow_id);
+
+    if (!result) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Data peminjaman tidak ditemukan" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Borrow fetched successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch borrow",
       error: error.message,
     });
   }
@@ -186,6 +227,15 @@ const approveBorrowRequest = async (req: AuthRequest, res: Response) => {
 
     const result = await borrowService.approveBorrowRequest(borrow_id, approved_by);
 
+    await notificationService.sendNotification({
+      user_id: result.user_id,
+      title: "Peminjaman Disetujui",
+      message: `Pengajuan peminjaman aset Anda telah disetujui.`,
+      type: "BORROW_STATUS",
+      link: "/peminjaman",
+      sendEmailFlag: true,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Borrow request approved successfully",
@@ -221,6 +271,15 @@ const rejectBorrowRequest = async (req: AuthRequest, res: Response) => {
 
     const result = await borrowService.rejectBorrowRequest(borrow_id, approved_by)
 
+      await notificationService.sendNotification({
+        user_id: result.user_id,
+        title: "Peminjaman Ditolak",
+        message: `Maaf, pengajuan peminjaman aset Anda telah ditolak.`,
+        type: "BORROW_STATUS",
+        link: "/my-borrows",
+        sendEmailFlag: true,
+      });
+
     return res.status(200).json({
       success: true,
       message: "Borrow request rejected successfully",
@@ -240,6 +299,7 @@ export default {
   createBorrowRequest,
   cancelBorrowRequest,
   getAllBorrowRequest,
+  getBorrowById,
   getAllActiveBorrow,
   getBorrowRequestByUserId,
   getMyBorrows,

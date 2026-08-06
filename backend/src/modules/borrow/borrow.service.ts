@@ -23,6 +23,14 @@ const getAllBorrowRequest = async () => {
   return borrows;
 };
 
+const getBorrowById = async (borrow_id: string) => {
+  const borrow = await borrowRepository.getBorrowById(borrow_id)
+
+  if(!borrow) throw new Error("Failed to get borrow ID")
+
+    return borrow
+}
+
 const getAllActiveBorrow = async () => {
   const result = await borrowRepository.getAllActiveBorrow();
 
@@ -64,6 +72,7 @@ const rejectBorrowRequest= async( borrow_id: string, approved_by: string) => {
 export default {
   createBorrowRequest,
   cancelBorrowRequest,
+  getBorrowById,
   getAllBorrowRequest,
   getAllActiveBorrow,
   getBorrowRequestByUserId,
