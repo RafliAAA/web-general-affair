@@ -48,7 +48,7 @@ const HandoverItemsTable = ({ items }: HandoverItemsTableProps) => {
                   {item.asset.asset_name}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {item.asset.asset_type}
+                  {item.asset.asset_category?.category_name || "-"}
                 </TableCell>
                 <TableCell className="text-sm">{item.notes || "-"}</TableCell>
               </TableRow>

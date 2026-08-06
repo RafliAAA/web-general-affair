@@ -71,8 +71,8 @@ const AdminHandoverDetailSheet = ({
                 label="Tanggal Serah Terima"
                 value={fmt(handover.handover_date)}
               />
-              <LabelValue label="Entity" value={handover.entity} />
-              <LabelValue label="Direktorat" value={handover.directorate} />
+           <LabelValue label="Entity" value={handover.entity?.entity_name ?? "—"} />
+            <LabelValue label="Direktorat" value={handover.directorate?.directorate_name ?? "—"} />
               <LabelValue
                 label="Penerima"
                 value={handover.receiver.profile.name}

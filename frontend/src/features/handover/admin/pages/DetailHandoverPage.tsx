@@ -8,7 +8,6 @@ import {
   RefreshCw,
   CornerDownLeft,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -19,12 +18,9 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useHandoverDetail } from "../hooks/useHandoverDetail";
-import ReturnHandoverModal from "../components/ReturnHandoverDialog";
+import ReturnHandoverDialog from "../components/ReturnHandoverDialog";
 import HandoverStatusBadge from "../components/HandoverStatusBadge";
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "—";
@@ -34,8 +30,6 @@ const formatDate = (dateStr: string | null) => {
     year: "numeric",
   });
 };
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 const InfoRow = ({
   icon: Icon,
@@ -96,8 +90,6 @@ const DetailSkeleton = () => (
   </div>
 );
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
 const DetailHandoverPage = () => {
   const { id } = useParams<{ id: string }>();
 
@@ -107,20 +99,9 @@ const DetailHandoverPage = () => {
   const [returning, setReturning] = useState(false);
 
   if (!id) return null;
-  const handleConfirmReturn = async (return_notes?: string) => {
-    try {
-      setReturning(true);
-      await handleReturn({ return_notes });
-      setReturnOpen(false);
-    } catch (err) {
-      console.error("Failed to return handover", err);
-    } finally {
-      setReturning(false);
-    }
-  };
 
   return (
-    <DashboardLayout title="Detail Serah Terima">
+    <>
       {loading ? (
         <DetailSkeleton />
       ) : error || !handover ? (
@@ -150,7 +131,8 @@ const DetailHandoverPage = () => {
                 {handover.receiver?.profile?.name ?? "—"}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {handover.entity} · {handover.directorate}
+                {handover.entity?.entity_name} ·{" "}
+                {handover.directorate?.directorate_name}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -177,18 +159,22 @@ const DetailHandoverPage = () => {
                 label="Nama penerima"
                 value={handover.receiver?.profile?.name ?? "—"}
               />
-              <InfoRow icon={Building} label="Entity" value={handover.entity} />
+              <InfoRow
+                icon={Building}
+                label="Entity"
+                value={handover.entity?.entity_name ?? "—"}
+              />
               <InfoRow
                 icon={Building}
                 label="Direktorat"
-                value={handover.directorate}
+                value={handover.directorate?.directorate_name ?? "—"}
               />
             </SectionCard>
 
             <SectionCard title="Tanggal & pembuat">
               <InfoRow
                 icon={Calendar}
-                label="Tgl handover"
+                label="Tanggal handover"
                 value={formatDate(handover.handover_date)}
               />
               <InfoRow
@@ -258,7 +244,9 @@ const DetailHandoverPage = () => {
                       <TableCell className="font-mono text-xs">
                         {item.asset.serial_number}
                       </TableCell>
-                      <TableCell>{item.asset.asset_category?.category_name || "—"}</TableCell>
+                      <TableCell>
+                        {item.asset.asset_category?.category_name || "—"}
+                      </TableCell>
                       <TableCell>{item.asset.condition}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {item.notes || "—"}
@@ -275,15 +263,26 @@ const DetailHandoverPage = () => {
           </div>
 
           {/* Return Modal */}
-          <ReturnHandoverModal
+          <ReturnHandoverDialog
             open={returnOpen}
+            handoverId={id}
             onClose={() => setReturnOpen(false)}
-            onConfirm={handleConfirmReturn}
-            loading={returning}
+            onSubmit={async (handover_id, payload) => {
+              try {
+                setReturning(true);
+                await handleReturn(payload);
+                setReturnOpen(false);
+              } catch (err) {
+                console.error("Failed to return handover", err);
+              } finally {
+                setReturning(false);
+              }
+            }}
+            isSubmitting={returning}
           />
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

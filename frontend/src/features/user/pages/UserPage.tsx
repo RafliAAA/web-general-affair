@@ -1,48 +1,37 @@
 import { useEffect, useState } from "react";
-import { Search, Plus, UserCircle } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import CreateUserModal from "../components/CreateUserModal";
 import { useUsers, useCreateUser } from "../hooks/useUser";
-import type { CreateUserPayload } from "../services/userService";
+import {
+  userService,
+  type CreateUserPayload,
+  type UpdateUserPayload,
+  type User,
+} from "../services/userService";
+import { toast } from "sonner";
 
-const ROLE_LABEL: Record<string, string> = {
-  USER: "Karyawan",
-  ADMIN: "General Affair",
-  IT: "Tim IT",
-};
-
-const ROLE_VARIANT: Record<string, "warning" | "success" | "default"> = {
-  USER: "warning",
-  ADMIN: "default",
-  IT: "success",
-};
-
-const formatDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+// Import Komponen yang baru dibuat
+import UserSummaryCards from "../components/UserSummaryCards";
+import UserTable from "../components/UserTable";
+import CreateUserModal from "../components/CreateUserModal";
+import UpdateUserModal from "../components/UpdateUserModal";
+import DeleteUserDialog from "../components/DeleteUserDialog";
 
 const UserPage = () => {
   const { users, isLoading, fetchUsers } = useUsers();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("Semua");
-  const [formOpen, setFormOpen] = useState(false);
 
+  // State untuk Modal Create
+  const [formOpen, setFormOpen] = useState(false);
   const { isSubmitting, createUser } = useCreateUser(fetchUsers);
+
+  // State untuk Modal Update & Delete
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -61,8 +50,40 @@ const UserPage = () => {
     setFormOpen(false);
   };
 
+  const handleUpdate = async (id: string, payload: UpdateUserPayload) => {
+    setIsUpdating(true);
+    try {
+      await userService.update(id, payload);
+      toast.success("User berhasil diperbarui!");
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Gagal memperbarui user");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingUser) return;
+    setIsDeleting(true);
+    try {
+      await userService.delete(deletingUser.user_id);
+      toast.success("User berhasil dihapus!");
+      setDeletingUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message ||
+          "Gagal menghapus user. Mungkin user ini memiliki riwayat transaksi.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <DashboardLayout title="Manajemen User">
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -83,7 +104,13 @@ const UserPage = () => {
                 variant={roleFilter === r ? "default" : "outline"}
                 onClick={() => setRoleFilter(r)}
               >
-                {r === "Semua" ? "Semua" : ROLE_LABEL[r]}
+                {r === "Semua"
+                  ? "Semua"
+                  : r === "USER"
+                    ? "Karyawan"
+                    : r === "ADMIN"
+                      ? "GA"
+                      : "IT"}
               </Button>
             ))}
             <Button size="sm" onClick={() => setFormOpen(true)}>
@@ -94,100 +121,41 @@ const UserPage = () => {
         </div>
 
         {/* Summary */}
-        {!isLoading && (
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { role: "USER", label: "Karyawan" },
-              { role: "ADMIN", label: "General Affair" },
-              { role: "IT", label: "Tim IT" },
-            ].map(({ role, label }) => (
-              <div
-                key={role}
-                className="rounded-lg border bg-card p-4 flex items-center gap-3"
-              >
-                <div className="p-2 rounded-md bg-muted">
-                  <UserCircle className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold">
-                    {users.filter((u) => u.role === role).length}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {!isLoading && <UserSummaryCards users={users} />}
 
         {/* Table */}
-        <div className="rounded-lg border bg-card">
-          {isLoading ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {["Nama", "Email", "Role", "Dibuat"].map((h) => (
-                    <TableHead key={h}>{h}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 4 }).map((_, j) => (
-                      <TableCell key={j}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : filtered.length === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              {search ? "Tidak ada user ditemukan" : "Belum ada data user"}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Dibuat</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((user) => (
-                  <TableRow key={user.user_id}>
-                    <TableCell className="font-medium">
-                      {user.profile?.name ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {user.email}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={ROLE_VARIANT[user.role]}>
-                        {ROLE_LABEL[user.role] ?? user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(user.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
+        <UserTable
+          users={filtered}
+          isLoading={isLoading}
+          onEdit={(user) => setEditingUser(user)}
+          onDelete={(user) => setDeletingUser(user)}
+        />
       </div>
 
+      {/* Modals */}
       <CreateUserModal
         open={formOpen}
         onClose={() => setFormOpen(false)}
         onSubmit={handleCreate}
         isSubmitting={isSubmitting}
       />
-    </DashboardLayout>
+
+      <UpdateUserModal
+        open={!!editingUser}
+        onClose={() => setEditingUser(null)}
+        onSubmit={handleUpdate}
+        initialData={editingUser}
+        isSubmitting={isUpdating}
+      />
+
+      <DeleteUserDialog
+        open={!!deletingUser}
+        onClose={() => setDeletingUser(null)}
+        onConfirm={handleDelete}
+        user={deletingUser}
+        isDeleting={isDeleting}
+      />
+    </>
   );
 };
 

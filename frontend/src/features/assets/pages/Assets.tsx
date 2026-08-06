@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import ListAssets from "../components/ListAssets";
 import { useAssets } from "../hooks/useAssets";
 import ListAssetSkeleton from "../components/ListAssetSkeleton";
@@ -18,12 +17,13 @@ const Assets = () => {
     handleSearchChange,
     handleStatusChange,
     handleCreate,
-  } = useAssets(5);
+  } = useAssets(10);
 
 
 const handleExportPdf = async () => {
   // Fetch semua aset tanpa limit untuk export
   const result = await getAssets({ limit: 9999 });
+  
   
   const blob = await pdf(<AssetsPdf assets={result.data} />).toBlob();
   const url = URL.createObjectURL(blob);
@@ -35,7 +35,7 @@ const handleExportPdf = async () => {
 };
 
   return (
-    <DashboardLayout title="Aset Perusahaan">
+    <>
       {loading ? (
         <ListAssetSkeleton />
       ) : (
@@ -52,7 +52,7 @@ const handleExportPdf = async () => {
           onPageChange={setPage}
         />
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

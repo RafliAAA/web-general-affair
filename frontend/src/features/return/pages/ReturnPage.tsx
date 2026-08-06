@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useReturn } from "../hooks/useReturn";
 import ReturnTable from "../components/ReturnTable";
 import ReturnTableSkeleton from "../components/ReturnTableSkeleton";
@@ -8,7 +7,6 @@ import type {
   BorrowRequest,
   CreateReturnPayload,
 } from "../services/returnService";
-
 
 const ReturnPage = () => {
   const { borrows, loading, error, handleReturn } = useReturn();
@@ -30,9 +28,8 @@ const ReturnPage = () => {
   };
 
   return (
-    <DashboardLayout title="Pengembalian Aset">
+    <>
       <div className="space-y-6">
-
         {/* Summary */}
         {!loading && borrows.length > 0 && (
           <p className="text-sm text-muted-foreground bg-blend-color-burn rounded-md border border-secondary bg-secondary/50 px-3 py-1 w-fit">
@@ -63,7 +60,7 @@ const ReturnPage = () => {
           loading={submitting}
         />
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

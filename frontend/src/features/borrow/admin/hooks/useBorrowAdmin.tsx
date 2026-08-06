@@ -63,5 +63,5 @@ export const useBorrowAdmin = () => {
     }
   };
 
-  return { borrows, loading, error, handleApprove, handleReject };
+  return { borrows, loading, error, handleApprove, handleReject, fetchBorrows };
 };

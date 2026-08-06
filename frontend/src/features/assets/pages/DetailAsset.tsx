@@ -10,22 +10,18 @@ import {
   ShieldCheck,
   User,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
 import { useAssetDetail } from "../hooks/useAssetDetail";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import DetailAssetSkeleton from "../components/DetailAssetSkeleton";
 import UpdateAssetModal from "../components/UpdateAssetModal";
 import { useState } from "react";
 import type { Borrow } from "@/types/inventory";
+import BorrowHistoryTable from "../components/BorrowHistoryTable";
+import MaintenanceHistoryTable from "../components/MaintenanceHistoryTable";
+import HandoverHistoryTable from "../components/HandoverHistoryTable";
+import type { HandoverItem } from "@/types/handover";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore"; 
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "—";
@@ -36,42 +32,25 @@ const formatDate = (dateStr: string | null) => {
   });
 };
 
-const statusVariant = (status: string) => {
-  switch (status) {
-    case "Tersedia":
-      return "success";
-    case "Diserahkan":
-      return "secondary";
-    case "Dipinjam":
-      return "warning";
-    case "Diperbaiki":
-      return "destructive";
-    default:
-      return "outline";
-  }
-};
-
-const borrowStatusVariant = (status: string) => {
-  switch (status) {
-    case "Dikembalikan":
-      return "success";
-    case "Disetujui":
-      return "secondary";
-    case "Menunggu":
-      return "outline";
-    case "Ditolak":
-      return "destructive";
-    case "Dibatalkan":
-      return "destructive";
-    default:
-      return "outline";
-  }
-};
-
-const getCurrentBorrow = (borrow: Borrow[]) => {
-  return borrow?.find(
+const getCurrentUser = (
+  borrow: Borrow[],
+  handoverItems: HandoverItem[],
+): string => {
+  const activeBorrow = borrow?.find(
     (b) => b.status === "Dipinjam" || b.status === "Disetujui",
   );
+  if (activeBorrow) {
+    return activeBorrow.user?.profile?.name ?? "—";
+  }
+
+  const activeHandover = handoverItems?.find(
+    (h) => h.handover?.status === "Aktif",
+  );
+  if (activeHandover) {
+    return activeHandover.handover?.receiver?.profile?.name ?? "—";
+  }
+
+  return "—";
 };
 
 const DetailAsset = () => {
@@ -80,8 +59,16 @@ const DetailAsset = () => {
   const navigate = useNavigate();
   const { asset, loading, error, handleUpdate } = useAssetDetail(id);
 
+  const { user } = useAuthStore();
+
+  const maintenances = asset?.maintenances || [];
+  const handoverItems = asset?.handoverItems || [];
+
+  // CEK APAKAH USER PUNYA AKSES UNTUK MELIHAT RIWAYAT & EDIT
+  const canManageAsset = user?.role === "ADMIN" || user?.role === "IT";
+
   return (
-    <DashboardLayout title="Detail Aset">
+    <>
       {loading ? (
         <DetailAssetSkeleton />
       ) : error || !asset ? (
@@ -109,19 +96,23 @@ const DetailAsset = () => {
             <div>
               <h1 className="text-xl font-medium">{asset.asset_name}</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {asset.asset_code} .        {asset.asset_category?.category_name ?? "—"}
-
+                {asset.asset_code} .{" "}
+                {asset.asset_category?.category_name ?? "—"}
               </p>
             </div>
+
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setEditOpen(true)}
-              >
-                <Edit className="h-4 w-4 mr-1.5" />
-                Edit
-              </Button>
+              {/* HANYA ADMIN & IT YANG BISA LIHAT TOMBOL EDIT */}
+              {canManageAsset && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Edit className="h-4 w-4 mr-1.5" />
+                  Edit
+                </Button>
+              )}
             </div>
           </div>
 
@@ -140,12 +131,17 @@ const DetailAsset = () => {
                   label: "Serial number",
                   value: asset.serial_number,
                 },
-                { icon: Package, label: "Kategori", value: asset.asset_category?.category_name ?? "—" },
+                {
+                  icon: Package,
+                  label: "Kategori",
+                  value: asset.asset_category?.category_name ?? "—",
+                },
                 {
                   icon: User,
                   label: "Pengguna saat ini",
                   value:
-                    getCurrentBorrow(asset.borrow)?.user?.profile?.name ?? "—",
+                    getCurrentUser(asset.borrow, asset.handoverItems || []) ??
+                    "—",
                 },
               ].map(({ icon: Icon, label, value }) => (
                 <div
@@ -169,23 +165,11 @@ const DetailAsset = () => {
                 </p>
                 <div className="flex items-center justify-between py-2 border-b">
                   <span className="text-sm text-muted-foreground">Status</span>
-                  <Badge variant={statusVariant(asset.status)}>
-                    {asset.status}
-                  </Badge>
+                  <StatusBadge status={asset.status} />
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-sm text-muted-foreground">Kondisi</span>
-                  <Badge
-                    variant={
-                      asset.condition === "Baik"
-                        ? "success"
-                        : asset.condition === "Cukup Baik"
-                          ? "outline"
-                          : "destructive"
-                    }
-                  >
-                    {asset.condition}
-                  </Badge>
+                  <StatusBadge status={asset.condition} />
                 </div>
               </div>
 
@@ -226,94 +210,15 @@ const DetailAsset = () => {
             </div>
           </div>
 
-          {/* Riwayat Peminjaman */}
-          <div className="rounded-lg border bg-card">
-            <div className="px-5 py-4 border-b">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Riwayat peminjaman
-              </p>
-            </div>
-            {asset.borrow.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama karyawan</TableHead>
-                    <TableHead>Tanggal pinjam</TableHead>
-                    <TableHead>Tanggal rencana kembali</TableHead>
-                    <TableHead>Tanggal kembali</TableHead>
-                    <TableHead>Kondisi kembali</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {asset.borrow
-                    ?.filter(
-                      (b) =>
-                        b.status === "Disetujui" || b.status === "Dikembalikan",
-                    )
-                    .map((b) => {
-                      const returnData = b.returns?.[0];
-                      return (
-                        <TableRow key={b.borrow_id}>
-                          <TableCell className="font-medium">
-                            {b.user?.profile?.name ?? "—"}
-                          </TableCell>
-                          <TableCell>{formatDate(b.createdAt)}</TableCell>
-                          <TableCell>
-                            {formatDate(b.expected_return_date)}
-                          </TableCell>
-                          <TableCell>
-                            {returnData
-                              ? formatDate(returnData.return_date)
-                              : "—"}
-                          </TableCell>
-                          <TableCell>
-                            {returnData?.return_condition ? (
-                              <Badge
-                                variant={
-                                  returnData.return_condition === "Baik"
-                                    ? "success"
-                                    : returnData.return_condition ===
-                                        "Cukup Baik"
-                                      ? "outline"
-                                      : "destructive"
-                                }
-                              >
-                                {returnData.return_condition}
-                              </Badge>
-                            ) : (
-                              "—"
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={borrowStatusVariant(b.status)}>
-                              {b.status}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="py-12 text-center text-sm text-muted-foreground">
-                Belum ada riwayat peminjaman
-              </div>
-            )}
-          </div>
+          {/* HANYA ADMIN & IT YANG BISA LIHAT RIWAYAT LENGKAP */}
+          {canManageAsset && (
+            <>
+              <BorrowHistoryTable borrows={asset.borrow} />
+              <MaintenanceHistoryTable maintenances={maintenances} />
+              <HandoverHistoryTable handoverItems={handoverItems} />
+            </>
+          )}
 
-          {/* Riwayat Pemeliharaan */}
-          <div className="rounded-lg border bg-card">
-            <div className="px-5 py-4 border-b">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Riwayat Pemeliharaan
-              </p>
-            </div>
-
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              Belum ada riwayat pemeliharaan
-            </div>
-          </div>
           {editOpen && (
             <UpdateAssetModal
               asset={asset}
@@ -326,7 +231,7 @@ const DetailAsset = () => {
           )}
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

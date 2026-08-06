@@ -1,4 +1,5 @@
-import MaintenanceStatusBadge from "../../user/components/MaintenanceStatusBadge";
+import type { Maintenance } from "@/types/maintenance";
+import { StatusBadge } from "../../../../components/shared/StatusBadge"; // Sesuaikan path jika beda
 
 import {
   Table,
@@ -17,7 +18,7 @@ const formatDate = (dateStr: string) =>
   });
 
 interface Props {
-  history: any[];
+  history: Maintenance[];
   onDetail: (id: string) => void;
 }
 
@@ -55,7 +56,7 @@ const MaintenanceHistoryTable = ({ history, onDetail }: Props) => {
                   </TableCell>
 
                   <TableCell className="text-sm text-muted-foreground">
-                    {m.reporter.profile?.name}
+                    {m.reporter?.profile?.name ?? "—"}
                   </TableCell>
 
                   <TableCell>{formatDate(m.createdAt)}</TableCell>
@@ -65,7 +66,7 @@ const MaintenanceHistoryTable = ({ history, onDetail }: Props) => {
                   </TableCell>
 
                   <TableCell>
-                    <MaintenanceStatusBadge status={m.status} />
+                    <StatusBadge status={m.status} />
                   </TableCell>
                 </TableRow>
               ))}

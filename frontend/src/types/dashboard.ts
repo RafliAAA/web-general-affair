@@ -2,6 +2,8 @@ export interface AssetStats {
   tersedia: number;
   dipinjam: number;
   diperbaiki: number;
+  diserahkan: number;
+  dihapus: number;
   total: number;
 }
 

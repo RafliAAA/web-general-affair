@@ -2,9 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Wrench, User, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useMaintenanceDetailIT } from "../hooks/useMaintenanceDetail";
-import MaintenanceStatusBadge from "../../user/components/MaintenanceStatusBadge";
+import { StatusBadge } from "../../../../components/shared/StatusBadge";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import ActualizationPDF from "../components/ActualizationPDF";
 
@@ -57,7 +56,7 @@ const MaintenanceDetailITPage = () => {
     useMaintenanceDetailIT(id);
 
   return (
-    <DashboardLayout title="Detail Maintenance">
+    <>
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-4 w-20" />
@@ -118,7 +117,7 @@ const MaintenanceDetailITPage = () => {
                     )}
                   </PDFDownloadLink>
                 )}
-              <MaintenanceStatusBadge status={maintenance.status} />
+              <StatusBadge status={maintenance.status} />
             </div>
           </div>
 
@@ -132,7 +131,7 @@ const MaintenanceDetailITPage = () => {
               <InfoRow
                 icon={User}
                 label="Dilaporkan oleh"
-                value={maintenance.reporter.profile?.name ?? "—"}
+                value={maintenance.reporter?.profile?.name ?? "—"}
               />
               <InfoRow
                 icon={User}
@@ -210,7 +209,7 @@ const MaintenanceDetailITPage = () => {
           )}
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

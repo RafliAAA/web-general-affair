@@ -1,4 +1,12 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
+import LogoSyaamil from "../../../assets/LogoSyaamil.png"; // sesuaikan path import dengan lokasi logo di project-mu
 
 interface DisposalItem {
   disposal_item_id: string;
@@ -8,8 +16,11 @@ interface DisposalItem {
   asset: {
     asset_name: string;
     asset_code: string;
-    asset_type: string;
+    asset_category?: {
+      category_name: string
+    } | null
   };
+
 }
 
 interface DisposalData {
@@ -17,6 +28,9 @@ interface DisposalData {
   memo_date: string;
   subject: string;
   description: string | null;
+  to: string;
+  from: string;
+  cc: string | null;
   items?: DisposalItem[];
 }
 
@@ -34,49 +48,70 @@ const styles = StyleSheet.create({
     color: "#09090b",
   },
   header: {
-    marginBottom: 16,
+    marginBottom: 4,
     borderBottomWidth: 1,
     borderBottomColor: "#e4e4e7",
     paddingBottom: 12,
   },
-  metaLabel: {
-    fontSize: 9,
-    color: "#71717a",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+  logoImage: {
+    width: 100,
+    height: 50,
+    objectFit: "contain",
+    marginBottom: 10,
+  },
+  titleWrap: {
+    alignItems: "center",
   },
   title: {
-    marginTop: 4,
+    marginTop: 2,
     fontSize: 18,
     fontWeight: "bold",
     letterSpacing: -0.5,
     color: "#09090b",
+    textAlign: "center",
   },
-  infoGrid: {
-    flexDirection: "row",
-    gap: 16,
+  memoNumber: {
+    marginTop: 4,
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#09090b",
+    textAlign: "center",
+  },
+  totalAsetLine: {
+    textAlign: "right",
+    color: "#71717a",
+    marginBottom: 6,
+  },
+  memoTable: {
+    borderWidth: 1,
+    borderColor: "#09090b",
     marginBottom: 16,
   },
-  infoCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#e4e4e7",
-    borderRadius: 6,
-    padding: 10,
-    backgroundColor: "#fafafa",
-  },
-  infoRow: {
+  memoRow: {
     flexDirection: "row",
-    paddingVertical: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: "#09090b",
   },
-  infoCellLabel: {
-    width: 80,
-    color: "#71717a",
+  memoRowLast: {
+    flexDirection: "row",
   },
-  infoCellValue: {
-    flex: 1,
-    color: "#18181b",
+  memoLabel: {
+    width: 90,
+    padding: 6,
     fontWeight: "bold",
+    color: "#09090b",
+  },
+  memoColon: {
+    width: 12,
+    padding: 6,
+    fontWeight: "bold",
+    color: "#09090b",
+  },
+  memoValue: {
+    flex: 1,
+    padding: 6,
+    fontWeight: "bold",
+    color: "#09090b",
   },
   descText: {
     color: "#27272a",
@@ -147,161 +182,218 @@ const styles = StyleSheet.create({
   cellCategory: { width: "18%", paddingRight: 6 },
   cellMethod: { width: "15%", paddingRight: 6 },
   cellNotes: { width: "22%", color: "#71717a" },
-  footer: {
-    position: "absolute",
-    bottom: 30,
-    left: 45,
-    right: 45,
+  signatureDate: {
+    textAlign: "left",
+    color: "#27272a",
+    marginTop: 24,
+  },
+  signatureSection: {
+    flexDirection: "row",
+    marginTop: 12,
+  },
+  signatureBox: {
+    width: "45%",
     textAlign: "center",
-    color: "#a1a1aa",
-    fontSize: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#e4e4e7",
-    paddingTop: 12,
+  },
+  signatureRole: {
+    color: "#71717a",
+    marginBottom: 40,
+  },
+  signatureName: {
+    fontWeight: "bold",
+    color: "#09090b",
+    textDecoration: "underline",
+    paddingTop: 8,
+  },
+  signatureNameRole: {
+    fontWeight: "semibold",
+    color: "#09090b",
   },
 });
 
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("id-ID", {
-    day: "2-digit",
+const formatSignatureDate = (dateStr: string) => {
+  if (!dateStr) return "Bandung, —";
+  const formatted = new Date(dateStr).toLocaleDateString("id-ID", {
+    day: "numeric",
     month: "long",
     year: "numeric",
   });
+  return `Bandung, ${formatted}`;
 };
 
-const DisposalPdf = ({ disposal }: Props) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.metaLabel}>INTERNAL MEMORANDUM DISPOSAL ASET</Text>
-        <Text style={styles.title}>{disposal.subject}</Text>
-      </View>
+// Master descriptions for each disposal method — only rendered when at
+// least one item in the memo actually uses that method.
+const METHOD_DESCRIPTIONS: Record<string, { label: string; text: string }> = {
+  Jual: {
+    label: "Jual",
+    text: "Dilakukan melalui penawaran langsung atau lelang kepada pihak ketiga dengan prinsip transparansi dan kepatuhan terhadap regulasi.",
+  },
+  Hibah: {
+    label: "Hibah",
+    text: "Dialokasikan kepada pihak yang membutuhkan.",
+  },
+  Kirim: {
+    label: "Kirim",
+    text: "Aset yang masih layak digunakan akan dikirim ke Kantor Pusat Syaamil Qur'an di Bandung.",
+  },
+};
 
-      {/* Info Grid */}
-      <View style={styles.infoGrid}>
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoCellLabel}>Nomor Memo</Text>
-            <Text style={styles.infoCellValue}>: {disposal.memo_number}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoCellLabel}>Tanggal Memo</Text>
-            <Text style={styles.infoCellValue}>
-              : {formatDate(disposal.memo_date)}
-            </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoCellLabel}>Total Aset</Text>
-            <Text style={styles.infoCellValue}>
-              : {disposal.items?.length ?? 0} Item
-            </Text>
+const DisposalPdf = ({ disposal }: Props) => {
+  const usedMethods = new Set(
+    (disposal.items ?? []).map((item) => item.method),
+  );
+  const activeMethodDescriptions = Object.values(METHOD_DESCRIPTIONS).filter(
+    (m) => usedMethods.has(m.label),
+  );
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header — logo di kiri atas, berdiri sendiri di baris pertama;
+            judul + nomor memo di baris terpisah di bawahnya, center */}
+        <View style={styles.header}>
+          <Image src={LogoSyaamil} style={styles.logoImage} />
+          <View style={styles.titleWrap}>
+            <Text style={styles.title}>INTERNAL MEMO</Text>
+            <Text style={styles.memoNumber}>{disposal.memo_number}</Text>
           </View>
         </View>
 
-      
-      </View>
-
-      {/* Kalimat Pembuka & Pengantar Surat */}
-      <Text style={styles.paragraph}>
-        Assalamu'alaikum Warahmatullah Wabarakatuh.
-      </Text>
-      <Text style={styles.paragraph}>
-        Alhamdulillahirabbil’alamin untuk semua nikmat yang Allah berikan.
-        Shalawat dan salam semoga atas Rasulullah Muhammad SAW, teladan seluruh
-        umat sepanjang zaman.
-      </Text>
-      <Text style={styles.paragraph}>
-        Berdasarkan informasi dari Mitra SDI Makassar terhadap aset perusahaan,
-        terdapat beberapa aset dengan kondisi baik dan rusak. Beberapa aset
-        tidak dapat dimanfaatkan, sementara lainnya masih dapat digunakan untuk
-        operasional di Holding. Terlampir daftar aset dimaksud :
-      </Text>
-
-      {/* Items Section */}
-      <Text style={styles.sectionTitle}>Daftar Aset Yang Didisposal</Text>
-
-      <View style={styles.table}>
-        {/* Table Header */}
-        <View style={styles.headerRow}>
-          <Text style={[styles.cellName, styles.headerCell]}>Nama Aset</Text>
-          <Text style={[styles.cellCode, styles.headerCell]}>Kode</Text>
-          <Text style={[styles.cellCategory, styles.headerCell]}>Kategori</Text>
-          <Text style={[styles.cellMethod, styles.headerCell]}>Metode</Text>
-          <Text style={[styles.cellNotes, styles.headerCell]}>Catatan</Text>
+        {/* TO / FROM / CC / RE */}
+        <View style={styles.memoTable}>
+          <View style={styles.memoRow}>
+            <Text style={styles.memoLabel}>TO</Text>
+            <Text style={styles.memoColon}>:</Text>
+            <Text style={styles.memoValue}>{disposal.to}</Text>
+          </View>
+          <View style={styles.memoRow}>
+            <Text style={styles.memoLabel}>FROM</Text>
+            <Text style={styles.memoColon}>:</Text>
+            <Text style={styles.memoValue}>{disposal.from}</Text>
+          </View>
+          <View style={styles.memoRow}>
+            <Text style={styles.memoLabel}>CC</Text>
+            <Text style={styles.memoColon}>:</Text>
+            <Text style={styles.memoValue}>{disposal.cc || "—"}</Text>
+          </View>
+          <View style={styles.memoRowLast}>
+            <Text style={styles.memoLabel}>RE</Text>
+            <Text style={styles.memoColon}>:</Text>
+            <Text style={styles.memoValue}>{disposal.subject}</Text>
+          </View>
         </View>
 
-        {/* Table Body */}
-        {disposal.items && disposal.items.length > 0 ? (
-          disposal.items.map((item) => (
-            <View key={item.disposal_item_id} style={styles.row}>
-              <Text style={styles.cellName}>{item.asset.asset_name}</Text>
-              <Text style={styles.cellCode}>{item.asset.asset_code}</Text>
-              <Text style={styles.cellCategory}>{item.asset.asset_type}</Text>
-              <Text style={styles.cellMethod}>{item.method}</Text>
-              <Text style={styles.cellNotes}>{item.notes || "—"}</Text>
+        <Text style={styles.paragraph}>
+          Assalamu'alaikum Warahmatullah Wabarakatuh.
+        </Text>
+        <Text style={styles.paragraph}>
+          Alhamdulillahirabbil’alamin untuk semua nikmat yang Allah berikan.
+          Shalawat dan salam semoga atas Rasulullah Muhammad SAW, teladan
+          seluruh umat sepanjang zaman.
+        </Text>
+        <Text style={styles.paragraph}>
+          Berdasarkan informasi dari {disposal.description} terhadap aset
+          perusahaan, terdapat beberapa aset dengan kondisi baik dan rusak.
+          Beberapa aset tidak dapat dimanfaatkan, sementara lainnya masih dapat
+          digunakan untuk operasional di Holding. Terlampir daftar aset dimaksud
+          :
+        </Text>
+
+        {/* Items Section */}
+        <Text style={styles.sectionTitle}>Daftar Aset Yang Didisposal</Text>
+        <Text style={styles.totalAsetLine}>
+          Total Aset: {disposal.items?.length ?? 0} Item
+        </Text>
+
+        <View style={styles.table}>
+          {/* Table Header */}
+          <View style={styles.headerRow}>
+            <Text style={[styles.cellName, styles.headerCell]}>Nama Aset</Text>
+            <Text style={[styles.cellCode, styles.headerCell]}>Kode</Text>
+            <Text style={[styles.cellCategory, styles.headerCell]}>
+              Kategori
+            </Text>
+            <Text style={[styles.cellMethod, styles.headerCell]}>Metode</Text>
+            <Text style={[styles.cellNotes, styles.headerCell]}>Catatan</Text>
+          </View>
+
+          {/* Table Body */}
+          {disposal.items && disposal.items.length > 0 ? (
+            disposal.items.map((item) => (
+              <View key={item.disposal_item_id} style={styles.row}>
+                <Text style={styles.cellName}>{item.asset.asset_name}</Text>
+                <Text style={styles.cellCode}>{item.asset.asset_code}</Text>
+                <Text style={styles.cellCategory}>{item.asset.asset_category?.category_name}</Text>
+                <Text style={styles.cellMethod}>{item.method}</Text>
+                <Text style={styles.cellNotes}>{item.notes || "—"}</Text>
+              </View>
+            ))
+          ) : (
+            <View style={{ paddingVertical: 16, textAlign: "center" }}>
+              <Text style={{ color: "#71717a" }}>
+                Belum ada data aset didalam berkas ini.
+              </Text>
             </View>
-          ))
-        ) : (
-          <View style={{ paddingVertical: 16, textAlign: "center" }}>
-            <Text style={{ color: "#71717a" }}>
-              Belum ada data aset didalam berkas ini.
+          )}
+        </View>
+
+        {/* Kalimat Kebijakan & Penjelasan Metode — hanya metode yang
+            benar-benar dipakai pada daftar aset di atas yang ditampilkan */}
+        {activeMethodDescriptions.length > 0 && (
+          <>
+            <Text style={styles.paragraph}>
+              Untuk optimalisasi manajemen aset serta efisiensi biaya
+              pengiriman, penyimpanan, dan perawatan, kami mengusulkan
+              pelaksanaan disposal aset melalui metode berikut :
             </Text>
-          </View>
+
+            <View style={styles.bulletList}>
+              {activeMethodDescriptions.map((method, index) => (
+                <View key={method.label} style={styles.bulletItem}>
+                  <Text style={styles.bulletPrefix}>{index + 1}.</Text>
+                  <Text style={styles.bulletContent}>
+                    <Text style={styles.boldText}>{method.label}</Text> :{" "}
+                    {method.text}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
         )}
-      </View>
 
-      {/* Kalimat Kebijakan & Penjelasan Metode */}
-      <Text style={styles.paragraph}>
-        Untuk optimalisasi manajemen aset serta efisiensi biaya pengiriman,
-        penyimpanan, dan perawatan, kami mengusulkan pelaksanaan disposal aset
-        melalui tiga metode berikut :
-      </Text>
+        {/* Kalimat Penutup Surat */}
+        <Text style={styles.paragraph}>
+          Demikian IM ini dibuat untuk diketahui dan dilaksanakan sebagaimana
+          mestinya, apabila di kemudian hari ada kekeliruan maka akan dilakukan
+          perbaikan seperlunya. Atas perhatian Bapak/Ibu kami ucapkan terima
+          kasih.
+        </Text>
+        <Text style={styles.paragraph}>
+          Wassalamu'alaikum Warahmatullah Wabarakatuh.
+        </Text>
 
-      <View style={styles.bulletList}>
-        <View style={styles.bulletItem}>
-          <Text style={styles.bulletPrefix}>1.</Text>
-          <Text style={styles.bulletContent}>
-            <Text style={styles.boldText}>Jual</Text> : Dilakukan melalui
-            penawaran langsung atau lelang kepada pihak ketiga dengan prinsip
-            transparansi dan kepatuhan terhadap regulasi.
-          </Text>
+        {/* Tanggal memo — ditaruh tepat di atas tanda tangan */}
+        <Text style={styles.signatureDate}>
+          {formatSignatureDate(disposal.memo_date)}
+        </Text>
+
+        {/* Signatures — FROM (pembuat memo) & TO (penerima/mengetahui) */}
+        <View style={styles.signatureSection}>
+          <View style={styles.signatureBox}>
+            <Text style={styles.signatureRole}>Mengetahui,</Text>
+            <Text style={styles.signatureName}>{disposal.from}</Text>
+            <Text style={styles.signatureNameRole}>General Affair Manager</Text>
+          </View>
+          <View style={styles.signatureBox}>
+            <Text style={styles.signatureRole}>Menyetujui,</Text>
+            <Text style={styles.signatureName}>{disposal.to}</Text>
+            <Text style={styles.signatureNameRole}>Chief Operating Office</Text>
+          </View>
         </View>
-        <View style={styles.bulletItem}>
-          <Text style={styles.bulletPrefix}>2.</Text>
-          <Text style={styles.bulletContent}>
-            <Text style={styles.boldText}>Hibah</Text> : Dialokasikan kepada
-            pihak yang membutuhkan.
-          </Text>
-        </View>
-        <View style={styles.bulletItem}>
-          <Text style={styles.bulletPrefix}>3.</Text>
-          <Text style={styles.bulletContent}>
-            <Text style={styles.boldText}>Kirim</Text> : Aset yang masih layak
-            digunakan akan dikirim ke Kantor Pusat Syaamil Qur'an di Bandung.
-          </Text>
-        </View>
-      </View>
 
-      {/* Kalimat Penutup Surat */}
-      <Text style={styles.paragraph}>
-        Demikian IM ini dibuat untuk diketahui dan dilaksanakan sebagaimana
-        mestinya, apabila di kemudian hari ada kekeliruan maka akan dilakukan
-        perbaikan seperlunya. Atas perhatian Bapak/Ibu kami ucapkan terima
-        kasih.
-      </Text>
-      <Text style={styles.paragraph}>
-        Wassalamu'alaikum Warahmatullah Wabarakatuh.
-      </Text>
-
-      {/* Footer */}
-      <Text style={styles.footer}>
-        Dokumen ini dibuat otomatis melalui Sistem Manajemen Aset & Disposal
-        Perusahaan.
-      </Text>
-    </Page>
-  </Document>
-);
+      </Page>
+    </Document>
+  );
+};
 
 export default DisposalPdf;

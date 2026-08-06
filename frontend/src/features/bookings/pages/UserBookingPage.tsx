@@ -25,7 +25,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import CreateBookingModal from "../components/CreateBookingModal";
 import {
   useMyBookings,
@@ -93,7 +92,7 @@ const UserBookingPage = () => {
   };
 
   return (
-    <DashboardLayout title="Booking Ruangan">
+    < >
       <div className="space-y-6">
         {/* Daftar Ruangan Tersedia */}
         <div className="space-y-3">
@@ -262,7 +261,7 @@ const UserBookingPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </DashboardLayout>
+    </>
   );
 };
 

@@ -3,7 +3,14 @@ export interface User {
   name: string;
   email: string;
   role?: string; 
+  profile: UserProfile | null
 }
+
+export interface UserProfile {
+  name: string | null;
+  photo: string | null;
+}
+
 
 export interface AuthState {
   user: User | null;
@@ -14,6 +21,7 @@ export interface AuthState {
   logout: () => Promise<void>;
   forceLogout: () => void;
   checkAuth: () => Promise<void>;
+  updateUser: (userData: User) => void;
 }
 
 export interface SignupPayload {

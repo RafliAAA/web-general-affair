@@ -2,9 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Wrench, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useMaintenanceDetail } from "../hooks/useMaintenanceDetail";
-import MaintenanceStatusBadge from "../components/MaintenanceStatusBadge";
+import { StatusBadge } from "../../../../components/shared/StatusBadge";
 
 const formatDate = (dateStr: string | null) =>
   dateStr
@@ -54,7 +53,7 @@ const MaintenanceDetailPage = () => {
   const { maintenance, loading, error } = useMaintenanceDetail(id);
 
   return (
-    <DashboardLayout title="Detail Laporan Maintenance">
+    <>
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-4 w-20" />
@@ -93,7 +92,7 @@ const MaintenanceDetailPage = () => {
                 {maintenance.asset.asset_code} · {maintenance.asset.asset_type}
               </p>
             </div>
-            <MaintenanceStatusBadge status={maintenance.status} />
+            <StatusBadge status={maintenance.status} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -106,7 +105,7 @@ const MaintenanceDetailPage = () => {
               <InfoRow
                 icon={User}
                 label="Dilaporkan oleh"
-                value={maintenance.reporter.profile?.name ?? "—"}
+                value={maintenance.reporter?.profile?.name ?? "—"}
               />
               <InfoRow
                 icon={User}
@@ -124,7 +123,7 @@ const MaintenanceDetailPage = () => {
               <InfoRow
                 icon={Wrench}
                 label="Dikerjakan oleh"
-                value={maintenance.reporter.profile?.name ?? "—"}
+                value={maintenance.handler?.profile?.name ?? "—"} // BUG FIX: Ambil dari handler (teknisi)
               />
               <InfoRow
                 icon={Calendar}
@@ -162,7 +161,7 @@ const MaintenanceDetailPage = () => {
           )}
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

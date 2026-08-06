@@ -8,8 +8,12 @@ import {
   Plus,
   Trash2,
   Download,
-} from "lucide-react"; // Tambah Download icon
-import { PDFDownloadLink } from "@react-pdf/renderer"; // Import dari react-pdf
+  FileText,
+  User,
+  Users,
+  BookOpen,
+} from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,11 +25,10 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useDisposalDetail } from "../hooks/useDisposalDetail";
 import AddDisposalItemModal from "../components/AddDisposalItemModal";
 import UpdateDisposalMemoModal from "../components/UpdateDisposalMemoModal";
-import DisposalPDF from "../components/DisposalPdf"; 
+import DisposalPDF from "../components/DisposalPdf";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -62,12 +65,12 @@ const InfoRow = ({
   label: string;
   value: string;
 }) => (
-  <div className="flex items-center justify-between py-2 border-b last:border-0">
-    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+  <div className="flex items-center justify-between py-2 border-b last:border-0 gap-4">
+    <span className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
       <Icon className="h-3.5 w-3.5" />
       {label}
     </span>
-    <span className="text-sm font-medium">{value}</span>
+    <span className="text-sm font-medium text-right">{value || "—"}</span>
   </div>
 );
 
@@ -129,7 +132,7 @@ const DetailDisposalPage = () => {
   const [editMemoOpen, setEditMemoOpen] = useState(false);
 
   return (
-    <DashboardLayout title="Detail Disposal">
+    <>
       {loading ? (
         <DetailSkeleton />
       ) : error || !disposal ? (
@@ -153,15 +156,14 @@ const DetailDisposalPage = () => {
           </button>
 
           {/* Header */}
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div>
               <h1 className="text-xl font-medium">{disposal.subject}</h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {disposal.memo_number}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {/* TOMBOL EXPORT PDF */}
+            <div className="flex items-center gap-2 flex-wrap">
               <PDFDownloadLink
                 document={<DisposalPDF disposal={disposal} />}
                 fileName={`Disposal-${disposal.memo_number.replace(/[/\\?%*:|"<>\s]/g, "-")}.pdf`}
@@ -169,7 +171,7 @@ const DetailDisposalPage = () => {
                 {({ loading: pdfLoading }) => (
                   <Button variant="outline" size="sm" disabled={pdfLoading}>
                     <Download className="h-4 w-4 mr-1.5" />
-                    {pdfLoading ? "Menyiapkan PDF..." : "Export PDF"}
+                    {pdfLoading ? "Menyiapkan..." : "Export PDF"}
                   </Button>
                 )}
               </PDFDownloadLink>
@@ -198,6 +200,14 @@ const DetailDisposalPage = () => {
                 label="Tanggal memo"
                 value={formatDate(disposal.memo_date)}
               />
+              <InfoRow
+                icon={FileText}
+                label="Subjek"
+                value={disposal.subject}
+              />
+              <InfoRow icon={User} label="From" value={disposal.from} />
+              <InfoRow icon={Users} label="To" value={disposal.to} />
+              <InfoRow icon={BookOpen} label="CC" value={disposal.cc} />
             </SectionCard>
 
             <SectionCard title="Deskripsi">
@@ -209,7 +219,7 @@ const DetailDisposalPage = () => {
 
           {/* Items */}
           <div className="rounded-lg border bg-card">
-            <div className="px-5 py-4 border-b flex items-center justify-between">
+            <div className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Aset yang didisposal
@@ -227,51 +237,58 @@ const DetailDisposalPage = () => {
                 Tambah aset
               </Button>
             </div>
+
             {disposal.items && disposal.items.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama aset</TableHead>
-                    <TableHead>Kode aset</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Metode</TableHead>
-                    <TableHead>Catatan</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {disposal.items.map((item) => (
-                    <TableRow key={item.disposal_item_id}>
-                      <TableCell className="font-medium">
-                        {item.asset.asset_name}
-                      </TableCell>
-                      <TableCell>{item.asset.asset_code}</TableCell>
-                      <TableCell>{item.asset.asset_category?.category_name || "—"}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={methodVariant(item.method)}
-                          className="text-xs"
-                        >
-                          {item.method}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {item.notes || "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-500 hover:text-red-600 h-7 px-2"
-                          onClick={() => handleRemoveItem(item.asset_id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama aset</TableHead>
+                      <TableHead>Kode aset</TableHead>
+                      <TableHead>Kategori</TableHead>
+                      <TableHead>Metode</TableHead>
+                      <TableHead>Catatan</TableHead>
+                      <TableHead />
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {disposal.items.map((item) => (
+                      <TableRow key={item.disposal_item_id}>
+                        <TableCell className="font-medium">
+                          {item.asset.asset_name}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {item.asset.asset_code}
+                        </TableCell>
+                        <TableCell>
+                          {item.asset.asset_category?.category_name || "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={methodVariant(item.method)}
+                            className="text-xs"
+                          >
+                            {item.method}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {item.notes || "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2"
+                            onClick={() => handleRemoveItem(item.asset_id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : (
               <div className="py-12 text-center text-sm text-muted-foreground">
                 Belum ada aset, klik "Tambah aset" untuk menambahkan
@@ -297,7 +314,7 @@ const DetailDisposalPage = () => {
           )}
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

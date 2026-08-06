@@ -10,15 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateDisposal } from "../services/disposalService";
 import type {
   Disposal,
-  DisposalItemPayload,
+  UpdateDisposalHeaderPayload,
 } from "../services/disposalService";
 
 interface Props {
   disposal: Disposal;
-  onUpdate: (updated: Disposal) => void;
+  onUpdate: (payload: UpdateDisposalHeaderPayload) => void; // ← ganti
   onClose: () => void;
 }
 
@@ -27,11 +26,14 @@ const toDateInput = (dateStr: string) =>
 
 const UpdateDisposalMemoModal = ({ disposal, onUpdate, onClose }: Props) => {
   const [form, setForm] = useState({
-  memo_number: disposal.memo_number ?? "",
-  memo_date: disposal.memo_date ? toDateInput(disposal.memo_date) : "",
-  subject: disposal.subject ?? "",
-  description: disposal.description ?? "",
-});
+    memo_number: disposal.memo_number ?? "",
+    memo_date: disposal.memo_date ? toDateInput(disposal.memo_date) : "",
+    subject: disposal.subject ?? "",
+    from: disposal.from ?? "",
+    to: disposal.to ?? "",
+    cc: disposal.cc ?? "",
+    description: disposal.description ?? "",
+  });
   const [loading, setLoading] = useState(false);
 
   const isValid = form.memo_number && form.memo_date && form.subject;
@@ -44,28 +46,19 @@ const UpdateDisposalMemoModal = ({ disposal, onUpdate, onClose }: Props) => {
     if (!isValid) return;
     try {
       setLoading(true);
-
-      const existingItems: DisposalItemPayload[] =
-        disposal.items?.map((i) => ({
-          asset_id: i.asset_id,
-          method: i.method,
-          notes: i.notes,
-        })) ?? [];
-
-      const updated = await updateDisposal(disposal.disposal_id, {
-        memo_number: form.memo_number ?? "",
+      await onUpdate({
         memo_date: new Date(form.memo_date).toISOString(),
-        subject: form.subject ?? "",
-        description: form.description ?? "",
-        items: existingItems,
+        subject: form.subject,
+        from: form.from,
+        to: form.to,
+        cc: form.cc,
+        description: form.description,
       });
-
-      onUpdate(updated);
       onClose();
     } finally {
       setLoading(false);
     }
-  };
+  };;
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -77,14 +70,6 @@ const UpdateDisposalMemoModal = ({ disposal, onUpdate, onClose }: Props) => {
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label className="text-sm text-muted-foreground">Nomor memo</Label>
-            <Input
-              value={form.memo_number}
-              onChange={(e) => handleChange("memo_number", e.target.value)}
-            />
-          </div>
-
           <div className="space-y-1.5">
             <Label className="text-sm text-muted-foreground">
               Tanggal memo
@@ -101,6 +86,36 @@ const UpdateDisposalMemoModal = ({ disposal, onUpdate, onClose }: Props) => {
             <Input
               value={form.subject}
               onChange={(e) => handleChange("subject", e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-sm text-muted-foreground">From</Label>
+              <Input
+                placeholder="Nama pengirim..."
+                value={form.from}
+                onChange={(e) => handleChange("from", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm text-muted-foreground">To</Label>
+              <Input
+                placeholder="Nama penerima..."
+                value={form.to}
+                onChange={(e) => handleChange("to", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">
+              CC <span className="text-muted-foreground/60">(opsional)</span>
+            </Label>
+            <Input
+              placeholder="cth: HR, Finance..."
+              value={form.cc}
+              onChange={(e) => handleChange("cc", e.target.value)}
             />
           </div>
 

@@ -1,5 +1,5 @@
-import { Check, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Check, X, RotateCcw } from "lucide-react";
+import { StatusBadge } from "../../../../components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -10,23 +10,14 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import type { BorrowRequest } from "../services/borrowService";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   borrows: BorrowRequest[];
-  onApprove: (borrow_id: string) => void;
-  onReject: (borrow_id: string) => void;
+  onApprove?: (borrow_id: string) => void;
+  onReject?: (borrow_id: string) => void;
+  onReturn?: (borrow: BorrowRequest) => void;
 }
-
-const statusVariant = (status: string) => {
-  switch (status) {
-    case "Disetujui":    return "success";
-    case "Menunggu":     return "outline";
-    case "Ditolak":
-    case "Dibatalkan":   return "destructive";
-    case "Dikembalikan": return "secondary";
-    default:             return "outline";
-  }
-};
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "—";
@@ -37,11 +28,12 @@ const formatDate = (dateStr: string | null) => {
   });
 };
 
-const BorrowTable = ({ borrows, onApprove, onReject }: Props) => {
+const BorrowTable = ({ borrows, onApprove, onReject, onReturn }: Props) => {
+  const navigate = useNavigate();
   if (borrows.length === 0) {
     return (
       <div className="py-12 text-center text-sm text-muted-foreground">
-        Tidak ada pengajuan peminjaman
+        Tidak ada data peminjaman
       </div>
     );
   }
@@ -52,49 +44,67 @@ const BorrowTable = ({ borrows, onApprove, onReject }: Props) => {
         <TableRow>
           <TableHead>Nama karyawan</TableHead>
           <TableHead>Nama aset</TableHead>
-          <TableHead>Kategori</TableHead>
           <TableHead>Alasan</TableHead>
           <TableHead>Tgl rencana kembali</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Aksi</TableHead>
+          <TableHead className="text-right">Aksi</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {borrows.map((b) => (
-          <TableRow key={b.borrow_id}>
+          <TableRow
+            key={b.borrow_id}
+            className="cursor-pointer hover:bg-muted/50"
+            onClick={() => navigate(`/peminjaman/${b.borrow_id}`)}
+          >
             <TableCell className="font-medium">
               {b.user?.profile?.name ?? "—"}
             </TableCell>
             <TableCell>{b.asset.asset_name}</TableCell>
-            <TableCell>{b.asset.asset_category?.category_name || "—"}</TableCell>
-            <TableCell className="max-w-48 truncate">{b.borrow_reason}</TableCell>
+            <TableCell className="max-w-48 truncate">
+              {b.borrow_reason}
+            </TableCell>
             <TableCell>{formatDate(b.expected_return_date)}</TableCell>
             <TableCell>
-              <Badge variant={statusVariant(b.status)}>{b.status}</Badge>
+              <StatusBadge status={b.status} />
             </TableCell>
-            <TableCell>
-              {b.status === "Menunggu" ? (
-                <div className="flex gap-2">
+            <TableCell
+              className="text-right"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {b.status === "Menunggu" && (
+                <div className="flex gap-2 justify-end">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-green-600 border-green-200 hover:bg-green-50"
-                    onClick={() => onApprove(b.borrow_id)}
+                    className="h-8 text-green-600 border-green-200 hover:bg-green-50"
+                    onClick={() => onApprove?.(b.borrow_id)}
                   >
-                    <Check className="h-3.5 w-3.5 mr-1" />
-                    Setujui
+                    <Check className="h-3.5 w-3.5 mr-1" /> Setujui
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                    onClick={() => onReject(b.borrow_id)}
+                    className="h-8 text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={() => onReject?.(b.borrow_id)}
                   >
-                    <X className="h-3.5 w-3.5 mr-1" />
-                    Tolak
+                    <X className="h-3.5 w-3.5 mr-1" /> Tolak
                   </Button>
                 </div>
-              ) : (
+              )}
+              {b.status === "Disetujui" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                  onClick={() => onReturn?.(b)}
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> Kembalikan
+                </Button>
+              )}
+              {(b.status === "Dikembalikan" ||
+                b.status === "Ditolak" ||
+                b.status === "Dibatalkan") && (
                 <span className="text-xs text-muted-foreground">—</span>
               )}
             </TableCell>

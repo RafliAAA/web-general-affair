@@ -8,6 +8,7 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+import type { Maintenance } from "@/types/maintenance";
 
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString("id-ID", {
@@ -17,7 +18,7 @@ const formatDate = (dateStr: string) =>
   });
 
 interface Props {
-  queue: any[];
+  queue: Maintenance[];
   onVerify: (id: string) => void;
 }
 

@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
-import { getDisposalById, updateDisposal } from "../services/disposalService";
-import type { Disposal, DisposalItemPayload } from "../services/disposalService";
+import {
+  getDisposalById,
+  updateDisposalHeader,
+  addDisposalItems,
+  removeDisposalItem,
+} from "../services/disposalService";
+import type {
+  Disposal,
+  DisposalItemPayload,
+  UpdateDisposalHeaderPayload,
+} from "../services/disposalService";
 
 export const useDisposalDetail = (id: string | undefined) => {
   const [disposal, setDisposal] = useState<Disposal | null>(null);
@@ -15,52 +24,23 @@ export const useDisposalDetail = (id: string | undefined) => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleUpdate = (updated: Disposal) => {
+  const handleUpdate = async (payload: UpdateDisposalHeaderPayload) => {
+    if (!id) return;
+    const updated = await updateDisposalHeader(id, payload);
     setDisposal(updated);
   };
 
-  // Tambah item baru ke disposal yang sudah ada (gabung item lama + baru)
-const handleAddItems = async (newItems: DisposalItemPayload[]) => {
-  if (!disposal || !id) return;
+  const handleAddItems = async (newItems: DisposalItemPayload[]) => {
+    if (!id) return;
+    const updated = await addDisposalItems(id, newItems);
+    setDisposal(updated);
+  };
 
-  const existingItems: DisposalItemPayload[] =
-    disposal.items?.map((i) => ({
-      asset_id: i.asset_id,
-      method: i.method,
-      notes: i.notes,
-    })) ?? [];
-
-  const updated = await updateDisposal(id, {
-    memo_number: disposal.memo_number,
-    memo_date: new Date(disposal.memo_date).toISOString(),
-    subject: disposal.subject,
-    description: disposal.description,
-    items: [...existingItems, ...newItems],
-  });
-  setDisposal(updated);
-};
-
-const handleRemoveItem = async (asset_id: string) => {
-  if (!disposal || !id) return;
-
-  const remainingItems: DisposalItemPayload[] =
-    disposal.items
-      ?.filter((i) => i.asset_id !== asset_id)
-      .map((i) => ({
-        asset_id: i.asset_id,
-        method: i.method,
-        notes: i.notes,
-      })) ?? [];
-
-  const updated = await updateDisposal(id, {
-    memo_number: disposal.memo_number,
-    memo_date: new Date(disposal.memo_date).toISOString(),
-    subject: disposal.subject,
-    description: disposal.description,
-    items: remainingItems,
-  });
-  setDisposal(updated);
-};
+  const handleRemoveItem = async (asset_id: string) => {
+    if (!id) return;
+    const updated = await removeDisposalItem(id, asset_id);
+    setDisposal(updated);
+  };
 
   return {
     disposal,
@@ -70,4 +50,4 @@ const handleRemoveItem = async (asset_id: string) => {
     handleAddItems,
     handleRemoveItem,
   };
-};  
+};

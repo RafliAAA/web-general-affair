@@ -11,9 +11,8 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useITMaintenance } from "../hooks/useITMaintenance";
-import MaintenanceStatusBadge from "../../user/components/MaintenanceStatusBadge";
+import { StatusBadge } from "../../../../components/shared/StatusBadge";
 import CompleteMaintenanceModal from "../components/CompleteMaintenanceModal";
 import CannotRepairModal from "../components/CannotRepairModal";
 import type { CannotRepairPayload, Maintenance } from "@/types/maintenance";
@@ -86,29 +85,26 @@ const ITMaintenancePage = () => {
 
   if (loading) {
     return (
-      <DashboardLayout title="Maintenance IT">
-        <div className="space-y-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full" />
-          ))}
-        </div>
-      </DashboardLayout>
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full" />
+        ))}
+      </div>
     );
   }
 
   if (error) {
     return (
-      <DashboardLayout title="Maintenance IT">
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          {error}
-        </div>
-      </DashboardLayout>
+      <div className="py-12 text-center text-sm text-muted-foreground">
+        {error}
+      </div>
     );
   }
 
   return (
-    <DashboardLayout title="Maintenance IT">
+    <>
       <div className="space-y-8">
+        {/* ANTRIAN PEKERJAAN */}
         <Section
           title="Antrian Pekerjaan"
           count={queue.length}
@@ -123,7 +119,7 @@ const ITMaintenancePage = () => {
                 <TableHead>Pelapor</TableHead>
                 <TableHead>Tanggal lapor</TableHead>
                 <TableHead>Diverifikasi oleh</TableHead>
-                <TableHead />
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -133,21 +129,22 @@ const ITMaintenancePage = () => {
                     {m.asset.asset_name}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {m.reporter.profile?.name ?? "—"}
+                    {m.reporter?.profile?.name ?? "—"}
                   </TableCell>
                   <TableCell>{formatDate(m.createdAt)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {m.verifier?.profile?.name ?? "—"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
+                    {/* Tombol Ambil di-rapikan */}
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300"
+                      className="h-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700 border-blue-200 hover:border-blue-300"
                       onClick={() => handleTake(m.maintenance_id)}
                     >
-                      <PlayCircle className="h-3.5 w-3.5 mr-1" />
-                      Ambil
+                      <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
+                      Ambil Job
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -156,6 +153,7 @@ const ITMaintenancePage = () => {
           </Table>
         </Section>
 
+        {/* SEDANG DIKERJAKAN */}
         <Section
           title="Sedang Dikerjakan"
           count={inProgress.length}
@@ -170,7 +168,7 @@ const ITMaintenancePage = () => {
                 <TableHead>Pelapor</TableHead>
                 <TableHead>Tanggal lapor</TableHead>
                 <TableHead>Diverifikasi oleh</TableHead>
-                <TableHead />
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -180,31 +178,33 @@ const ITMaintenancePage = () => {
                     {m.asset.asset_name}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {m.reporter.profile?.name ?? "—"}
+                    {m.reporter?.profile?.name ?? "—"}
                   </TableCell>
                   <TableCell>{formatDate(m.createdAt)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {m.verifier?.profile?.name ?? "—"}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5 justify-end">
+                    <div className="flex items-center gap-2 justify-end">
+                      {/* Tombol Selesai di-rapikan */}
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-7 px-2 text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
+                        className="h-8 text-green-600 hover:bg-green-50 hover:text-green-700 border-green-200 hover:border-green-300"
                         onClick={() => setCompleteTarget(m)}
                       >
-                        <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                        <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                         Selesai
                       </Button>
+                      {/* Tombol Gagal di-rapikan */}
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="h-7 px-2 text-red-500 hover:text-red-600 border-red-200 hover:border-red-300"
+                        variant="ghost"
+                        className="h-8 text-red-500 hover:bg-red-50 hover:text-red-600"
                         onClick={() => setCannotRepairTarget(m)}
                       >
-                        <XCircle className="h-3.5 w-3.5 mr-1" />
-                        Tidak Dapat Diperbaiki
+                        <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                        Gagal Perbaiki
                       </Button>
                     </div>
                   </TableCell>
@@ -214,6 +214,7 @@ const ITMaintenancePage = () => {
           </Table>
         </Section>
 
+        {/* RIWAYAT */}
         <Section
           title="Riwayat"
           data={history}
@@ -233,23 +234,21 @@ const ITMaintenancePage = () => {
               {history.map((m) => (
                 <TableRow
                   key={m.maintenance_id}
-                  className="cursor-pointer"
-                  onClick={() =>
-                    navigate(`/perbaikan/${m.maintenance_id}`)
-                  }
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigate(`/perbaikan/${m.maintenance_id}`)}
                 >
                   <TableCell className="font-medium">
                     {m.asset.asset_name}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {m.reporter.profile?.name ?? "—"}
+                    {m.reporter?.profile?.name ?? "—"}
                   </TableCell>
                   <TableCell>{formatDate(m.createdAt)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {m.verifier?.profile?.name ?? "—"}
                   </TableCell>
                   <TableCell>
-                    <MaintenanceStatusBadge status={m.status} />
+                    <StatusBadge status={m.status} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -277,7 +276,7 @@ const ITMaintenancePage = () => {
           setCannotRepairTarget(null);
         }}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

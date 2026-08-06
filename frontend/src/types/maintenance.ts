@@ -74,7 +74,6 @@ export interface ActualizationForm {
 }
 
 export interface CannotRepairPayload {
-  form_number: string;
   description: string;
   issue: string;
   handling: string;

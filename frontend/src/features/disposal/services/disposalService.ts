@@ -20,18 +20,34 @@ export interface DisposalItem {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    asset_category?: {
+      category_name: string;
+    } | null;
   };
 }
+
 
 export interface Disposal {
   disposal_id: string;
   memo_number: string;
   memo_date: string;
   subject: string;
+  from: string;
+  to: string;
+  cc: string;
   description: string;
   createdAt: string;
   updatedAt: string;
   items?: DisposalItem[];
+}
+
+export interface UpdateDisposalHeaderPayload {
+  memo_date: string;
+  subject: string;
+  from: string;
+  to: string;
+  cc: string;
+  description?: string;
 }
 
 export interface DisposalItemPayload {
@@ -41,9 +57,11 @@ export interface DisposalItemPayload {
 }
 
 export interface CreateDisposalPayload {
-  memo_number: string;
   memo_date: string;
   subject: string;
+  from: string;
+  to: string;
+  cc: string
   description: string;
   items: DisposalItemPayload[];
 }
@@ -75,4 +93,28 @@ export const updateDisposal = async (
 
 export const deleteDisposal = async (id: string): Promise<void> => {
   await api.delete(`/disposal/${id}`);
+};
+
+export const updateDisposalHeader = async (
+  id: string,
+  payload: UpdateDisposalHeaderPayload,
+): Promise<Disposal> => {
+  const res = await api.patch(`/disposal/${id}/header`, payload);
+  return res.data.data;
+};
+
+export const addDisposalItems = async (
+  id: string,
+  items: DisposalItemPayload[],
+): Promise<Disposal> => {
+  const res = await api.post(`/disposal/${id}/items`, { items });
+  return res.data.data;
+};
+
+export const removeDisposalItem = async (
+  id: string,
+  asset_id: string,
+): Promise<Disposal> => {
+  const res = await api.delete(`/disposal/${id}/items/${asset_id}`);
+  return res.data.data;
 };

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
@@ -16,17 +17,24 @@ const StatCard = ({
   colorClass = "bg-primary/10 text-primary",
 }: StatCardProps) => {
   return (
-    <div className="rounded-lg border bg-card p-5 w-full gap-2 space-y-3">
-      <div className="flex  items-center justify-between">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <div className={`p-2 rounded-md ${colorClass}`}>
-          <Icon className="w-4 h-4" />
+    <div className="rounded-xl border bg-card p-5 transition-shadow hover:shadow-sm">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <div
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-full",
+            colorClass,
+          )}
+        >
+          <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="text-2xl font-semibold">{value}</p>
-      {description && (
-        <p className="text-xs text-muted-foreground">{description}</p>
-      )}
+      <div className="mt-2">
+        <p className="text-2xl font-semibold tracking-tight">{value}</p>
+        {description && (
+          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        )}
+      </div>
     </div>
   );
 };

@@ -22,3 +22,16 @@ export const getAllMaintenance = async (): Promise<Maintenance[]> => {
   const res = await api.get("/maintenance");
   return res.data.data;
 };
+
+export const completeMaintenanceExternal = async (
+  maintenance_id: string,
+  resolution_notes: string,
+): Promise<Maintenance> => {
+  const res = await api.patch(
+    `/maintenance/${maintenance_id}/complete-external`,
+    {
+      resolution_notes,
+    },
+  );
+  return res.data.data;
+};

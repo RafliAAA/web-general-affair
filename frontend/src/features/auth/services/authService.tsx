@@ -17,5 +17,5 @@ export const logoutApi = async (): Promise<void> => {
 
 export const checkAuthApi = async (): Promise<User> => {
   const res = await api.get("/auth/me");
-  return res.data.data.profile;
+  return res.data.data;
 };

@@ -11,10 +11,9 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useMyMaintenance } from "../hooks/useMyMaintenance";
 import CreateMaintenanceModal from "../components/CreateMaintenanceModal";
-import MaintenanceStatusBadge from "../components/MaintenanceStatusBadge";
+import { StatusBadge } from "../../../../components/shared/StatusBadge";
 
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString("id-ID", {
@@ -29,7 +28,7 @@ const MyMaintenancePage = () => {
   const [createOpen, setCreateOpen] = useState(false);
 
   return (
-    <DashboardLayout title="Laporan Maintenance Saya">
+    <>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -71,8 +70,10 @@ const MyMaintenancePage = () => {
                 {maintenances.map((m) => (
                   <TableRow
                     key={m.maintenance_id}
-                    className="cursor-pointer"
-                    onClick={() => navigate(`/lapor-kerusakan/${m.maintenance_id}`)}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() =>
+                      navigate(`/lapor-kerusakan/${m.maintenance_id}`)
+                    }
                   >
                     <TableCell className="font-medium">
                       {m.asset.asset_name}
@@ -85,7 +86,7 @@ const MyMaintenancePage = () => {
                       {m.handler?.profile?.name ?? "—"}
                     </TableCell>
                     <TableCell>
-                      <MaintenanceStatusBadge status={m.status} />
+                      <StatusBadge status={m.status} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -100,7 +101,7 @@ const MyMaintenancePage = () => {
         onClose={() => setCreateOpen(false)}
         onSubmit={handleCreate}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

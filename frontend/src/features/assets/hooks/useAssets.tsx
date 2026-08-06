@@ -15,7 +15,7 @@ export interface AssetMeta {
   totalPages: number;
 }
 
-export const useAssets = (limitPerPage = 5) => {
+export const useAssets = (limitPerPage = 10) => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [meta, setMeta] = useState<AssetMeta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +24,7 @@ export const useAssets = (limitPerPage = 5) => {
   const [debouncedSearch, setDebouncedSearch] = useState(""); // ← tambah
   const [statusFilter, setStatusFilter] = useState(""); // ← tambah
   const limit = limitPerPage;
+  
 
   useEffect(() => {
     const timer = setTimeout(() => {

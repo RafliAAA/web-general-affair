@@ -25,10 +25,10 @@ interface Props {
   loading: boolean;
 }
 
-const KONDISI_OPTIONS = ["Baik", "Cukup", "Rusak"] as const;
+const KONDISI_OPTIONS = ["Baik", "Rusak"] as const;
 
 const ReturnModal = ({ borrow, onConfirm, onClose, loading }: Props) => {
-  const [condition, setCondition] = useState<"Baik" | "Cukup" | "Rusak" | "">("");
+  const [condition, setCondition] = useState<"Baik" | "Rusak" | "">("");
   const [notes, setNotes] = useState("");
 
   const handleSubmit = () => {
@@ -54,7 +54,8 @@ const ReturnModal = ({ borrow, onConfirm, onClose, loading }: Props) => {
           <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
             <p className="text-sm font-medium">{borrow.asset.asset_name}</p>
             <p className="text-xs text-muted-foreground">
-              {borrow.asset.serial_number} · {borrow.asset.asset_type}
+              {borrow.asset.serial_number} ·{" "}
+              {borrow.asset.asset_category?.category_name ?? "—"}{" "}
             </p>
             <p className="text-xs text-muted-foreground">
               Dipinjam oleh{" "}
@@ -102,7 +103,12 @@ const ReturnModal = ({ borrow, onConfirm, onClose, loading }: Props) => {
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={loading}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            disabled={loading}
+          >
             Batal
           </Button>
           <Button

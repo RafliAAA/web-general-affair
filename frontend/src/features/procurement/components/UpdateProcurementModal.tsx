@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Plus, Trash2, ChevronsUpDown, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useUserSearch } from "../../user/hooks/useUserSearch";
 import type {
   Procurement,
   CreateProcurementPayload,
@@ -18,10 +40,9 @@ import type {
 
 interface Props {
   procurement: Procurement;
-  // Menggunakan Omit untuk memastikan payload yang dikirim bersih dari print_date jika typenya belum di-update
   onUpdate: (
     id: string,
-    payload: Partial<Omit<CreateProcurementPayload, "print_date">>,
+    payload: Partial<CreateProcurementPayload>,
   ) => Promise<unknown>;
   onClose: () => void;
 }
@@ -29,37 +50,58 @@ interface Props {
 const toDateInput = (dateStr: string) =>
   new Date(dateStr).toISOString().split("T")[0];
 
-const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
-  const [form, setForm] = useState<Omit<CreateProcurementPayload, "print_date">>({
-    pr_number: procurement.pr_number,
-    pr_date: toDateInput(procurement.pr_date),
-    // print_date DIHAPUS dari inisialisasi state edit
-    due_date: toDateInput(procurement.due_date),
-    end_user: procurement.end_user,
-    remarks: procurement.remarks,
-    items: procurement.items?.map((i) => ({
-      part_number: i.part_number,
-      description: i.description,
-      quantity: i.quantity,
-      unit_of_measure: i.unit_of_measure,
-    })) ?? [
-      { part_number: "", description: "", quantity: 1, unit_of_measure: "" },
-    ],
-  });
-  const [loading, setLoading] = useState(false);
+const unitOptions = ["PCS", "UNIT", "SET", "BOX", "PACK"];
 
-  // DIUBAH: Pengecekan form.print_date dihapus dari penentuan validitas form
+const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
+  const [form, setForm] = useState<Omit<CreateProcurementPayload, "pr_number">>(
+    {
+      pr_date: toDateInput(procurement.pr_date),
+      due_date: toDateInput(procurement.due_date),
+      end_user: procurement.end_user,
+      remarks: procurement.remarks,
+      items: procurement.items?.map((i) => ({
+        part_number: i.part_number,
+        description: i.description,
+        quantity: i.quantity,
+        unit_of_measure: i.unit_of_measure,
+        quantity_approved: i.quantity_approved,
+        asset_category_id: i.asset_category_id || "",
+        procurement_item_id: i.procurement_item_id,
+      })) ?? [
+        {
+          part_number: "",
+          description: "",
+          quantity: 1,
+          unit_of_measure: "",
+          quantity_approved: 0,
+          asset_category_id: "",
+        },
+      ],
+    },
+  );
+
+  const [loading, setLoading] = useState(false);
+  const [endUserPopoverOpen, setEndUserPopoverOpen] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const { users, isSearching, searchUsers } = useUserSearch();
+
+  useEffect(() => {
+    if (keyword.trim().length < 2) return;
+    searchUsers(keyword);
+  }, [keyword, searchUsers]);
+
   const isValid =
     form.pr_date &&
     form.due_date &&
     form.end_user &&
     form.items.length > 0 &&
     form.items.every(
-      (i) => i.part_number && i.description && i.unit_of_measure && i.quantity > 0,
+      (i) =>
+        i.part_number && i.description && i.unit_of_measure && i.quantity > 0,
     );
 
   const handleChange = (
-    field: keyof Omit<CreateProcurementPayload, "print_date">,
+    field: keyof Omit<CreateProcurementPayload, "pr_number">,
     value: string,
   ) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -72,7 +114,7 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
   ) => {
     setForm((prev) => {
       const items = [...prev.items];
-      items[index] = { ...items[index], [field]: value } as typeof items[0];
+      items[index] = { ...items[index], [field]: value } as (typeof items)[0];
       return { ...prev, items };
     });
   };
@@ -82,7 +124,14 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
       ...prev,
       items: [
         ...prev.items,
-        { part_number: "", description: "", quantity: 1, unit_of_measure: "" },
+        {
+          part_number: "",
+          description: "",
+          quantity: 1,
+          unit_of_measure: "",
+          quantity_approved: 0,
+          asset_category_id: "",
+        },
       ],
     }));
   };
@@ -115,23 +164,84 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* PR Info */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">Nomor PR</Label>
-              <Input value={form.pr_number} disabled className="bg-muted/50" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">End user</Label>
-              <Input
-                placeholder="Nama - Departemen"
-                value={form.end_user}
-                onChange={(e) => handleChange("end_user", e.target.value)}
-              />
-            </div>
+          {/* End User — Combobox (Sama seperti Create) */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">End user</Label>
+            <Popover
+              open={endUserPopoverOpen}
+              onOpenChange={setEndUserPopoverOpen}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn(
+                    "w-full justify-between font-normal",
+                    !form.end_user && "text-muted-foreground",
+                  )}
+                >
+                  <span className="truncate">
+                    {form.end_user || "Pilih karyawan..."}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" align="start">
+                <Command>
+                  <CommandInput
+                    placeholder="Cari nama karyawan..."
+                    value={keyword}
+                    onValueChange={setKeyword}
+                  />{" "}
+                  <CommandList>
+                    {isSearching ? (
+                      <div className="py-6 text-center text-sm text-muted-foreground">
+                        Mencari...
+                      </div>
+                    ) : (
+                      <>
+                        <CommandEmpty></CommandEmpty>
+                        <CommandGroup>
+                          {users.map((user) => {
+                            const label = user.profile?.name
+                              ? `${user.profile.name}`
+                              : user.email;
+                            const isSelected = form.end_user === label;
+                            return (
+                              <CommandItem
+                                key={user.user_id}
+                                value={`${user.profile?.name ?? ""} ${user.email}`}
+                                onSelect={() => {
+                                  handleChange("end_user", label);
+                                  setEndUserPopoverOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    isSelected ? "opacity-100" : "opacity-0",
+                                  )}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">
+                                    {user.profile?.name ?? "—"}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {user.email}
+                                  </p>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
-          {/* DIUBAH: Grid diubah dari grid-cols-3 menjadi grid-cols-2 karena input Tanggal Cetak dihapus */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-sm text-muted-foreground">
@@ -223,17 +333,28 @@ const UpdateProcurementModal = ({ procurement, onUpdate, onClose }: Props) => {
                     <Label className="text-xs text-muted-foreground">
                       Satuan
                     </Label>
-                    <Input
-                      placeholder="UNIT / PCS / SET"
+                    <Select
                       value={item.unit_of_measure}
-                      onChange={(e) =>
-                        handleItemChange(
-                          index,
-                          "unit_of_measure",
-                          e.target.value,
-                        )
+                      onValueChange={(value) =>
+                        handleItemChange(index, "unit_of_measure", value)
                       }
-                    />
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Pilih satuan" />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        side="bottom"
+                        align="start"
+                        className="max-h-32 overflow-y-auto"
+                      >
+                        {unitOptions.map((unit) => (
+                          <SelectItem key={unit} value={unit}>
+                            {unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">

@@ -9,16 +9,35 @@ export interface BorrowRequest {
   status: "Menunggu" | "Disetujui" | "Ditolak" | "Dibatalkan" | "Dikembalikan";
   approved_by: string | null;
   createdAt: string;
+
   asset: {
     asset_name: string;
+    asset_code: string; // <--- TAMBAHAN (Untuk modal/tabel)
     serial_number: string;
-    asset_type: string;
+    // Bisa null kalau aset belum punya kategori
+    asset_category?: { category_name: string } | null;
   };
+
   user: {
     profile: {
-      name: string;
+      name: string | null;
     } | null;
-  };
+  } | null;
+
+  // TAMBAHAN: Untuk mengetahui siapa Admin yang approve/reject
+  approver?: {
+    profile: {
+      name: string | null;
+    } | null;
+  } | null;
+
+  // TAMBAHAN: Untuk menampilkan info pengembalian di halaman detail
+  returns?: {
+    return_id: string;
+    return_condition: string;
+    return_date: string;
+    notes: string | null;
+  }[];
 }
 
 export const getBorrowRequests = async (): Promise<BorrowRequest[]> => {
@@ -26,12 +45,17 @@ export const getBorrowRequests = async (): Promise<BorrowRequest[]> => {
   return res.data.data;
 };
 
+export const getBorrowById = async (id: string) => {
+  const res = await api.get(`/borrow/${id}`);
+  return res.data.data;
+};
+
 export const approveBorrowRequest = async (borrow_id: string) => {
-  const res = await api.patch(`/borrow/approve/${borrow_id}`);
+  const res = await api.patch(`/borrow/${borrow_id}/approve/`);
   return res.data.data;
 };
 
 export const rejectBorrowRequest = async (borrow_id: string) => {
-  const res = await api.patch(`/borrow/reject/${borrow_id}`);
+  const res = await api.patch(`/borrow/${borrow_id}/reject`);
   return res.data.data;
 };

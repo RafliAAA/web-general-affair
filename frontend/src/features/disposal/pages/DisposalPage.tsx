@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useDisposal } from "../hooks/useDisposal";
 import DisposalTable from "../components/DisposalTable";
 import DisposalTableSkeleton from "../components/DisposalTableSkeleton";
@@ -21,11 +20,11 @@ const DisposalPage = () => {
   );
 
   const handleCreated = (disposal: Disposal) => {
-    navigate(`/disposal/${disposal.disposal_id}`);
+    navigate(`/penghapusan/${disposal.disposal_id}`);
   };
 
   return (
-    <DashboardLayout title="Disposal Aset">
+    <>
       <div className="space-y-6">
 
         {/* Header */}
@@ -56,7 +55,7 @@ const DisposalPage = () => {
         </div>
 
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

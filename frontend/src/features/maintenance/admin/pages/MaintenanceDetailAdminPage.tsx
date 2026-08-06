@@ -1,12 +1,21 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Wrench, User, Download } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Wrench,
+  User,
+  Download,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useMaintenanceDetailIT } from "../../IT/hooks/useMaintenanceDetail";
-import MaintenanceStatusBadge from "../../user/components/MaintenanceStatusBadge";
+// GANTI IMPORT KE STATUS BADGE GLOBAL
+import { StatusBadge } from "../../../../components/shared/StatusBadge";
 import ActualizationPDF from "../../IT/components/ActualizationPDF";
+import CompleteExternalModal from "../components/CompleteExternalModal";
+import { useState } from "react";
 
 const formatDate = (dateStr: string | null) =>
   dateStr
@@ -53,11 +62,12 @@ const SectionCard = ({
 const MaintenanceDetailAdminPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [isExternalModalOpen, setIsExternalModalOpen] = useState(false);
   const { maintenance, actualization, loading, error } =
     useMaintenanceDetailIT(id);
 
   return (
-    <DashboardLayout title="Detail Laporan Maintenance">
+    <>
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-4 w-20" />
@@ -109,7 +119,11 @@ const MaintenanceDetailAdminPage = () => {
                     fileName={`form-aktualisasi-${actualization.form_number}.pdf`}
                   >
                     {({ loading: pdfLoading }) => (
-                      <Button size="sm" variant="secondary" disabled={pdfLoading}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={pdfLoading}
+                      >
                         <Download className="h-3.5 w-3.5 mr-1.5" />
                         {pdfLoading
                           ? "Menyiapkan..."
@@ -118,7 +132,19 @@ const MaintenanceDetailAdminPage = () => {
                     )}
                   </PDFDownloadLink>
                 )}
-              <MaintenanceStatusBadge status={maintenance.status} />
+
+              {maintenance.status === "TidakDapatDiperbaiki" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800"
+                  onClick={() => setIsExternalModalOpen(true)}
+                >
+                  <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                  Selesai Diperbaiki
+                </Button>
+              )}
+              <StatusBadge status={maintenance.status} />
             </div>
           </div>
 
@@ -132,7 +158,7 @@ const MaintenanceDetailAdminPage = () => {
               <InfoRow
                 icon={User}
                 label="Dilaporkan oleh"
-                value={maintenance.reporter.profile?.name ?? "—"}
+                value={maintenance.reporter?.profile?.name ?? "—"}
               />
               <InfoRow
                 icon={User}
@@ -218,7 +244,13 @@ const MaintenanceDetailAdminPage = () => {
           )}
         </div>
       )}
-    </DashboardLayout>
+      <CompleteExternalModal
+        open={isExternalModalOpen}
+        onClose={() => setIsExternalModalOpen(false)}
+        maintenanceId={id!}
+        onSuccess={() => navigate("/pemeliharaan")}
+      />
+    </>
   );
 };
 

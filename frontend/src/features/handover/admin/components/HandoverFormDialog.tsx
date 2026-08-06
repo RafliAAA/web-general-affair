@@ -30,6 +30,13 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -37,6 +44,8 @@ import { cn } from "@/lib/utils";
 import { useAssets } from "../hooks/useAssets";
 import { useEffect, useState } from "react";
 import { useUserSearch } from "../../../user/hooks/useUserSearch";
+import { useEntity } from "../../../entity/hooks/useEntity";
+import { useDirectorate } from "../../../directorate/hooks/useDirectorate";
 import type { CreateHandoverPayload } from "@/types/handover";
 
 const itemSchema = z.object({
@@ -47,8 +56,9 @@ const itemSchema = z.object({
 const handoverSchema = z.object({
   user_id: z.string().min(1, "Penerima wajib dipilih"),
   handover_date: z.string().min(1, "Tanggal wajib diisi"),
-  entity: z.string().min(1, "Entity wajib diisi"),
-  directorate: z.string().min(1, "Direktorat wajib diisi"),
+  entity_id: z.string().min(1, "Entity wajib dipilih"),
+  directorate_id: z.string().min(1, "Direktorat wajib diisi"),
+  recipient_type: z.enum(["Personal", "Divisi"]),
   items: z.array(itemSchema).min(1, "Minimal 1 item aset"),
 });
 
@@ -69,15 +79,20 @@ const HandoverFormDialog = ({
 }: HandoverFormDialogProps) => {
   const { assets, isLoading: isLoadingAssets } = useAssets();
   const { users, isSearching: isLoadingUsers, searchUsers } = useUserSearch();
+  const { entities } = useEntity();
+  const { directorates, fetchDirectorates } = useDirectorate();
+
   const [userKeyword, setUserKeyword] = useState("");
   const [userPopoverOpen, setUserPopoverOpen] = useState(false);
+
   const form = useForm<HandoverFormValues>({
     resolver: zodResolver(handoverSchema),
     defaultValues: {
       user_id: "",
       handover_date: new Date().toISOString().split("T")[0],
-      entity: "",
-      directorate: "",
+      entity_id: "",
+      directorate_id: "",
+      recipient_type: "Personal", // DEFAULT
       items: [{ asset_id: "", notes: "" }],
     },
   });
@@ -95,9 +110,18 @@ const HandoverFormDialog = ({
 
   const watchedItems = form.watch("items");
   const watchedUserId = form.watch("user_id");
+  const watchedEntityId = form.watch("entity_id");
+  const watchedRecipientType = form.watch("recipient_type"); // WATCH RECIPIENT TYPE
 
   const selectedAssetIds = watchedItems.map((i) => i.asset_id).filter(Boolean);
   const selectedUser = users.find((u) => u.user_id === watchedUserId);
+
+  useEffect(() => {
+    if (watchedEntityId) {
+      fetchDirectorates(watchedEntityId);
+      form.setValue("directorate_id", "");
+    }
+  }, [watchedEntityId, fetchDirectorates, form]);
 
   const handleSubmit = (values: HandoverFormValues) => {
     onSubmit(values);
@@ -123,13 +147,43 @@ const HandoverFormDialog = ({
           >
             {/* Info Utama */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Penerima — Combobox */}
+              {/* DROPDOWN JENIS PENERIMA */}
+              <FormField
+                control={form.control}
+                name="recipient_type"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
+                    <FormLabel>Jenis Penerima</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih Jenis Penerima" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Personal">
+                          Personal (Individu)
+                        </SelectItem>
+                        <SelectItem value="Divisi">
+                          Divisi / Departemen
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="user_id"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
-                    <FormLabel>Penerima</FormLabel>
+                    <FormLabel>
+                      {watchedRecipientType === "Divisi"
+                        ? "PIC Divisi (Penanggung Jawab)"
+                        : "Penerima"}
+                    </FormLabel>
                     <Popover
                       open={userPopoverOpen}
                       onOpenChange={setUserPopoverOpen}
@@ -167,41 +221,38 @@ const HandoverFormDialog = ({
                                 Mencari...
                               </div>
                             ) : (
-                              <>
-
-                                <CommandGroup>
-                                  {users.map((user) => {
-                                    const isSelected =
-                                      field.value === user.user_id;
-                                    return (
-                                      <CommandItem
-                                        key={user.user_id}
-                                        value={`${user.profile?.name ?? ""} ${user.email}`}
-                                        onSelect={() =>
-                                          field.onChange(user.user_id)
-                                        }
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            isSelected
-                                              ? "opacity-100"
-                                              : "opacity-0",
-                                          )}
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-medium truncate">
-                                            {user.profile?.name ?? "—"}
-                                          </p>
-                                          <p className="text-xs text-muted-foreground">
-                                            {user.email} · {user.role}
-                                          </p>
-                                        </div>
-                                      </CommandItem>
-                                    );
-                                  })}
-                                </CommandGroup>
-                              </>
+                              <CommandGroup>
+                                {users.map((user) => {
+                                  const isSelected =
+                                    field.value === user.user_id;
+                                  return (
+                                    <CommandItem
+                                      key={user.user_id}
+                                      value={`${user.profile?.name ?? ""} ${user.email}`}
+                                      onSelect={() =>
+                                        field.onChange(user.user_id)
+                                      }
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          isSelected
+                                            ? "opacity-100"
+                                            : "opacity-0",
+                                        )}
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate">
+                                          {user.profile?.name ?? "—"}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {user.email} · {user.role}
+                                        </p>
+                                      </div>
+                                    </CommandItem>
+                                  );
+                                })}
+                              </CommandGroup>
                             )}
                           </CommandList>
                         </Command>
@@ -225,28 +276,63 @@ const HandoverFormDialog = ({
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
-                name="entity"
+                name="entity_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Entity</FormLabel>
-                    <FormControl>
-                      <Input placeholder="cth: PT KKC" {...field} />
-                    </FormControl>
+                    <FormLabel>Entity (Perusahaan)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih Entity" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {entities.map((ent) => (
+                          <SelectItem key={ent.entity_id} value={ent.entity_id}>
+                            {ent.entity_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
-                name="directorate"
+                name="directorate_id"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
-                    <FormLabel>Direktorat</FormLabel>
-                    <FormControl>
-                      <Input placeholder="cth: PPIC" {...field} />
-                    </FormControl>
+                    <FormLabel>
+                      {watchedRecipientType === "Divisi"
+                        ? "Divisi Penerima"
+                        : "Direktorat"}
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!watchedEntityId}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih Direktorat" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {directorates.map((dir) => (
+                          <SelectItem
+                            key={dir.directorate_id}
+                            value={dir.directorate_id}
+                          >
+                            {dir.directorate_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -265,8 +351,7 @@ const HandoverFormDialog = ({
                   size="sm"
                   onClick={() => append({ asset_id: "", notes: "" })}
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Tambah aset
+                  <Plus className="w-4 h-4 mr-1" /> Tambah aset
                 </Button>
               </div>
 
@@ -297,7 +382,6 @@ const HandoverFormDialog = ({
                       </Button>
                     </div>
 
-                    {/* Combobox pilih aset */}
                     <FormField
                       control={form.control}
                       name={`items.${index}.asset_id`}
@@ -346,9 +430,8 @@ const HandoverFormDialog = ({
                                           key={asset.asset_id}
                                           value={`${asset.asset_code} ${asset.asset_name}`}
                                           onSelect={() => {
-                                            if (!isUsedElsewhere) {
+                                            if (!isUsedElsewhere)
                                               field.onChange(asset.asset_id);
-                                            }
                                           }}
                                           disabled={isUsedElsewhere}
                                           className={cn(
@@ -392,7 +475,6 @@ const HandoverFormDialog = ({
                       )}
                     />
 
-                    {/* Preview info aset terpilih */}
                     {selectedAsset && (
                       <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-background border text-xs text-muted-foreground">
                         <span>
@@ -418,7 +500,6 @@ const HandoverFormDialog = ({
                       </div>
                     )}
 
-                    {/* Keterangan */}
                     <FormField
                       control={form.control}
                       name={`items.${index}.notes`}

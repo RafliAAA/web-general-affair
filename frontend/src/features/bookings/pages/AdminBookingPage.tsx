@@ -12,7 +12,6 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import ReviewBookingModal from "../components/ReviewBookingModal";
 import { useAdminBookings, useReviewBooking } from "../hooks/useBooking";
 import type { Booking, ReviewBookingPayload } from "../services/bookingService";
@@ -75,7 +74,7 @@ const AdminBookingPage = () => {
   };
 
   return (
-    <DashboardLayout title="Manajemen Booking Ruangan">
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -178,7 +177,7 @@ const AdminBookingPage = () => {
         onSubmit={handleReview}
         isSubmitting={isSubmitting}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

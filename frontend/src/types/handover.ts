@@ -1,3 +1,14 @@
+export interface Entity {
+  entity_id: string;
+  entity_name: string;
+}
+
+export interface Directorate {
+  directorate_id: string;
+  directorate_name: string;
+  entity_id: string;
+}
+
 export interface HandoverAsset {
   asset_id: string;
   asset_code: string;
@@ -20,8 +31,11 @@ export interface HandoverItem {
   handover_item_id: string;
   handover_id: string;
   asset_id: string;
+  returned_at: string | null;
+  return_notes: string
   notes: string;
   asset: HandoverAsset;
+  handover: Handover;
 }
 
 export interface HandoverProfile {
@@ -35,8 +49,10 @@ export interface Handover {
   user_id: string;
   created_by: string;
   handover_date: string;
-  entity: string;
-  directorate: string;
+  entity: Entity;       
+  directorate: Directorate; 
+  // TAMBAHKAN INI
+  recipient_type: "Personal" | "Divisi";
   status: "Aktif" | "Dikembalikan";
   returned_at: string | null;
   return_notes: string | null;
@@ -57,8 +73,10 @@ export interface CreateHandoverItemPayload {
 export interface CreateHandoverPayload {
   user_id: string;
   handover_date: string;
-  entity: string;
-  directorate: string;
+  entity_id: string;       
+  directorate_id: string;  
+  // TAMBAHKAN INI
+  recipient_type: "Personal" | "Divisi";
   items: CreateHandoverItemPayload[];
 }
 

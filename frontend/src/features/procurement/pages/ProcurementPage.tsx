@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useProcurement } from "../hooks/useProcurement";
 import ProcurementTable from "../components/ProcurementTable";
 import ProcurementTableSkeleton from "../components/ProcurementTableSkeleton";
@@ -30,7 +29,7 @@ const ProcurementPage = () => {
   );
 
   return (
-    <DashboardLayout title="Purchase Request">
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -72,7 +71,7 @@ const ProcurementPage = () => {
           onClose={() => setSelectedProcurement(null)}
         />
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

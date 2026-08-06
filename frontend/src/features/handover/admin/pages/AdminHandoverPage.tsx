@@ -2,8 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { Plus, Search, Eye, RotateCcw, Trash2 } from "lucide-react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import {
+  Plus,
+  Search,
+  Eye,
+  RotateCcw,
+  Trash2,
+  MoreHorizontal,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +19,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -65,13 +70,13 @@ const AdminHandoverPage = () => {
     fetchHandovers();
   }, [fetchHandovers]);
 
-  const filtered = handovers.filter((h) => {
+    const filtered = handovers.filter((h) => {
     const q = search.toLowerCase();
     return (
-      h.entity.toLowerCase().includes(q) ||
-      h.directorate.toLowerCase().includes(q) ||
-      h.receiver.profile.name.toLowerCase().includes(q) ||
-      h.status.toLowerCase().includes(q)
+      h.entity?.entity_name?.toLowerCase().includes(q) || 
+      h.directorate?.directorate_name?.toLowerCase().includes(q) || 
+      h.receiver?.profile?.name?.toLowerCase().includes(q) || 
+      h.status?.toLowerCase().includes(q)
     );
   });
 
@@ -94,20 +99,19 @@ const AdminHandoverPage = () => {
     setDeleteId(null);
   };
 
+  // UBAH INI: Hapus DashboardLayout, langsung return Skeleton
   if (isLoading) {
     return (
-      <DashboardLayout title="Manajemen Handover">
-        <div className="space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      </DashboardLayout>
+      <div className="space-y-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
     );
   }
 
   return (
-    <DashboardLayout title="Manajemen Handover">
+    <>
       <div className="space-y-6">
         {/* Toolbar */}
         <div className="flex items-center gap-3">
@@ -137,14 +141,14 @@ const AdminHandoverPage = () => {
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Jumlah aset</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead >Aksi</TableHead>
+                <TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center text-muted-foreground py-12"
                   >
                     {search
@@ -158,14 +162,14 @@ const AdminHandoverPage = () => {
                     <TableCell className="font-medium">
                       {h.receiver.profile.name}
                     </TableCell>
-                    <TableCell>
-                      <p className="text-sm">{h.entity}</p>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-xs text-muted-foreground">
-                        {h.directorate}
-                      </p>
-                    </TableCell>
+                     <TableCell>
+                  <p className="text-sm">{h.entity?.entity_name ?? "—"}</p> 
+                </TableCell>
+                <TableCell>
+                  <p className="text-xs text-muted-foreground">
+                    {h.directorate?.directorate_name ?? "—"} 
+                  </p>
+                </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {fmt(h.handover_date)}
                     </TableCell>
@@ -268,7 +272,7 @@ const AdminHandoverPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </DashboardLayout>
+    </>
   );
 };
 

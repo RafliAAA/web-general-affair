@@ -1,50 +1,59 @@
 export type ProcurementStatus = "Menunggu" | "Disetujui" | "Ditolak";
 
+export interface ProcurementAsset {
+  asset_id: string;
+  asset_code: string;
+  asset_name: string;
+  status: string;
+  condition: string;
+}
+
 export interface ProcurementItem {
   procurement_item_id: string;
   procurement_id: string;
   part_number: string;
   description: string;
   quantity: number;
-  quantity_approved: number; // Tambahan: defaultnya 0 saat baru dibuat
+  quantity_approved: number;
   unit_of_measure: string;
+  asset_category_id?: string;
+  asset_category?: { category_name: string } | null;
+  assets?: ProcurementAsset[]
 }
 
 export interface Procurement {
   procurement_id: string;
   pr_number: string;
-  pr_date: string; // ISO String dari Date
-  due_date: string; // ISO String dari Date
-  end_user: string;
-  remarks: string | null;
-  status: ProcurementStatus; // Tambahan: untuk tracking status approval
-  createdAt: string;
-  updatedAt: string;
-  items?: ProcurementItem[];
-}
-
-// Payload saat pertama kali membuat pengadaan (Create)
-export interface CreateProcurementPayload {
-  pr_number: string;
   pr_date: string;
   due_date: string;
   end_user: string;
   remarks: string | null;
+  status: ProcurementStatus;
+  createdAt: string;
+  updatedAt: string;
+  items: ProcurementItem[];
+}
+
+export interface CreateProcurementPayload {
+  pr_date: string;
+  due_date: string;
+  end_user: string;
+  remarks: string | null;
+  actualization_id?: string;
   items: {
     part_number: string;
     description: string;
     quantity: number;
     unit_of_measure: string;
-    // quantity_approved tidak perlu dikirim di sini karena otomatis 0 di backend
   }[];
 }
 
 // Tambahan: Payload saat melakukan Approval (Update oleh Admin/Keuangan)
 export interface UpdateProcurementPayload {
-  status: "Disetujui" | "Ditolak";
-  remarks?: string | null;
-  items: {
-    procurement_item_id: string; // Butuh ID item untuk tahu item mana yang di-approve
-    quantity_approved: number;   // Jumlah fisik yang disetujui untuk jadi aset
-  }[];
+  pr_date: string;
+  due_date: string;
+  end_user: string;
+  remarks: string | null;
+  status: ProcurementStatus;
+  items: ProcurementItem[]; // Kirim full item agar dapat asset_category_id
 }

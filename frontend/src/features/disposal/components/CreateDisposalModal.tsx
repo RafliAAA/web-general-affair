@@ -16,9 +16,11 @@ import type { Disposal } from "../services/disposalService";
 
 interface Props {
   onCreate: (payload: {
-    memo_number: string;
     memo_date: string;
     subject: string;
+    from: string;
+    to: string;
+    cc: string;
     description: string;
     items: [];
   }) => Promise<Disposal>;
@@ -26,9 +28,11 @@ interface Props {
 }
 
 const initialForm = {
-  memo_number: "",
   memo_date: "",
   subject: "",
+  from: "",
+  to: "",
+  cc: "",
   description: "",
 };
 
@@ -37,7 +41,7 @@ const CreateDisposalModal = ({ onCreate, onCreated }: Props) => {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
 
-  const isValid = form.memo_number && form.memo_date && form.subject;
+  const isValid = form.memo_date && form.subject;
 
   const handleChange = (field: keyof typeof initialForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -73,18 +77,7 @@ const CreateDisposalModal = ({ onCreate, onCreated }: Props) => {
 
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label className="text-sm text-muted-foreground">Nomor memo</Label>
-            <Input
-              placeholder="INT/0001/IM/HCGA/SYAAMILGROUP/01/2026"
-              value={form.memo_number}
-              onChange={(e) => handleChange("memo_number", e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-sm text-muted-foreground">
-              Tanggal memo
-            </Label>
+            <Label className="text-sm text-muted-foreground">Tanggal memo</Label>
             <Input
               type="date"
               value={form.memo_date}
@@ -98,6 +91,37 @@ const CreateDisposalModal = ({ onCreate, onCreated }: Props) => {
               placeholder="Disposal aset..."
               value={form.subject}
               onChange={(e) => handleChange("subject", e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-sm text-muted-foreground">From</Label>
+              <Input
+                placeholder="Nama pengirim..."
+                value={form.from}
+                onChange={(e) => handleChange("from", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm text-muted-foreground">To</Label>
+              <Input
+                placeholder="Nama penerima..."
+                value={form.to}
+                onChange={(e) => handleChange("to", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">
+              CC{" "}
+              <span className="text-muted-foreground/60">(opsional)</span>
+            </Label>
+            <Input
+              placeholder="cth: HR, Finance..."
+              value={form.cc}
+              onChange={(e) => handleChange("cc", e.target.value)}
             />
           </div>
 

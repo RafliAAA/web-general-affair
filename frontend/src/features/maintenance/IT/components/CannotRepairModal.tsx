@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { CannotRepairPayload } from "@/types/maintenance";
 
@@ -19,8 +18,8 @@ interface Props {
 }
 
 const CannotRepairModal = ({ open, onClose, onSubmit }: Props) => {
-  const [form, setForm] = useState<CannotRepairPayload>({
-    form_number: "",
+  // Hapus form_number dari state
+  const [form, setForm] = useState({
     description: "",
     issue: "",
     handling: "",
@@ -30,13 +29,12 @@ const CannotRepairModal = ({ open, onClose, onSubmit }: Props) => {
 
   const isValid = Object.values(form).every((v) => v.trim() !== "");
 
-  const handleChange = (field: keyof CannotRepairPayload, value: string) => {
+  const handleChange = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleClose = () => {
     setForm({
-      form_number: "",
       description: "",
       issue: "",
       handling: "",
@@ -68,14 +66,7 @@ const CannotRepairModal = ({ open, onClose, onSubmit }: Props) => {
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label className="text-sm text-muted-foreground">Nomor form</Label>
-            <Input
-              placeholder="SVC24110023"
-              value={form.form_number}
-              onChange={(e) => handleChange("form_number", e.target.value)}
-            />
-          </div>
+          {/* Input Form Number dihapus di sini */}
 
           <div className="space-y-1.5">
             <Label className="text-sm text-muted-foreground">Keterangan</Label>

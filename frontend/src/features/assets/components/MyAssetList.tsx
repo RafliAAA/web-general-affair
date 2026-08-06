@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { EyeIcon, MoreHorizontal, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,92 +9,47 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import type { Asset } from "../../../types/inventory";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import CreateAssetModal from "./CreateAssetModal";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import type { AssetMeta } from "../hooks/useAssets";
+import { useMyAssets } from "../hooks/useMyAssets";
+// IMPORT KOMPONEN SHARED STATUS BADGE
 import { StatusBadge } from "../../../components/shared/StatusBadge";
 
-interface Props {
-  dataAssets: Asset[];
-  meta: AssetMeta | null;
-  search: string;
-  page: number;
-  statusFilter: string;
-  onStatusChange: (value: string) => void;
-  onCreate: (data: Asset) => void;
-  onExportPdf: () => void;
-  onSearchChange: (value: string) => void;
-  onPageChange: (page: number) => void;
-}
-
-const ListAssets = ({
-  dataAssets,
-  meta,
-  search,
-  page,
-  statusFilter,
-  onStatusChange,
-  onCreate,
-  onExportPdf,
-  onSearchChange,
-  onPageChange,
-}: Props) => {
+export default function MyAssetList() {
   const navigate = useNavigate();
+  const { assets, loading } = useMyAssets();
+  const [search, setSearch] = useState("");
+
+  // Filter aset berdasarkan search bar (client-side)
+  const filteredAssets = assets.filter((asset) => {
+    return (
+      asset.asset_name.toLowerCase().includes(search.toLowerCase()) ||
+      asset.asset_code.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   return (
     <div className="space-y-6">
+      {/* Header Search */}
       <div className="flex items-center justify-between flex-wrap">
         <div className="relative max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Cari aset..."
+            placeholder="Cari aset saya..."
             className="pl-9"
             value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <Select
-            value={statusFilter || "Semua"}
-            onValueChange={(value) =>
-              onStatusChange(value === "Semua" ? "" : value)
-            }
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Filter Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Semua">Semua Status</SelectItem>
-              <SelectItem value="Tersedia">Tersedia</SelectItem>
-              <SelectItem value="Dipinjam">Dipinjam</SelectItem>
-              <SelectItem value="Diperbaiki">Diperbaiki</SelectItem>
-              <SelectItem value="Diserahkan">Diserahkan</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="outline" onClick={onExportPdf}>
-            Export PDF
-          </Button>
-          <CreateAssetModal onCreate={onCreate} />
         </div>
       </div>
 
+      {/* Table */}
       <div className="rounded-lg border bg-card overflow-x-auto">
         <Table className="min-w-full text-sm">
           <TableHeader>
@@ -107,8 +63,17 @@ const ListAssets = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dataAssets.length > 0 ? (
-              dataAssets.map((asset) => (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  Memuat data aset...
+                </TableCell>
+              </TableRow>
+            ) : filteredAssets.length > 0 ? (
+              filteredAssets.map((asset) => (
                 <TableRow
                   key={asset.asset_id}
                   className="cursor-pointer hover:bg-muted/50"
@@ -123,9 +88,11 @@ const ListAssets = ({
                   <TableCell className="font-medium">
                     {asset.asset_category?.category_name ?? "—"}
                   </TableCell>
+                  {/* GANTI PAKAI STATUS BADGE */}
                   <TableCell className="font-medium">
                     <StatusBadge status={asset.condition} />
                   </TableCell>
+                  {/* GANTI PAKAI STATUS BADGE */}
                   <TableCell className="font-medium w-25">
                     <StatusBadge status={asset.status} />
                   </TableCell>
@@ -158,44 +125,13 @@ const ListAssets = ({
                   colSpan={6}
                   className="text-center py-8 text-muted-foreground"
                 >
-                  Tidak ada aset ditemukan
+                  Belum ada aset yang diserahkan kepada Anda.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-
-      {meta && meta.totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Menampilkan {dataAssets.length} dari {meta.total} aset
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 1}
-              onClick={() => onPageChange(page - 1)}
-            >
-              Sebelumnya
-            </Button>
-            <span className="text-sm px-2">
-              {page} / {meta.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === meta.totalPages}
-              onClick={() => onPageChange(page + 1)}
-            >
-              Selanjutnya
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
-};
-
-export default ListAssets;
+}

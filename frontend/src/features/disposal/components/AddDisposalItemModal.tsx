@@ -33,10 +33,12 @@ interface AvailableAsset {
   asset_id: string;
   asset_code: string;
   asset_name: string;
-  asset_type: string;
   serial_number: string;
   condition: string;
   status: string;
+  asset_category?: {     // ← tambah ini
+    category_name: string;
+  } | null;
 }
 
 interface PendingItem {
@@ -56,7 +58,7 @@ interface Props {
   excludedIds: string[];
 }
 
-const METHOD_OPTIONS = ["Hibah", "Jual", "Musnahkan", "Tukar Tambah"];
+const METHOD_OPTIONS = ["Hibah", "Jual", "Kirim"];
 
 const conditionVariant = (condition: string) => {
   switch (condition) {
@@ -89,7 +91,7 @@ const AddDisposalItemModal = ({
     if (!open) return;
     setLoadingAssets(true);
     api
-      .get("/assets")
+      .get("/assets/available")
       .then((res) => setAssets(res.data.data))
       .catch((err) => console.error("Failed to fetch assets", err))
       .finally(() => setLoadingAssets(false));

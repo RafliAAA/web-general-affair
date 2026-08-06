@@ -11,12 +11,23 @@ export const useProcurementDetail = (id: string | undefined) => {
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
-  useEffect(() => {
+  // 1. BUAT FUNGSI INI AGAR BISA DIPANGGIL UNTUK REFRESH DATA
+  const fetchProcurement = async () => {
     if (!id) return;
-    getProcurementById(id)
-      .then(setProcurement)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    setLoading(true);
+    try {
+      const data = await getProcurementById(id);
+      setProcurement(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 2. PANGGIL SAAT PERTAMA KALI HALAMAN DIBUKA
+  useEffect(() => {
+    fetchProcurement();
   }, [id]);
 
   const handleUpdate = (updated: Procurement) => {
@@ -28,12 +39,10 @@ export const useProcurementDetail = (id: string | undefined) => {
     try {
       setExporting(true);
 
-      // Generate PDF blob langsung di browser
       const blob = await pdf(
-        createElement(ProcurementPDF, { procurement })
+        createElement(ProcurementPDF, { procurement }),
       ).toBlob();
 
-      // Download
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -49,5 +58,14 @@ export const useProcurementDetail = (id: string | undefined) => {
     }
   };
 
-  return { procurement, loading, error, exporting, handleUpdate, handleExport };
+  // 3. KEMBALIKAN fetchProcurement DI SINI
+  return {
+    procurement,
+    loading,
+    error,
+    exporting,
+    handleUpdate,
+    handleExport,
+    fetchProcurement,
+  };
 };
