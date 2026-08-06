@@ -39,7 +39,6 @@ export const updateMyProfile = async (payload: UpdateProfilePayload): Promise<Pr
     photoUrl = null;
   }
 
-  // Siapkan body request
   const body: any = { name: payload.name };
   if (photoUrl !== undefined) {
     body.photo = photoUrl;

@@ -12,7 +12,6 @@ export const useProfile = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // UBAH INI: dari setUser menjadi updateUser
   const updateUser = useAuthStore((state) => state.updateUser);
 
   const fetchProfile = async () => {
@@ -31,15 +30,22 @@ export const useProfile = () => {
     fetchProfile();
   }, []);
 
-  const updateProfile = async (payload: UpdateProfilePayload) => {
+   const updateProfile = async (payload: UpdateProfilePayload) => {
     try {
       setIsSubmitting(true);
       const updatedData = await updateMyProfile(payload);
       setProfile(updatedData);
 
-      // UBAH INI: panggil updateUser, bukan setUser
-      if (updateUser) {
-        updateUser(updatedData);
+      if (updateUser && updatedData) {
+        updateUser({
+          id: updatedData.user_id, 
+          email: updatedData.email,
+          name: updatedData.profile?.name || "", 
+          profile: {
+            name: updatedData.profile?.name || null,
+            photo: updatedData.profile?.photo || null,
+          },
+        });
       }
 
       return updatedData;

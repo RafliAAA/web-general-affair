@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { ChevronRight } from "lucide-react";
-import type { ITMaintenanceItem } from "../services/itDashboardService";
+import type { ITMaintenanceItem } from "../services/ITDashboardService"; 
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
 interface Props {

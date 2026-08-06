@@ -116,7 +116,7 @@ const ProfileForm = ({ profile, isSubmitting, onSubmit }: ProfileFormProps) => {
             />
 
             {/* Tombol Pilih Foto & Hapus (Sejajar Horizontal) */}
-            <div className="flex items-center gap-2 w-full max-w-[200px]">
+            <div className="flex items-center gap-2 w-full max-w-50">
               <Button
                 type="button"
                 variant="outline"
@@ -141,7 +141,7 @@ const ProfileForm = ({ profile, isSubmitting, onSubmit }: ProfileFormProps) => {
               )}
             </div>
 
-            <p className="text-xs text-muted-foreground text-center max-w-[200px]">
+            <p className="text-xs text-muted-foreground text-center max-w-50">
               Format: JPG atau PNG. Maksimal 2MB.
             </p>
           </div>
@@ -181,7 +181,7 @@ const ProfileForm = ({ profile, isSubmitting, onSubmit }: ProfileFormProps) => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="min-w-[120px]"
+                className="min-w-30"
               >
                 {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
               </Button>

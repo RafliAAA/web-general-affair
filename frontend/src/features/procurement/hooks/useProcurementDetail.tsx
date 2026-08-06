@@ -40,7 +40,7 @@ export const useProcurementDetail = (id: string | undefined) => {
       setExporting(true);
 
       const blob = await pdf(
-        createElement(ProcurementPDF, { procurement }),
+        createElement(ProcurementPDF, { procurement }) as any,
       ).toBlob();
 
       const url = URL.createObjectURL(blob);
