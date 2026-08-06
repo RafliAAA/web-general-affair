@@ -1,4 +1,5 @@
 import {
+  AssetStatus,
   BorrowStatus,
   HandoverStatus,
   MaintenanceStatus,
@@ -7,7 +8,7 @@ import prisma from "../../config/prisma";
 import { generateAssetCode } from "../../helper/generate.code";
 
 const createAsset = async (data: any) => {
-  const assetCode = await generateAssetCode();
+  const assetCode = await generateAssetCode(prisma, data.asset_category_id);
 
   return prisma.asset.create({
     data: {
@@ -57,6 +58,30 @@ const findAllAssets = async (filter: {
       orderBy: { asset_name: "asc" },
       include: {
         asset_category: true,
+        borrow: {
+          where: { 
+            status: { in: ["Disetujui"] } 
+          },
+          include: { 
+            user: { 
+              select: { profile: { select: { name: true } } } 
+            } 
+          },
+          take: 1,
+        },
+        handoverItems: {
+          where: { 
+            handover: { status: "Aktif" } 
+          },
+          include: { 
+            handover: { 
+              select: { 
+                receiver: { select: { profile: { select: { name: true } } } } 
+              } 
+            } 
+          },
+          take: 1,
+        }
       },
     }),
     prisma.asset.count({ where }),
@@ -93,6 +118,44 @@ const findAssetById = async (asset_id: string) => {
             },
           },
           returns: true,
+        },
+      },
+      maintenances: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          reporter: {
+            select: {
+              profile: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      handoverItems: {
+        orderBy: {
+          handover: {
+            handover_date: "desc",
+          },
+        },
+        include: {
+          handover: {
+            include: {
+              receiver: {
+                select: {
+                  profile: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -133,8 +196,17 @@ const deleteAsset = async (asset_id: string) => {
 
 const getAvailableAssets = async () => {
   return await prisma.asset.findMany({
-    where: { status: "Tersedia" },
+    where: {
+      status: AssetStatus.Tersedia,
+      deletedAt: null,
+      borrow: {
+        none: {
+          status: { in: [BorrowStatus.Menunggu, BorrowStatus.Disetujui] },
+        },
+      },
+    },
     orderBy: { asset_name: "asc" },
+    include: { asset_category: true },
   });
 };
 
@@ -185,6 +257,13 @@ const getMyAssets = async (user_id: string, excludeMaintenance = false) => {
 
   return prisma.asset.findMany({
     where,
+    include: {
+      asset_category: {
+        select: {
+          category_name: true,
+        },
+      },
+    },
     orderBy: {
       asset_name: "asc",
     },

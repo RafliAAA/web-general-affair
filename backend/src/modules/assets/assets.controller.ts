@@ -45,7 +45,7 @@ const getAllAssets = async (req: Request, res: Response) => {
       status,
       asset_type,
       page = "1",
-      limit = "8",
+      limit = "10",
     } = req.query;
 
     const result = await assetsService.getAllAssets({
