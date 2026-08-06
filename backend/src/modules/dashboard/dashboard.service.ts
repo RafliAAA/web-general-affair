@@ -6,4 +6,20 @@ const getAdminDashboard = async () => {
   return result;
 };
 
-export default { getAdminDashboard };
+const getUserDashboard = async (user_id: string) => {
+  const result = await dashboardRepository.getUserDashboard(user_id);
+  if (!result) throw new Error("Failed to fetch user dashboard");
+  return result;
+};
+
+const getITDashboard = async () => {
+  const result = await dashboardRepository.getITDashboard();
+  if (!result) throw new Error("Failed to fetch IT dashboard");
+  return result;
+};
+
+export default { 
+  getAdminDashboard,
+  getUserDashboard,
+  getITDashboard,
+ };

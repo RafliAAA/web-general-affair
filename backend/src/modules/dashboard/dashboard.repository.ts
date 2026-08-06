@@ -7,6 +7,8 @@ const getAdminDashboard = async () => {
     totalTersedia,
     totalDipinjam,
     totalDiperbaiki,
+    totalDiserahkan,
+    totalDihapus,
 
     // Peminjaman per status
     totalBorrowMenunggu,
@@ -36,6 +38,8 @@ const getAdminDashboard = async () => {
     prisma.asset.count({ where: { status: "Tersedia" } }),
     prisma.asset.count({ where: { status: "Dipinjam" } }),
     prisma.asset.count({ where: { status: "Diperbaiki" } }),
+    prisma.asset.count({ where: { status: "Diserahkan" } }),
+    prisma.asset.count({ where: { status: "Dihapus" } }),
 
     // Peminjaman
     prisma.borrow.count({ where: { status: BorrowStatus.Menunggu } }),
@@ -89,19 +93,24 @@ const getAdminDashboard = async () => {
       tersedia: totalTersedia,
       dipinjam: totalDipinjam,
       diperbaiki: totalDiperbaiki,
-      total: totalTersedia + totalDipinjam + totalDiperbaiki,
+      dihapus: totalDihapus,
+      diserahkan: totalDiserahkan,
+      total:
+        totalTersedia +
+        totalDipinjam +
+        totalDiperbaiki +
+        totalDihapus +
+        totalDiserahkan,
     },
     borrows: {
       menunggu: totalBorrowMenunggu,
       disetujui: totalBorrowDisetujui,
       ditolak: totalBorrowDitolak,
-      dibatalkan: totalBorrowDibatalkan,
       dikembalikan: totalBorrowDikembalikan,
       total:
         totalBorrowMenunggu +
         totalBorrowDisetujui +
         totalBorrowDitolak +
-        totalBorrowDibatalkan +
         totalBorrowDikembalikan,
     },
     maintenance: {
@@ -129,4 +138,198 @@ const getAdminDashboard = async () => {
   };
 };
 
-export default { getAdminDashboard };
+const getUserDashboard = async (user_id: string) => {
+  const [
+    // 1. Aset yang diserahkan ke user ini dan masih aktif
+    totalAsetSayaAktif,
+
+    // 2. Peminjaman yang diajukan oleh user ini
+    totalBorrowMenunggu,
+    totalBorrowDisetujui,
+    totalBorrowDikembalikan,
+
+    // 3. Laporan kerusakan yang dilaporkan oleh user ini
+    totalMaintenanceProses,
+    totalMaintenanceSelesai,
+
+    // 4. Recent Activity (5 terbaru)
+    recentMyBorrows,
+    recentMyMaintenance,
+    recentMyHandovers,
+  ] = await Promise.all([
+    // Aset Saya (Handover Aktif)
+    prisma.handover.count({
+      where: { user_id, status: "Aktif" },
+    }),
+
+    // Peminjaman Saya
+    prisma.borrow.count({
+      where: { user_id, status: BorrowStatus.Menunggu },
+    }),
+    prisma.borrow.count({
+      where: { user_id, status: BorrowStatus.Disetujui },
+    }),
+    prisma.borrow.count({
+      where: { user_id, status: BorrowStatus.Dikembalikan },
+    }),
+
+    // Maintenance Saya
+    prisma.maintenance.count({
+      where: {
+        reported_by: user_id,
+        status: {
+          in: [
+            MaintenanceStatus.MenungguVerifikasi,
+            MaintenanceStatus.MenungguDikerjakan,
+            MaintenanceStatus.SedangDikerjakan,
+          ],
+        },
+      },
+    }),
+    prisma.maintenance.count({
+      where: { reported_by: user_id, status: MaintenanceStatus.Selesai },
+    }),
+
+    // Recent Borrows
+    prisma.borrow.findMany({
+      where: { user_id },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        asset: { select: { asset_name: true, asset_code: true } },
+      },
+    }),
+
+    // Recent Maintenance
+    prisma.maintenance.findMany({
+      where: { reported_by: user_id },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        asset: { select: { asset_name: true, asset_code: true } },
+      },
+    }),
+
+    // Recent Handovers (Aset yang diserahkan ke dia)
+    prisma.handover.findMany({
+      where: { user_id },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        items: {
+          select: {
+            asset: { select: { asset_name: true, asset_code: true } },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    myAssets: {
+      aktif: totalAsetSayaAktif,
+    },
+    myBorrows: {
+      menunggu: totalBorrowMenunggu,
+      disetujui: totalBorrowDisetujui,
+      dikembalikan: totalBorrowDikembalikan,
+      total:
+        totalBorrowMenunggu + totalBorrowDisetujui + totalBorrowDikembalikan,
+    },
+    myMaintenance: {
+      proses: totalMaintenanceProses,
+      selesai: totalMaintenanceSelesai,
+      total: totalMaintenanceProses + totalMaintenanceSelesai,
+    },
+    recentActivity: {
+      borrows: recentMyBorrows,
+      maintenance: recentMyMaintenance,
+      handovers: recentMyHandovers,
+    },
+  };
+};
+
+const getITDashboard = async () => {
+  const [
+    totalMenungguVerifikasi,
+    totalMenungguDikerjakan,
+    totalSedangDikerjakan,
+    totalSelesai,
+    totalTidakDapatDiperbaiki,
+    recentMaintenance,
+    monthlyMaintenanceRaw, // <--- TAMBAHKAN INI UNTUK MENAMPUNG QUERY RAW
+  ] = await Promise.all([
+    prisma.maintenance.count({
+      where: { status: MaintenanceStatus.MenungguVerifikasi },
+    }),
+    prisma.maintenance.count({
+      where: { status: MaintenanceStatus.MenungguDikerjakan },
+    }),
+    prisma.maintenance.count({
+      where: { status: MaintenanceStatus.SedangDikerjakan },
+    }),
+    prisma.maintenance.count({ where: { status: MaintenanceStatus.Selesai } }),
+    prisma.maintenance.count({
+      where: { status: MaintenanceStatus.TidakDapatDiperbaiki },
+    }),
+
+    // Ambil 5 laporan terbaru yang butuh aksi IT (Menunggu Dikerjakan / Sedang Dikerjakan)
+    prisma.maintenance.findMany({
+      where: {
+        status: {
+          in: [
+            MaintenanceStatus.MenungguDikerjakan,
+            MaintenanceStatus.SedangDikerjakan,
+          ],
+        },
+      },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        asset: { select: { asset_name: true, asset_code: true } },
+        reporter: { select: { profile: { select: { name: true } } } },
+      },
+    }),
+
+    prisma.$queryRaw`
+      SELECT 
+        MONTH(createdAt) as month, 
+        CAST(COUNT(*) AS SIGNED) as count 
+      FROM Maintenance 
+      WHERE YEAR(createdAt) = YEAR(CURDATE())
+      GROUP BY MONTH(createdAt)
+      ORDER BY month ASC
+    `,
+  ]);
+
+   return {
+    maintenance: {
+      menungguVerifikasi: totalMenungguVerifikasi,
+      menungguDikerjakan: totalMenungguDikerjakan,
+      sedangDikerjakan: totalSedangDikerjakan,
+      selesai: totalSelesai,
+      tidakDapatDiperbaiki: totalTidakDapatDiperbaiki,
+      total:
+        totalMenungguVerifikasi +
+        totalMenungguDikerjakan +
+        totalSedangDikerjakan +
+        totalSelesai +
+        totalTidakDapatDiperbaiki,
+    },
+    recentActivity: {
+      maintenance: recentMaintenance,
+    },
+    // PERBAIKAN ADA DI BAGIAN INI:
+    monthlyTrend: (monthlyMaintenanceRaw as any[]).map((item) => ({
+      month: new Date(0, Number(item.month) - 1).toLocaleString('id-ID', { month: 'short' }),
+      count: Number(item.count)
+    }))
+  };
+};
+
+// Jangan lupa daftarkan di export default
+export default {
+  getAdminDashboard,
+  getUserDashboard,
+  getITDashboard,
+};
