@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import handoverService from "./handover.service";
 import { createHandoverSchema, returnHandoverSchema } from "./handover.dto";
 import type { AuthRequest } from "../../middleware/auth";
+import notificationService from "../notifications/notification.service";
 
 const createHandover = async (req: AuthRequest, res: Response) => {
   try {
@@ -23,6 +24,18 @@ const createHandover = async (req: AuthRequest, res: Response) => {
       parsed.data,
       created_by,
     );
+
+    if (result) {
+      await notificationService.sendNotification({
+        user_id: result.user_id,
+        title: "Aset Baru Diserahkan ke Anda",
+        message: `Aset telah diserahkan kepada Anda. Silakan cek detail penyerahan.`,
+        type: "HANDOVER",
+        link: `/aset-saya`,
+        sendEmailFlag: true,
+      });
+    }
+
     return res.status(201).json({
       success: true,
       message: "Handover created successfully",

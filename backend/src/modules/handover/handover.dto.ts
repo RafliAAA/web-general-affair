@@ -3,16 +3,17 @@ import { z } from "zod";
 export const createHandoverSchema = z.object({
   user_id: z.uuid(),
   handover_date: z.coerce.date(),
-  entity: z.string().min(1, "Entity is required"),
-  directorate: z.string().min(1, "Directorate is required"),
+  entity_id: z.uuid(),
+  directorate_id: z.uuid(),
   items: z
     .array(
       z.object({
         asset_id: z.string().uuid(),
-        notes: z.string().optional(), 
+        notes: z.string().optional(),
       }),
     )
     .min(1, "Minimal 1 aset harus dipilih"),
+  recipient_type: z.enum(["Personal", "Divisi"]).default("Personal"),
 });
 
 export const returnHandoverSchema = z.object({

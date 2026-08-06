@@ -33,8 +33,10 @@ const createHandover = async (data: CreateHandoverDTO, created_by: string) => {
         user_id: data.user_id,
         created_by,
         handover_date: data.handover_date,
-        entity: data.entity,
-        directorate: data.directorate,
+        entity_id: data.entity_id,
+        directorate_id: data.directorate_id,
+        // TAMBAHKAN INI
+        recipient_type: data.recipient_type || "Personal",
         items: {
           create: data.items.map((item) => ({
             asset_id: item.asset_id,
@@ -46,6 +48,8 @@ const createHandover = async (data: CreateHandoverDTO, created_by: string) => {
         items: { include: { asset: true } },
         receiver: { select: { profile: { select: { name: true } } } },
         creator: { select: { profile: { select: { name: true } } } },
+        entity: true,
+        directorate: true,
       },
     });
 
@@ -82,6 +86,8 @@ const getAllHandover = async () => {
       },
       receiver: { select: { profile: { select: { name: true } } } },
       creator: { select: { profile: { select: { name: true } } } },
+      entity: true,
+      directorate: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -111,6 +117,8 @@ const getHandoverById = async (handover_id: string) => {
       receiver: { select: { profile: { select: { name: true } } } },
       creator: { select: { profile: { select: { name: true } } } },
       returner: { select: { profile: { select: { name: true } } } },
+      entity: true,
+      directorate: true,
     },
   });
 };
@@ -131,6 +139,8 @@ const getHandoverByUser = async (user_id: string) => {
           },
         },
       },
+      entity: true,
+      directorate: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -153,7 +163,6 @@ const returnHandover = async (
       throw new Error("Handover is already returned");
     }
 
-    // Update status handover
     const updated = await tx.handover.update({
       where: { handover_id },
       data: {
@@ -164,7 +173,6 @@ const returnHandover = async (
       },
     });
 
-    // Update semua asset menjadi tersedia
     await tx.asset.updateMany({
       where: {
         asset_id: {
