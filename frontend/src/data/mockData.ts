@@ -2,8 +2,6 @@ import type { SOP } from "@/types/sop";
 import type {
   Asset,
   BorrowRequest,
-  Room,
-  RoomBooking,
   Projects,
 } from "../types/inventory";
 
@@ -11,7 +9,6 @@ export const companyAssets: Asset[] = [
   {
     asset_id: "1",
     asset_name: 'MacBook Pro 14"',
-    asset_type: "Laptop",
     serial_number: "MBP-2024-001",
     status: "Tersedia",
     asset_code: "",
@@ -26,7 +23,6 @@ export const companyAssets: Asset[] = [
   {
     asset_id: "2",
     asset_name: 'Dell Monitor 27"',
-    asset_type: "Monitor",
     serial_number: "DM-2024-015",
     status: "Tersedia",
     asset_code: "",
@@ -41,7 +37,6 @@ export const companyAssets: Asset[] = [
   {
     asset_id: "3",
     asset_name: "Proyektor Epson",
-    asset_type: "Proyektor",
     serial_number: "EP-2023-003",
     status: "Tersedia",
     asset_code: "",
@@ -56,9 +51,8 @@ export const companyAssets: Asset[] = [
   {
     asset_id: "4",
     asset_name: "Kamera Sony A7 III",
-    asset_type: "Kamera",
     serial_number: "SNY-2024-008",
-    status: "maintenance",
+    status: "Diperbaiki",
     asset_code: "",
     condition: "",
     purchase_date: null,
@@ -71,7 +65,6 @@ export const companyAssets: Asset[] = [
   {
     asset_id: "5",
     asset_name: 'iPad Pro 12.9"',
-    asset_type: "Tablet",
     serial_number: "IPD-2024-012",
     status: "Tersedia",
     asset_code: "",
@@ -126,71 +119,71 @@ export const borrowRequests: BorrowRequest[] = [
   },
 ];
 
-export const rooms: Room[] = [
-  {
-    id: "room-1",
-    name: "Ruang Meeting Utama",
-    capacity: 20,
-    facilities: ["Proyektor", "Whiteboard", "Video Conference", "AC"],
-  },
-  {
-    id: "room-2",
-    name: "Ruang Rapat Kecil A",
-    capacity: 8,
-    facilities: ["TV", "Whiteboard", "AC"],
-  },
-  {
-    id: "room-3",
-    name: "Ruang Rapat Kecil B",
-    capacity: 6,
-    facilities: ["Monitor", "Whiteboard", "AC"],
-  },
-  {
-    id: "room-4",
-    name: "Ruang Training",
-    capacity: 30,
-    facilities: ["Proyektor", "Sound System", "AC", "Microphone"],
-  },
-];
+// export const rooms: Room[] = [
+//   {
+//     id: "room-1",
+//     name: "Ruang Meeting Utama",
+//     capacity: 20,
+//     facilities: ["Proyektor", "Whiteboard", "Video Conference", "AC"],
+//   },
+//   {
+//     id: "room-2",
+//     name: "Ruang Rapat Kecil A",
+//     capacity: 8,
+//     facilities: ["TV", "Whiteboard", "AC"],
+//   },
+//   {
+//     id: "room-3",
+//     name: "Ruang Rapat Kecil B",
+//     capacity: 6,
+//     facilities: ["Monitor", "Whiteboard", "AC"],
+//   },
+//   {
+//     id: "room-4",
+//     name: "Ruang Training",
+//     capacity: 30,
+//     facilities: ["Proyektor", "Sound System", "AC", "Microphone"],
+//   },
+// ];
 
-export const roomBookings: RoomBooking[] = [
-  {
-    id: "book-1",
-    roomId: "room-1",
-    roomName: "Ruang Meeting Utama",
-    bookedBy: "user-1",
-    bookedByName: "Ahmad Rizki",
-    date: new Date("2025-01-02"),
-    startTime: "09:00",
-    endTime: "11:00",
-    purpose: "Weekly Team Meeting",
-    status: "approved",
-  },
-  {
-    id: "book-2",
-    roomId: "room-2",
-    roomName: "Ruang Rapat Kecil A",
-    bookedBy: "user-3",
-    bookedByName: "Budi Santoso",
-    date: new Date("2025-01-03"),
-    startTime: "14:00",
-    endTime: "16:00",
-    purpose: "Interview Kandidat",
-    status: "pending",
-  },
-  {
-    id: "book-3",
-    roomId: "room-4",
-    roomName: "Ruang Training",
-    bookedBy: "user-4",
-    bookedByName: "Dewi Lestari",
-    date: new Date("2025-01-06"),
-    startTime: "09:00",
-    endTime: "17:00",
-    purpose: "Training New Employee",
-    status: "approved",
-  },
-];
+// export const roomBookings: RoomBooking[] = [
+//   {
+//     id: "book-1",
+//     roomId: "room-1",
+//     roomName: "Ruang Meeting Utama",
+//     bookedBy: "user-1",
+//     bookedByName: "Ahmad Rizki",
+//     date: new Date("2025-01-02"),
+//     startTime: "09:00",
+//     endTime: "11:00",
+//     purpose: "Weekly Team Meeting",
+//     status: "approved",
+//   },
+//   {
+//     id: "book-2",
+//     roomId: "room-2",
+//     roomName: "Ruang Rapat Kecil A",
+//     bookedBy: "user-3",
+//     bookedByName: "Budi Santoso",
+//     date: new Date("2025-01-03"),
+//     startTime: "14:00",
+//     endTime: "16:00",
+//     purpose: "Interview Kandidat",
+//     status: "pending",
+//   },
+//   {
+//     id: "book-3",
+//     roomId: "room-4",
+//     roomName: "Ruang Training",
+//     bookedBy: "user-4",
+//     bookedByName: "Dewi Lestari",
+//     date: new Date("2025-01-06"),
+//     startTime: "09:00",
+//     endTime: "17:00",
+//     purpose: "Training New Employee",
+//     status: "approved",
+//   },
+// ];
 
 // export const vehicles: Vehicle[] = [
 //   {
