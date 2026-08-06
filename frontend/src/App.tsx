@@ -1,49 +1,113 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  Outlet,
+} from "react-router-dom";
 import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "sonner";
 import Spinner from "./components/layout/Spinner";
 import { useAuthStore } from "./features/auth/stores/useAuthStore";
+import DashboardLayout from "./components/layout/DashboardLayout";
 
-
-const AdminDashboardPage = lazy(() => import("./features/dashboard/admin/pages/AdminDashboardPage"));
-// const Projects = lazy(() => import("./pages/projects/Projects"));
-// const LoansPage = lazy(() => import("./pages/Loans"));
-// const ReturnsPage = lazy(() => import("./pages/Returns"));
+const AdminDashboardPage = lazy(
+  () => import("./features/dashboard/admin/pages/AdminDashboardPage"),
+);
+const UserDashboardPage = lazy(
+  () => import("./features/dashboard/user/pages/UserDashboardPage"),
+);
+const ITDashboardPage = lazy(
+  () => import("./features/dashboard/IT/pages/ITDashboardPage"),
+);
+const ProfilePage = lazy(() => import("./features/profile/pages/ProfilePage"));
+const EntityPage = lazy(() => import("./features/entity/pages/EntityPage"));
+const DirectoratePage = lazy(
+  () => import("./features/directorate/pages/DirectoratePage"),
+);
 const Assets = lazy(() => import("./features/assets/pages/Assets"));
 const AssetDetail = lazy(() => import("./features/assets/pages/DetailAsset"));
+const CategoryPage = lazy(
+  () => import("./features/categories/pages/CategoryPage"),
+);
+const MyAssetPage = lazy(() => import("./features/assets/pages/MyAssets"));
 const ProcurementPage = lazy(
   () => import("./features/procurement/pages/ProcurementPage"),
 );
 const ProcurementDetailPage = lazy(
   () => import("./features/procurement/pages/DetailProcurementPage"),
 );
-const AdminHandoverPage = lazy(() => import("./features/handover/admin/pages/AdminHandoverPage"))
+const AdminHandoverPage = lazy(
+  () => import("./features/handover/admin/pages/AdminHandoverPage"),
+);
 const DetailHandoverPage = lazy(
   () => import("./features/handover/admin/pages/DetailHandoverPage"),
 );
 const AdminBorrowPage = lazy(
   () => import("./features/borrow/admin/pages/AdminBorrowPage"),
 );
+const DetailBorrowPage = lazy(
+  () => import("./features/borrow/admin/pages/DetailBorrowPage"),
+);
 const Borrow = lazy(() => import("./features/borrow/user/pages/BorrowPage"));
 const ReturnPage = lazy(() => import("./features/return/pages/ReturnPage"));
-// const RoomPage = lazy(() => import("./features/rooms/pages/RoomPage"));
-// const UserBookingPage = lazy(() => import("./features/bookings/pages/UserBookingPage"))
-// const AdminBookingPage = lazy(() => import("./features/bookings/pages/AdminBookingPage"))
-// const DetailRoomPage = lazy(() => import("./features/rooms/pages/DetailRoomPage"));
-const MyMaintenancePage = lazy(() => import("./features/maintenance/user/pages/MyMaintenancePage"));
-const MaintenanceDetailPage = lazy(() => import("./features/maintenance/user/pages/MaintenanceDetailPage"));
-const AdminMaintenancePage = lazy(() => import("./features/maintenance/admin/pages/AllMaintenancePage"))
-const AdminMaintenanceDetailPage = lazy(() => import("./features/maintenance/admin/pages/MaintenanceDetailAdminPage"))
-const ITMaintenancePage = lazy(() => import("./features/maintenance/IT/pages/ITMaintenancePage"))
-const  ITMaintenanceDetailPage = lazy(() => import("./features/maintenance/IT/pages/MaintenanceDetailITPage"))
-const DisposalPage = lazy(() => import("./features/disposal/pages/DisposalPage"))
-const DisposalDetailPage = lazy(() => import("./features/disposal/pages/DetailDisposalPage"))
-const UserManagementPage = lazy(() => import("./features/user/pages/UserPage"))
-
+const MyMaintenancePage = lazy(
+  () => import("./features/maintenance/user/pages/MyMaintenancePage"),
+);
+const MaintenanceDetailPage = lazy(
+  () => import("./features/maintenance/user/pages/MaintenanceDetailPage"),
+);
+const AdminMaintenancePage = lazy(
+  () => import("./features/maintenance/admin/pages/AllMaintenancePage"),
+);
+const AdminMaintenanceDetailPage = lazy(
+  () => import("./features/maintenance/admin/pages/MaintenanceDetailAdminPage"),
+);
+const ITMaintenancePage = lazy(
+  () => import("./features/maintenance/IT/pages/ITMaintenancePage"),
+);
+const ITMaintenanceDetailPage = lazy(
+  () => import("./features/maintenance/IT/pages/MaintenanceDetailITPage"),
+);
+const DisposalPage = lazy(
+  () => import("./features/disposal/pages/DisposalPage"),
+);
+const DisposalDetailPage = lazy(
+  () => import("./features/disposal/pages/DetailDisposalPage"),
+);
+const UserManagementPage = lazy(() => import("./features/user/pages/UserPage"));
+const NotificationPage = lazy(
+  () => import("./features/notifications/pages/NotificationPage"),
+);
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./features/auth/pages/Login"));
 const Register = lazy(() => import("./features/auth/pages/Register"));
 const SOP = lazy(() => import("./features/SOP/pages/SOP"));
+
+// KOMPONEN CEK HAK AKSES ROLE
+const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
+  const { user } = useAuthStore();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+};
+
+const RoleBasedDashboard = () => {
+  const { user } = useAuthStore();
+
+  if (user?.role === "ADMIN") return <AdminDashboardPage />;
+  if (user?.role === "IT") return <ITDashboardPage />;
+  if (user?.role === "USER") return <UserDashboardPage />;
+
+  return <Navigate to="/login" replace />;
+};
 
 function App() {
   const { user, checkAuth, checkingAuth } = useAuthStore();
@@ -61,121 +125,7 @@ function App() {
       <Toaster richColors position="top-right" />
       <Suspense fallback={<Spinner />}>
         <Routes>
-          <Route
-            path="/"
-            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
-          />
-          {/* <Route path="/projects" element={user ? <Projects /> : <Navigate to="/login" />} /> */}
-          <Route
-            path="/pengadaan"
-            element={user ? <ProcurementPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/pengadaan/:id"
-            element={
-              user ? <ProcurementDetailPage /> : <Navigate to="/login" />
-            }
-          />
-          <Route
-            path="/serah-terima"
-            element={
-              user ? <AdminHandoverPage /> : <Navigate to="/login" />
-            }
-          />
-          <Route
-            path="/serah-terima/:id"
-            element={
-              user ? <DetailHandoverPage /> : <Navigate to="/login" />
-            }
-          />
-          <Route
-            path="/peminjaman"
-            element={user ? <AdminBorrowPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/pengembalian"
-            element={user ? <ReturnPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/penghapusan"
-            element={user ? <DisposalPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/penghapusan/:id"
-            element={user ? <DisposalDetailPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/aset-perusahaan"
-            element={user ? <Assets /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/aset-perusahaan/:id"
-            element={user ? <AssetDetail /> : <Navigate to="/login" />}
-          />
-          {/* <Route
-            path="/ruangan"
-            element={user ? <RoomPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/ruangan/:id"
-            element={user ? <DetailRoomPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/booking-ruangan"
-            element={user ? <UserBookingPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/approve-ruangan"
-            element={user ? <AdminBookingPage /> : <Navigate to="/login" />}
-          /> */}
-          <Route
-            path="/pengajuan"
-            element={user ? <Borrow /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/aset-karyawan"
-            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/lapor-kerusakan"
-            element={user ? <MyMaintenancePage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/lapor-kerusakan/:id"
-            element={user ? <MaintenanceDetailPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/pemeliharaan"
-            element={user ? <AdminMaintenancePage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/pemeliharaan/:id"
-            element={user ? <AdminMaintenanceDetailPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/perbaikan"
-            element={user ? <ITMaintenancePage/> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/perbaikan/:id"
-            element={user ? <ITMaintenanceDetailPage/> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/kendaraan"
-            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/ruangan"
-            element={user ? <AdminDashboardPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/management-users"
-            element={user ? <UserManagementPage /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/sop"
-            element={user ? <SOP /> : <Navigate to="/login" />}
-          />
+          {/* 1. ROUTE PUBLIK */}
           <Route
             path="/login"
             element={!user ? <Login /> : <Navigate to="/" />}
@@ -184,6 +134,82 @@ function App() {
             path="/register"
             element={!user ? <Register /> : <Navigate to="/" />}
           />
+
+          {/* 2. ROUTE PRIVAT (Wajib Login) */}
+          <Route
+            element={user ? <DashboardLayout /> : <Navigate to="/login" />}
+          >
+            {/* ROUTE UNTUK SEMUA ROLE (ADMIN, IT, USER) */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={["ADMIN", "IT", "USER"]} />
+              }
+            >
+              {/* PANGGIL KOMPONEN DINAMIS DI SINI */}
+              <Route path="/" element={<RoleBasedDashboard />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/notifikasi" element={<NotificationPage />} />
+              <Route path="/aset-perusahaan/:id" element={<AssetDetail />} />
+              <Route path="/sop" element={<SOP />} />
+            </Route>
+
+            {/* ROUTE KHUSUS ADMIN */}
+            <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+              <Route path="/pengadaan" element={<ProcurementPage />} />
+              <Route
+                path="/pengadaan/:id"
+                element={<ProcurementDetailPage />}
+              />
+              <Route path="/serah-terima" element={<AdminHandoverPage />} />
+              <Route
+                path="/serah-terima/:id"
+                element={<DetailHandoverPage />}
+              />
+              <Route path="/peminjaman" element={<AdminBorrowPage />} />
+              <Route path="/peminjaman/:id" element={<DetailBorrowPage />} />
+              <Route path="/pengembalian" element={<ReturnPage />} />
+              <Route path="/penghapusan" element={<DisposalPage />} />
+              <Route path="/penghapusan/:id" element={<DisposalDetailPage />} />
+              <Route path="/aset-perusahaan" element={<Assets />} />
+              <Route path="/kategori-aset" element={<CategoryPage />} />
+              <Route path="/pemeliharaan" element={<AdminMaintenancePage />} />
+              <Route
+                path="/pemeliharaan/:id"
+                element={<AdminMaintenanceDetailPage />}
+              />
+              <Route
+                path="/management-users"
+                element={<UserManagementPage />}
+              />
+              <Route path="/entity" element={<EntityPage />} />
+              <Route path="/directorate" element={<DirectoratePage />} />
+              <Route path="/aset-karyawan" element={<AdminDashboardPage />} />
+              <Route path="/kendaraan" element={<AdminDashboardPage />} />
+              <Route path="/ruangan" element={<AdminDashboardPage />} />
+            </Route>
+
+            {/* ROUTE KHUSUS IT */}
+            <Route element={<ProtectedRoute allowedRoles={["IT"]} />}>
+              <Route path="/perbaikan" element={<ITMaintenancePage />} />
+              <Route
+                path="/perbaikan/:id"
+                element={<ITMaintenanceDetailPage />}
+              />
+            </Route>
+
+            {/* ROUTE KHUSUS USER */}
+            <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
+              <Route path="/lapor-kerusakan" element={<MyMaintenancePage />} />
+              <Route
+                path="/lapor-kerusakan/:id"
+                element={<MaintenanceDetailPage />}
+              />
+              <Route path="/pengajuan" element={<Borrow />} />
+              <Route path="/aset-saya" element={<MyAssetPage />} />
+            </Route>
+          </Route>
+
+          {/* 3. FALLBACK / 404 NOT FOUND */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
