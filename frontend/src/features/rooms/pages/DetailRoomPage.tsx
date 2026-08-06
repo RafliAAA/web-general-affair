@@ -4,7 +4,6 @@ import { ArrowLeft, Users, MapPin, SquarePen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import RoomFormModal from "../components/RoomFormModal";
 import { useRoomDetail, useUpdateRoom } from "../hooks/useRooms";
 import type { CreateRoomPayload } from "../services/roomsService";
@@ -94,7 +93,7 @@ const DetailRoomPage = () => {
   };
 
   return (
-    <DashboardLayout title="Detail Ruangan">
+    <>
       {isLoading || !room ? (
         <DetailSkeleton />
       ) : (
@@ -171,7 +170,7 @@ const DetailRoomPage = () => {
           />
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 };
 

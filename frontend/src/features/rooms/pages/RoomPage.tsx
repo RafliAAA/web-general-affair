@@ -36,7 +36,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import RoomFormModal from "../components/RoomFormModal";
 import {
   useRooms,
@@ -87,7 +86,7 @@ const RoomPage = () => {
   };
 
   return (
-    <DashboardLayout title="Manajemen Ruangan">
+    <>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -281,7 +280,7 @@ const RoomPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </DashboardLayout>
+    </>
   );
 };
 

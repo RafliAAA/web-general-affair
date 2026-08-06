@@ -36,6 +36,8 @@ const initialForm: CreateUserPayload = {
   email: "",
   password: "",
   role: "USER",
+  entity_id: "",       
+  directorate_id: ""
 };
 
 const CreateUserModal = ({ open, onClose, onSubmit, isSubmitting }: Props) => {
