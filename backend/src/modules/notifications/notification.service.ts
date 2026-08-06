@@ -24,7 +24,7 @@ const sendNotification = async (data: CreateNotificationDTO) => {
     const user = await notificationRepository.findUserEmailById(data.user_id);
 
     if (user?.email) {
-      const frontendUrl = process.env.APP_URL || "http://localhost:5173";
+      const frontendUrl = process.env.APP_URL;
       const fullLink = data.link ? `${frontendUrl}${data.link}` : frontendUrl;
 
       const userName = user.profile?.name || "Pengguna";
@@ -77,7 +77,7 @@ const sendNotificationToRoles = async (data: SendToRolesDTO) => {
     sendNotificationToUser(user.user_id, notifData);
   }
 
-  const frontendUrl = process.env.APP_URL || "http://localhost:5173";
+  const frontendUrl = process.env.APP_URL;
   const fullLink = data.link ? `${frontendUrl}${data.link}` : frontendUrl;
 
   for (const user of users) {

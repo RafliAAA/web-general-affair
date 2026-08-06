@@ -11,7 +11,7 @@ const initSocket = () => {
   // Kalau socket sudah nyala, jangan di-init lagi
   if (socket) return;
 
-  socket = io("http://localhost:5000", {
+  socket = io(import.meta.env.VITE_API_URL, {
     withCredentials: true,
   });
 
