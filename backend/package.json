@@ -4,9 +4,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "ts-node-dev --respawn --transpile-only prisma/seeder.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
+  },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seeder.ts"
   },
   "keywords": [],
   "author": "",
