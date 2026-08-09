@@ -17,7 +17,7 @@ import BorrowModal from "../components/BorrowModal";
 import { StatusBadge } from "@/components/shared/StatusBadge"; // Sesuaikan path
 import type { Asset } from "../../../../types/inventory";
 
-const KATEGORI = ["Semua", "Laptop", "Handphone", "Kamera", "Mobil"];
+const KATEGORI = ["Semua", "Elektronik", "Kendaraan"];
 
 // Setting jumlah aset per halaman
 const ITEMS_PER_PAGE = 8;
@@ -68,7 +68,6 @@ const BorrowPage = () => {
     borrow_reason: string,
     expected_return_date: string,
     recipient_type: "Personal" | "Divisi",
-    directorate_id?: string,
   ) => {
     if (!selectedAsset) return;
     try {
@@ -79,7 +78,6 @@ const BorrowPage = () => {
         borrow_reason,
         expected_return_date,
         recipient_type,
-        directorate_id, 
       );
       setSelectedAsset(null);
     } catch (err) {

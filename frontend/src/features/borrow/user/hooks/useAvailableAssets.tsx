@@ -46,7 +46,6 @@ export const useAvailableAssets = () => {
     borrow_reason: string,
     expected_return_date: string,
     recipient_type: "Personal" | "Divisi",
-    directorate_id?: string,
   ) => {
     try {
       const result = await createBorrowRequest(
@@ -55,7 +54,6 @@ export const useAvailableAssets = () => {
         borrow_reason,
         expected_return_date,
         recipient_type,
-        directorate_id,
       );
 
       // Hapus aset dari list available agar gak dobel pinjam

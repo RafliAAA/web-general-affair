@@ -9,12 +9,12 @@ export interface BorrowRequest {
   status: "Menunggu" | "Disetujui" | "Ditolak" | "Dibatalkan" | "Dikembalikan";
   approved_by: string | null;
   createdAt: string;
+  recipient_type?: "Personal" | "Divisi"; 
 
   asset: {
     asset_name: string;
-    asset_code: string; // <--- TAMBAHAN (Untuk modal/tabel)
+    asset_code: string; 
     serial_number: string;
-    // Bisa null kalau aset belum punya kategori
     asset_category?: { category_name: string } | null;
   };
 
@@ -24,14 +24,12 @@ export interface BorrowRequest {
     } | null;
   } | null;
 
-  // TAMBAHAN: Untuk mengetahui siapa Admin yang approve/reject
   approver?: {
     profile: {
       name: string | null;
     } | null;
   } | null;
 
-  // TAMBAHAN: Untuk menampilkan info pengembalian di halaman detail
   returns?: {
     return_id: string;
     return_condition: string;

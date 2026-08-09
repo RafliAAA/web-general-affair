@@ -18,7 +18,6 @@ export const createBorrowRequest = async (
   borrow_date: string,
   expected_return_date: string,
   recipient_type: "Personal" | "Divisi",
-  directorate_id?: string,
 ) => {
   const res = await api.post("/borrow", {
     asset_id,
@@ -26,7 +25,6 @@ export const createBorrowRequest = async (
     borrow_date: new Date(borrow_date).toISOString(),
     expected_return_date,
     recipient_type,
-    directorate_id: directorate_id || null,
   });
   return res.data.data;
 };

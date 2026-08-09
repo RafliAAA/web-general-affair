@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { categoryIconMap, conditionVariant } from "@/lib/utils";
+import { categoryIconMap } from "@/lib/utils";
 import type { Asset } from "../../../../types/inventory";
 import { Package } from "lucide-react";
 
@@ -10,33 +10,51 @@ interface Props {
 }
 
 const AssetCard = ({ asset, onSelect }: Props) => {
-   const Icon =
-     categoryIconMap[
-       asset.asset_category?.category_name as keyof typeof categoryIconMap
-     ] ?? Package;
+  const Icon =
+    categoryIconMap[
+      asset.asset_category?.category_name as keyof typeof categoryIconMap
+    ] ?? Package;
 
   return (
     <div
-      className="rounded-lg border bg-card p-4 space-y-3 hover:border-primary/50 transition-colors cursor-pointer"
+      className="rounded-lg border bg-card p-4 cursor-pointer hover:border-primary/50 hover:shadow-sm transition-all duration-200 flex flex-col justify-between min-h-35"
       onClick={() => onSelect(asset)}
     >
-      <div className="flex items-start justify-between">
-        <div className="p-2 rounded-md bg-muted">
-          <Icon className="h-4 w-4 text-muted-foreground" />
+      {/* Bagian Atas: Nama/Kode (Kiri) & Tersedia (Kanan) */}
+      <div className="flex justify-between items-start gap-2">
+        <div className="space-y-1">
+          <p className="text-sm font-medium leading-tight line-clamp-2">
+            {asset.asset_name}
+          </p>
+          <p className="text-xs text-muted-foreground">({asset.asset_code})</p>
         </div>
-        <Badge variant={conditionVariant(asset.condition)} className="text-xs">
-          {asset.condition}
+        <Badge
+          variant="outline"
+          className="bg-green-50 text-green-700 border-green-200 text-[10px] font-medium shrink-0"
+        >
+          Tersedia
         </Badge>
       </div>
-      <div>
-        <p className="text-sm font-medium leading-tight">{asset.asset_name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {asset.asset_code}
-        </p>
+
+      {/* Bagian Bawah: Kategori (Kiri) & Tombol Pinjam (Kanan) */}
+      <div className="flex items-center justify-between mt-4 pt-3 border-t">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Icon className="h-3 w-3" />
+          <span>{asset.asset_category?.category_name || "Umum"}</span>
+        </div>
+
+        <Button
+          size="sm"
+          variant="default"
+          className="h-7 px-3 text-xs"
+          onClick={(e) => {
+            e.stopPropagation(); // Cegah event klik card berjalan 2x
+            onSelect(asset);
+          }}
+        >
+          Pinjam
+        </Button>
       </div>
-      <Button size="sm" variant="outline" className="w-full text-xs">
-        Pinjam
-      </Button>
     </div>
   );
 };

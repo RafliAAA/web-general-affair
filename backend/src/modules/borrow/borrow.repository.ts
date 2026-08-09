@@ -4,6 +4,24 @@ import { CreateBorrowInput } from "./borrow.dto";
 
 const createBorrowRequest = async (data: CreateBorrowInput) => {
   return await prisma.$transaction(async (tx) => {
+    // 1. Cari data user beserta profilnya untuk mendapatkan directorate_id
+    const user = await tx.user.findUnique({
+      where: { user_id: data.user_id },
+      select: {
+        profile: {
+          select: { directorate_id: true }
+        }
+      }
+    });
+
+    // Jaga-jaga jika user tidak ditemukan atau profilnya belum punya directorate_id
+    if (!user || !user.profile || !user.profile.directorate_id) {
+      throw new Error("User tidak ditemukan atau belum memiliki directorate di profilnya");
+    }
+
+    const userDirectorateId = user.profile.directorate_id;
+
+    // 2. Cek aset
     const asset = await tx.asset.findUnique({
       where: { asset_id: data.asset_id },
     });
@@ -13,6 +31,7 @@ const createBorrowRequest = async (data: CreateBorrowInput) => {
       throw new Error("Asset is not available");
     }
 
+    // 3. Cek peminjaman yang masih aktif
     const existingBorrow = await tx.borrow.findFirst({
       where: {
         asset_id: data.asset_id,
@@ -29,6 +48,7 @@ const createBorrowRequest = async (data: CreateBorrowInput) => {
       );
     }
 
+    // 4. Buat record peminjaman beserta directorate_id dari profil
     return await tx.borrow.create({
       data: {
         user_id: data.user_id,
@@ -37,7 +57,7 @@ const createBorrowRequest = async (data: CreateBorrowInput) => {
         borrow_date: data.borrow_date,
         expected_return_date: data.expected_return_date,
         recipient_type: data.recipient_type || "Personal",
-        directorate_id: data.directorate_id || null,
+        directorate_id: userDirectorateId, 
       },
     });
   });

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   User,
+  Users, // <--- TAMBAHKAN IKON INI
   Calendar,
   Package,
   CheckCircle,
@@ -112,13 +113,19 @@ const DetailBorrowPage = () => {
       </div>
 
       {/* Info Grid */}
-      <div className="grid  gap-4">
+      <div className="grid gap-4">
         {/* Info Peminjam */}
         <SectionCard title="Informasi Peminjaman">
           <InfoRow
             icon={User}
             label="Dipinjam oleh"
             value={borrow.user?.profile?.name ?? "—"}
+          />
+          {/* <--- TAMBAHKAN BARIS INI --- */}
+          <InfoRow
+            icon={Users}
+            label="Tipe Peminjaman"
+            value={borrow.recipient_type ?? "Personal"}
           />
           <InfoRow icon={Package} label="Alasan" value={borrow.borrow_reason} />
           <InfoRow

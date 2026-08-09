@@ -1,6 +1,5 @@
 import type { HandoverItem } from "./handover";
 import type { Maintenance } from "./maintenance";
-import type { Directorate } from "./handover"; // Import Directorate dari handover
 
 export type AssetStatus = "Tersedia" | "Dipinjam" | "Diperbaiki" | "Diserahkan";
 export type RequestStatus = "pending" | "approved" | "rejected";
@@ -45,7 +44,6 @@ export interface Borrow {
   // TAMBAHKAN 3 BARIS INI
   recipient_type: "Personal" | "Divisi";
   directorate_id: string | null;
-  directorate?: Directorate | null; 
 
   asset?: {                      
     asset_name: string;

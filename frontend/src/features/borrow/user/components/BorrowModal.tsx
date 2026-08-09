@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { conditionVariant } from "@/lib/utils";
-import { useDirectorate } from "../../../directorate/hooks/useDirectorate"; // Sesuaikan path
 import type { Asset } from "../../../../types/inventory";
 
 interface Props {
@@ -28,7 +27,6 @@ interface Props {
     borrow_date: string,
     expected_return_date: string,
     recipient_type: "Personal" | "Divisi",
-    directorate_id?: string,
   ) => void;
   onClose: () => void;
   loading: boolean;
@@ -43,13 +41,6 @@ const BorrowModal = ({ asset, onConfirm, onClose, loading }: Props) => {
   const [recipientType, setRecipientType] = useState<"Personal" | "Divisi">(
     "Personal",
   );
-  const [directorateId, setDirectorateId] = useState("");
-
-  const { directorates, fetchDirectorates } = useDirectorate();
-
-  useEffect(() => {
-    fetchDirectorates(); // Fetch semua direktorat saat modal dibuka
-  }, [fetchDirectorates]);
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -97,30 +88,6 @@ const BorrowModal = ({ asset, onConfirm, onClose, loading }: Props) => {
             </Select>
           </div>
 
-          {/* Jika Divisi, tampilkan dropdown Direktorat */}
-          {recipientType === "Divisi" && (
-            <div className="space-y-1.5">
-              <Label className="text-sm text-muted-foreground">
-                Divisi Peminjam
-              </Label>
-              <Select value={directorateId} onValueChange={setDirectorateId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih Divisi" />
-                </SelectTrigger>
-                <SelectContent>
-                  {directorates.map((dir) => (
-                    <SelectItem
-                      key={dir.directorate_id}
-                      value={dir.directorate_id}
-                    >
-                      {dir.directorate_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
           <div className="space-y-1.5">
             <Label className="text-sm text-muted-foreground">
               Tanggal peminjaman
@@ -166,18 +133,13 @@ const BorrowModal = ({ asset, onConfirm, onClose, loading }: Props) => {
           </Button>
           <Button
             size="sm"
-            disabled={
-              !returnDate ||
-              loading ||
-              (recipientType === "Divisi" && !directorateId)
-            }
+            disabled={!returnDate || !borrowDate || loading}
             onClick={() =>
               onConfirm(
                 borrow_reason,
                 borrowDate,
                 new Date(returnDate).toISOString(),
                 recipientType,
-                directorateId,
               )
             }
           >
