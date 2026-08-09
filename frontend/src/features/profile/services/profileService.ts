@@ -8,12 +8,16 @@ export interface ProfileData {
   profile: {
     name: string | null;
     photo: string | null;
+    entity_id: string | null; 
+    directorate_id: string | null; 
   } | null;
 }
 
 export interface UpdateProfilePayload {
   name?: string;
   photo?: File | null;
+  entity_id?: string | null; // <--- DITAMBAHKAN
+  directorate_id?: string | null; // <--- DITAMBAHKAN
 }
 
 export const getMyProfile = async (): Promise<ProfileData> => {
@@ -21,7 +25,9 @@ export const getMyProfile = async (): Promise<ProfileData> => {
   return res.data.data;
 };
 
-export const updateMyProfile = async (payload: UpdateProfilePayload): Promise<ProfileData> => {
+export const updateMyProfile = async (
+  payload: UpdateProfilePayload,
+): Promise<ProfileData> => {
   let photoUrl: string | null | undefined = undefined;
 
   if (payload.photo instanceof File) {
@@ -30,16 +36,26 @@ export const updateMyProfile = async (payload: UpdateProfilePayload): Promise<Pr
     const fileExt = file.name.split(".").pop();
     const fileName = `profile-${Date.now()}.${fileExt}`;
 
-    const { error } = await supabase.storage.from("photo-profile").upload(fileName, file);
+    const { error } = await supabase.storage
+      .from("photo-profile")
+      .upload(fileName, file);
     if (error) throw error;
 
-    const { data } = supabase.storage.from("photo-profile").getPublicUrl(fileName);
+    const { data } = supabase.storage
+      .from("photo-profile")
+      .getPublicUrl(fileName);
     photoUrl = data.publicUrl;
   } else if (payload.photo === null) {
     photoUrl = null;
   }
 
-  const body: any = { name: payload.name };
+  // Siapkan body yang akan dikirim ke backend
+  const body: any = {
+    name: payload.name,
+    entity_id: payload.entity_id, 
+    directorate_id: payload.directorate_id, 
+  };
+
   if (photoUrl !== undefined) {
     body.photo = photoUrl;
   }

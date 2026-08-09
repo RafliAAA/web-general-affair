@@ -9,20 +9,42 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+// Hapus import Select karena tidak dipakai lagi
 import { Camera, Upload, Trash2 } from "lucide-react";
 import type {
   ProfileData,
   UpdateProfilePayload,
 } from "../services/profileService";
 
+interface SelectOption {
+  id: string;
+  name: string;
+}
+
 interface ProfileFormProps {
   profile: ProfileData;
   isSubmitting: boolean;
   onSubmit: (payload: UpdateProfilePayload) => Promise<void>;
+  entities?: SelectOption[];
+  directorates?: SelectOption[];
 }
 
-const ProfileForm = ({ profile, isSubmitting, onSubmit }: ProfileFormProps) => {
+const ProfileForm = ({
+  profile,
+  isSubmitting,
+  onSubmit,
+  entities = [],
+  directorates = [],
+}: ProfileFormProps) => {
   const [name, setName] = useState(profile.profile?.name || "");
+  // Kita simpan IDnya untuk keperluan payload (jika dibutuhkan), tapi UI-nya disabled
+  const entityId = profile.profile?.entity_id || "";
+  const directorateId = profile.profile?.directorate_id || "";
+
+  // Cari nama Entity dan Direktorat berdasarkan ID
+  const entityName = entities.find((ent) => ent.id === entityId)?.name || "—";
+  const directorateName =
+    directorates.find((dir) => dir.id === directorateId)?.name || "—";
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(
@@ -34,7 +56,10 @@ const ProfileForm = ({ profile, isSubmitting, onSubmit }: ProfileFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: UpdateProfilePayload = { name };
+    // Payload sekarang hanya mengirim name dan photo
+    const payload: UpdateProfilePayload = {
+      name,
+    };
 
     if (photoFile) {
       payload.photo = photoFile;
@@ -115,7 +140,6 @@ const ProfileForm = ({ profile, isSubmitting, onSubmit }: ProfileFormProps) => {
               onChange={handleFileChange}
             />
 
-            {/* Tombol Pilih Foto & Hapus (Sejajar Horizontal) */}
             <div className="flex items-center gap-2 w-full max-w-50">
               <Button
                 type="button"
@@ -175,6 +199,33 @@ const ProfileForm = ({ profile, isSubmitting, onSubmit }: ProfileFormProps) => {
               <p className="text-xs text-muted-foreground">
                 Email tidak dapat diubah.
               </p>
+            </div>
+
+            {/* GRID UNTUK ENTITY & DIREKTORAT (READ-ONLY) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="entity" className="text-sm font-medium">
+                  Entitas
+                </Label>
+                <Input
+                  id="entity"
+                  value={entityName}
+                  disabled
+                  className="bg-muted/40 cursor-not-allowed text-muted-foreground"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="directorate" className="text-sm font-medium">
+                  Direktorat
+                </Label>
+                <Input
+                  id="directorate"
+                  value={directorateName}
+                  disabled
+                  className="bg-muted/40 cursor-not-allowed text-muted-foreground"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end pt-4">

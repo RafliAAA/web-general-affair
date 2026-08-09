@@ -11,6 +11,9 @@ import {
 } from "../services/userService";
 import { toast } from "sonner";
 
+import { useDirectorate } from "../../directorate/hooks/useDirectorate";
+import { useEntity } from "../../entity/hooks/useEntity"; 
+
 // Import Komponen yang baru dibuat
 import UserSummaryCards from "../components/UserSummaryCards";
 import UserTable from "../components/UserTable";
@@ -22,6 +25,10 @@ const UserPage = () => {
   const { users, isLoading, fetchUsers } = useUsers();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("Semua");
+
+  // Fetch data untuk dropdown Entity & Direktorat
+  const { directorates, fetchDirectorates } = useDirectorate();
+  const { entities, fetchEntities } = useEntity(); // Asumsi nama hook & fungsinya
 
   // State untuk Modal Create
   const [formOpen, setFormOpen] = useState(false);
@@ -35,7 +42,9 @@ const UserPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    fetchDirectorates();
+    fetchEntities(); // Fetch data entity
+  }, [fetchUsers, fetchDirectorates, fetchEntities]);
 
   const filtered = users
     .filter((u) => roleFilter === "Semua" || u.role === roleFilter)
@@ -81,6 +90,16 @@ const UserPage = () => {
       setIsDeleting(false);
     }
   };
+
+  const entityOptions = (entities || []).map((e: any) => ({
+    id: e.entity_id,
+    name: e.entity_name,
+  }));
+
+  const directorateOptions = (directorates || []).map((d: any) => ({
+    id: d.directorate_id,
+    name: d.directorate_name,
+  }));
 
   return (
     <>
@@ -138,6 +157,8 @@ const UserPage = () => {
         onClose={() => setFormOpen(false)}
         onSubmit={handleCreate}
         isSubmitting={isSubmitting}
+        entities={entityOptions} // <--- KIRIM PROPS INI
+        directorates={directorateOptions} // <--- KIRIM PROPS INI
       />
 
       <UpdateUserModal

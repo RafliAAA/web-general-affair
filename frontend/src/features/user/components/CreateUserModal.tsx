@@ -18,11 +18,19 @@ import {
 } from "@/components/ui/select";
 import type { CreateUserPayload } from "../services/userService";
 
+// Interface untuk opsi dropdown
+interface SelectOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
   onSubmit: (payload: CreateUserPayload) => Promise<void>;
   isSubmitting: boolean;
+  entities?: SelectOption[]; // <--- TAMBAHKAN PROPS INI
+  directorates?: SelectOption[]; // <--- TAMBAHKAN PROPS INI
 }
 
 const ROLE_OPTIONS: { value: CreateUserPayload["role"]; label: string }[] = [
@@ -36,11 +44,18 @@ const initialForm: CreateUserPayload = {
   email: "",
   password: "",
   role: "USER",
-  entity_id: "",       
-  directorate_id: ""
+  entity_id: "",
+  directorate_id: "",
 };
 
-const CreateUserModal = ({ open, onClose, onSubmit, isSubmitting }: Props) => {
+const CreateUserModal = ({
+  open,
+  onClose,
+  onSubmit,
+  isSubmitting,
+  entities = [],
+  directorates = [],
+}: Props) => {
   const [form, setForm] = useState<CreateUserPayload>(initialForm);
 
   const isValid = form.name && form.email && form.password && form.role;
@@ -119,6 +134,49 @@ const CreateUserModal = ({ open, onClose, onSubmit, isSubmitting }: Props) => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* GRID UNTUK ENTITY & DIREKTORAT */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm text-muted-foreground">Entity</Label>
+              <Select
+                value={form.entity_id}
+                onValueChange={(val) => handleChange("entity_id", val)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Entity" />
+                </SelectTrigger>
+                <SelectContent>
+                  {entities.map((ent) => (
+                    <SelectItem key={ent.id} value={ent.id}>
+                      {ent.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm text-muted-foreground">
+                Direktorat
+              </Label>
+              <Select
+                value={form.directorate_id}
+                onValueChange={(val) => handleChange("directorate_id", val)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih Direktorat" />
+                </SelectTrigger>
+                <SelectContent>
+                  {directorates.map((dir) => (
+                    <SelectItem key={dir.id} value={dir.id}>
+                      {dir.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 

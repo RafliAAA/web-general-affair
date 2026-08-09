@@ -12,12 +12,20 @@ import type { User, UpdateUserPayload } from "../services/userService";
 import { useEntity } from "@/features/entity/hooks/useEntity";
 import { useDirectorate } from "@/features/directorate/hooks/useDirectorate";
 
+// Tambahkan interface untuk opsi dropdown
+interface SelectOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
   onSubmit: (id: string, payload: UpdateUserPayload) => Promise<void>;
   initialData: User | null;
   isSubmitting: boolean;
+  entities?: SelectOption[];       // <--- DITAMBAHKAN (Opsional)
+  directorates?: SelectOption[];   // <--- DITAMBAHKAN (Opsional)
 }
 
 const UpdateUserModal = ({ open, onClose, onSubmit, initialData, isSubmitting }: Props) => {
@@ -29,6 +37,7 @@ const UpdateUserModal = ({ open, onClose, onSubmit, initialData, isSubmitting }:
     directorate_id: "",
   });
 
+  // Karena kamu sudah fetch sendiri di sini, props dari parent bisa diabaikan
   const { entities } = useEntity();
   const { directorates, fetchDirectorates } = useDirectorate();
 

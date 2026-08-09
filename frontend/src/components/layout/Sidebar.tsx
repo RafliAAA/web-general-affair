@@ -94,7 +94,7 @@ const navigation: NavItem[] = [
     roles: ["USER"],
   },
   {
-    name: "Pengajuan pinjam",
+    name: "Pengajuan Aset",
     href: "/pengajuan",
     icon: FilePen,
     roles: ["USER"],
@@ -106,9 +106,9 @@ const navigation: NavItem[] = [
     icon: User,
     roles: ["ADMIN"],
     children: [
-      { name: "List Karyawan", href: "/management-users", roles: ["ADMIN"] },
-      { name: "Master Entity", href: "/entity", roles: ["ADMIN"] },
-      { name: "Master Direktorat", href: "/directorate", roles: ["ADMIN"] },
+      { name: "Data Karyawan", href: "/management-users", roles: ["ADMIN"] },
+      { name: "Data Entitas", href: "/entity", roles: ["ADMIN"] },
+      { name: "Data Direktorat", href: "/directorate", roles: ["ADMIN"] },
     ],
   },
 ];
@@ -148,7 +148,7 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
 
       <aside
         className={cn(
-          "fixed lg:static top-0 left-0 z-40 h-screen bg-white transition-all duration-300 overflow-hidden",
+          "fixed top-0 left-0 z-40 h-screen lg:sticky bg-white transition-all duration-300 overflow-hidden",
           isOpen
             ? "w-64 border-r border-slate-300 translate-x-0"
             : "w-0 -translate-x-full lg:translate-x-0",
