@@ -13,7 +13,6 @@ const createReturn = async (
   notes?: string,
 ) => {
   return await prisma.$transaction(async (tx) => {
-    // 1. Cari data peminjaman, beserta kategori asetnya
     const borrow = await tx.borrow.findUnique({
       where: { borrow_id },
       include: {
@@ -75,14 +74,12 @@ const createReturn = async (
         },
       });
 
-      // Cek nama kategori asetnya (bisa juga pakai category_code)
       const categoryName = borrow.asset.asset_category?.category_name || "";
       const isITAsset = categoryName === "Elektronik" || categoryName === "IT";
 
-      // Tentukan status maintenance berdasarkan kategori
       const maintenanceStatus = isITAsset 
-        ? MaintenanceStatus.MenungguDikerjakan // Kalau IT, tunggu IT ambil job
-        : MaintenanceStatus.SedangDikerjakan;  // Kalau Kendaraan/Umum, langsung dikerjakan GA
+        ? MaintenanceStatus.MenungguDikerjakan 
+        : MaintenanceStatus.SedangDikerjakan;  
 
       // Auto-generate tiket Maintenance
       await tx.maintenance.create({

@@ -411,7 +411,6 @@ const cannotRepair = async (data: CannotRepairDTO) => {
   });
 };
 
-// DTO-nya bisa pakai CompleteMaintenanceDTO yang sama
 const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
   return await prisma.$transaction(async (tx) => {
     const maintenance = await tx.maintenance.findUnique({
@@ -430,9 +429,6 @@ const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
     // Cek apakah aset ini kendaraan
     const isKendaraan = maintenance.asset.asset_category?.category_name === "Kendaraan";
 
-    // Tombol ini hanya bisa dipanggil kalau:
-    // 1. Aset Kendaraan & SedangDikerjakan (Berarti mobil lagi di bengkel)
-    // 2. Aset Bukan Kendaraan & TidakDapatDiperbaiki (Berarti elektronik yang dikirim ke vendor)
     const isAllowed = 
       (isKendaraan && maintenance.status === MaintenanceStatus.SedangDikerjakan) || 
       (!isKendaraan && maintenance.status === MaintenanceStatus.TidakDapatDiperbaiki);
@@ -478,7 +474,7 @@ const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
       include: {
         asset: {
           include: {
-            asset_category: true, // Include kategori agar frontend dapat datanya
+            asset_category: true, 
           },
         },
         reporter: {
