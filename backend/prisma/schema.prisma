@@ -54,6 +54,12 @@ enum MaintenanceStatus {
   TidakDapatDiperbaiki  
 }
 
+enum MaintenanceSource {
+  LAPORAN_KARYAWAN
+  PENGEMBALIAN_ASET
+}
+
+
 enum DisposalMethod {
   Jual
   Hibah
@@ -325,6 +331,7 @@ model Maintenance {
   taken_at         DateTime?
   resolution_notes String?
   completed_at     DateTime?
+  source MaintenanceSource @default(LAPORAN_KARYAWAN)
 
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
@@ -388,6 +395,7 @@ model DisposalItem {
 
   notes            String?
   method           DisposalMethod
+  recipient_name   String?
 
 
   disposal Disposal @relation(fields: [disposal_id],references: [disposal_id],onDelete: Cascade)
@@ -407,7 +415,7 @@ model Room {
   updatedAt  DateTime   @updatedAt
   deletedAt  DateTime?
 
-   facilities RoomFacility[]
+  facilities RoomFacility[]
   bookings RoomBooking[]
 
   
@@ -444,17 +452,16 @@ model RoomBooking {
 
 model Notification {
   notification_id String           @id @default(uuid())
-  user_id         String           // User penerima notifikasi
+  user_id         String           
   title           String
   message         String
   type            NotificationType @default(SYSTEM)
-  link            String?          // URL tujuan saat notifikasi diklik (misal: /borrows/123)
+  link            String?          
   is_read         Boolean          @default(false)
   createdAt       DateTime         @default(now())
 
-  // Relasi ke User
   user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
-  @@index([user_id, is_read]) // Index untuk mempercepat query notifikasi yang belum dibaca
+  @@index([user_id, is_read]) 
 }
 
