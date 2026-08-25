@@ -13,7 +13,6 @@ const createBooking = async (data: CreateBookingDTO, user_id: string) => {
       throw new Error("Ruangan tidak tersedia");
     }
 
-    // cek bentrok jadwal
     const conflict = await tx.roomBooking.findFirst({
       where: {
         room_id: data.room_id,
@@ -43,7 +42,21 @@ const createBooking = async (data: CreateBookingDTO, user_id: string) => {
       },
       include: {
         room: { include: { facilities: true } },
-        user: { select: { profile: { select: { name: true } } } },
+        user: {
+          select: {
+            profile: {
+              select: {
+                name: true,
+                entity: {
+                  select: { entity_name: true },
+                },
+                directorate: {
+                  select: { directorate_name: true },
+                },
+              },
+            },
+          },
+        },
       },
     });
   });
@@ -53,7 +66,21 @@ const getAllBookings = async () => {
   return await prisma.roomBooking.findMany({
     include: {
       room: { include: { facilities: true } },
-      user: { select: { profile: { select: { name: true } } } },
+      user: {
+        select: {
+          profile: {
+            select: {
+              name: true,
+              entity: {
+                select: { entity_name: true },
+              },
+              directorate: {
+                select: { directorate_name: true },
+              },
+            },
+          },
+        },
+      },
       reviewer: { select: { profile: { select: { name: true } } } },
     },
     orderBy: { createdAt: "desc" },
@@ -65,7 +92,21 @@ const getBookingById = async (booking_id: string) => {
     where: { booking_id },
     include: {
       room: { include: { facilities: true } },
-      user: { select: { profile: { select: { name: true } } } },
+      user: {
+        select: {
+          profile: {
+            select: {
+              name: true,
+              entity: {
+                select: { entity_name: true },
+              },
+              directorate: {
+                select: { directorate_name: true },
+              },
+            },
+          },
+        },
+      },
       reviewer: { select: { profile: { select: { name: true } } } },
     },
   });
@@ -90,7 +131,21 @@ const getRoomSchedule = async (room_id: string, date?: string) => {
       ...(date ? { date: new Date(date) } : {}),
     },
     include: {
-      user: { select: { profile: { select: { name: true } } } },
+      user: {
+        select: {
+          profile: {
+            select: {
+              name: true,
+              entity: {
+                select: { entity_name: true },
+              },
+              directorate: {
+                select: { directorate_name: true },
+              },
+            },
+          },
+        },
+      },
     },
     orderBy: [{ date: "asc" }, { start_time: "asc" }],
   });
@@ -119,7 +174,21 @@ const reviewBooking = async (
     },
     include: {
       room: { include: { facilities: true } },
-      user: { select: { profile: { select: { name: true } } } },
+      user: {
+        select: {
+          profile: {
+            select: {
+              name: true,
+              entity: {
+                select: { entity_name: true },
+              },
+              directorate: {
+                select: { directorate_name: true },
+              },
+            },
+          },
+        },
+      },
       reviewer: { select: { profile: { select: { name: true } } } },
     },
   });

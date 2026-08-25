@@ -23,7 +23,6 @@ const createMaintenance = async (data: CreateMaintenanceDTO) => {
 
     if (!asset) throw new Error("Asset not found");
 
-    // Cek peminjaman aktif
     const activeBorrow = await tx.borrow.findFirst({
       where: {
         asset_id: data.asset_id,
@@ -70,6 +69,7 @@ const hasOwnership = !!activeBorrow || !!activeHandover;
         asset_id: data.asset_id,
         reported_by: data.reported_by,
         description: data.description,
+        source: data.source,
       },
       include: {
         asset: true,
@@ -156,7 +156,11 @@ const getMaintenanceById = async (maintenance_id: string) => {
   return await prisma.maintenance.findUnique({
     where: { maintenance_id },
     include: {
-      asset: true,
+      asset: {
+        include: {
+          asset_category: true, 
+        },
+      },
       reporter: { select: userSelect },
       verifier: { select: userSelect },
       handler: { select: userSelect },
@@ -412,12 +416,28 @@ const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
   return await prisma.$transaction(async (tx) => {
     const maintenance = await tx.maintenance.findUnique({
       where: { maintenance_id: data.maintenance_id },
+      include: {
+        asset: {
+          include: {
+            asset_category: true, 
+          },
+        },
+      },
     });
 
     if (!maintenance) throw new Error("Maintenance not found");
 
-    // HANYA BISA SELESAIKAN KALAU STATUSNYA TIDAK DAPAT DIPERBAIKI (DARI VENDOR)
-    if (maintenance.status !== MaintenanceStatus.TidakDapatDiperbaiki) {
+    // Cek apakah aset ini kendaraan
+    const isKendaraan = maintenance.asset.asset_category?.category_name === "Kendaraan";
+
+    // Tombol ini hanya bisa dipanggil kalau:
+    // 1. Aset Kendaraan & SedangDikerjakan (Berarti mobil lagi di bengkel)
+    // 2. Aset Bukan Kendaraan & TidakDapatDiperbaiki (Berarti elektronik yang dikirim ke vendor)
+    const isAllowed = 
+      (isKendaraan && maintenance.status === MaintenanceStatus.SedangDikerjakan) || 
+      (!isKendaraan && maintenance.status === MaintenanceStatus.TidakDapatDiperbaiki);
+
+    if (!isAllowed) {
       throw new Error("This maintenance is not waiting for external repair");
     }
 
@@ -452,11 +472,15 @@ const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
       where: { maintenance_id: data.maintenance_id },
       data: {
         status: MaintenanceStatus.Selesai,
-        resolution_notes: data.resolution_notes, // GA bisa ngisi: "Diperbaiki vendor PT XXX"
+        resolution_notes: data.resolution_notes,
         completed_at: new Date(),
       },
-       include: {
-        asset: true,
+      include: {
+        asset: {
+          include: {
+            asset_category: true, // Include kategori agar frontend dapat datanya
+          },
+        },
         reporter: {
           select: {
             user_id: true,

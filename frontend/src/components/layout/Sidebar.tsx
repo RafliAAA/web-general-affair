@@ -14,8 +14,11 @@ import {
   FileWarning,
   Trash2,
   FilePen,
-  Settings,
   User,
+  // 🌟 Tambahkan ikon baru di sini
+  DoorOpen, 
+  CalendarCheck, 
+  CalendarDays,
 } from "lucide-react";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
@@ -37,6 +40,13 @@ const navigation: NavItem[] = [
     name: "Dashboard",
     href: "/",
     icon: LayoutDashboard,
+    roles: ["ADMIN", "IT", "USER"],
+  },
+  
+  {
+    name: "Ruangan",
+    href: "/ruangan",
+    icon: DoorOpen,
     roles: ["ADMIN", "IT", "USER"],
   },
 
@@ -67,11 +77,19 @@ const navigation: NavItem[] = [
     roles: ["ADMIN"],
   },
   {
-    name: "Peminjaman",
+    name: "Peminjaman Aset",
     href: "/peminjaman",
     icon: ArrowRightLeft,
     roles: ["ADMIN"],
   },
+  
+  {
+    name: "Persetujuan Ruangan",
+    href: "/persetujuan-ruangan",
+    icon: CalendarCheck,
+    roles: ["ADMIN"],
+  },
+  
   {
     name: "Pemeliharaan",
     href: "/pemeliharaan",
@@ -100,6 +118,13 @@ const navigation: NavItem[] = [
     roles: ["USER"],
   },
   { name: "Aset Saya", href: "/aset-saya", icon: Package, roles: ["USER"] },
+  
+  {
+    name: "Peminjaman Ruangan",
+    href: "/peminjaman-ruangan",
+    icon: CalendarDays,
+    roles: ["USER"],
+  },
 
   {
     name: "Manajemen User",
@@ -258,18 +283,6 @@ const Sidebar = ({ isOpen, closeSidebar }: SidebarProps) => {
               );
             })}
           </nav>
-
-          {/* Footer */}
-          <div className="border-t border-sidebar-border p-4">
-            <Link
-              to="/pengaturan"
-              className="flex items-center gap-3 px-3 py-2.5 text-base rounded-lg hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              onClick={handleLinkClick}
-            >
-              <Settings className="w-5 h-5" />
-              Pengaturan
-            </Link>
-          </div>
         </div>
       </aside>
     </>

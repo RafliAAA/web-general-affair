@@ -4,6 +4,7 @@ export const createMaintenanceSchema = z.object({
   asset_id: z.string().uuid(),
   reported_by: z.string().uuid(),
   description: z.string().min(1, "Description is required"),
+  source: z.enum(["LAPORAN_KARYAWAN", "PENGEMBALIAN_ASET"]).default("LAPORAN_KARYAWAN"),
 });
 
 export const verifyMaintenanceSchema = z.object({
@@ -54,4 +55,6 @@ export type RejectMaintenanceDTO = z.infer<typeof rejectMaintenanceSchema>;
 export type TakeMaintenanceDTO = z.infer<typeof takeMaintenanceSchema>;
 export type CompleteMaintenanceDTO = z.infer<typeof completeMaintenanceSchema>;
 export type CannotRepairDTO = z.infer<typeof cannotRepairSchema>;
-export type CreateActualizationFormDTO = z.infer<typeof createActualizationFormSchema>;
+export type CreateActualizationFormDTO = z.infer<
+  typeof createActualizationFormSchema
+>;

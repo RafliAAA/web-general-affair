@@ -9,7 +9,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { Booking, ReviewBookingPayload } from "../services/bookingService";
+import type {
+  Booking,
+  ReviewBookingPayload,
+} from "@/types/booking";
 
 interface Props {
   open: boolean;
@@ -19,7 +22,13 @@ interface Props {
   isSubmitting: boolean;
 }
 
-const ReviewBookingModal = ({ open, booking, onClose, onSubmit, isSubmitting }: Props) => {
+const ReviewBookingModal = ({
+  open,
+  booking,
+  onClose,
+  onSubmit,
+  isSubmitting,
+}: Props) => {
   const [rejectNotes, setRejectNotes] = useState("");
   const [action, setAction] = useState<"Disetujui" | "Ditolak" | null>(null);
 
@@ -56,8 +65,11 @@ const ReviewBookingModal = ({ open, booking, onClose, onSubmit, isSubmitting }: 
               <p className="text-sm font-medium">{booking.room.name}</p>
               <p className="text-xs text-muted-foreground">
                 {new Date(booking.date).toLocaleDateString("id-ID", {
-                  day: "2-digit", month: "long", year: "numeric",
-                })} · {booking.start_time} – {booking.end_time}
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
+                · {booking.start_time} – {booking.end_time}
               </p>
               <p className="text-xs text-muted-foreground">
                 Diajukan oleh{" "}
@@ -67,7 +79,9 @@ const ReviewBookingModal = ({ open, booking, onClose, onSubmit, isSubmitting }: 
               </p>
               <p className="text-xs text-muted-foreground">
                 Tujuan:{" "}
-                <span className="font-medium text-foreground">{booking.purpose}</span>
+                <span className="font-medium text-foreground">
+                  {booking.purpose}
+                </span>
               </p>
             </div>
 
@@ -108,7 +122,12 @@ const ReviewBookingModal = ({ open, booking, onClose, onSubmit, isSubmitting }: 
         )}
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" onClick={handleClose} disabled={isSubmitting}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
             Batal
           </Button>
           <Button

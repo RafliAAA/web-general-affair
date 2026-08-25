@@ -1,11 +1,13 @@
 import { z } from "zod";
 
-export const DisposalMethodEnum = z.enum(["Jual", "Hibah"]);
+export const DisposalMethodEnum = z.enum(["Jual", "Hibah", "Kirim"]);
 
 export const CreateDisposalItemSchema = z.object({
   asset_id: z.string().uuid(),
   method: DisposalMethodEnum,
   notes: z.string().nullable(),
+  recipient_name: z.string().optional().or(z.literal("")),
+
 });
 
 export const CreateDisposalSchema = z.object({
@@ -18,7 +20,6 @@ export const CreateDisposalSchema = z.object({
   items: z.array(CreateDisposalItemSchema),
 });
 
-// ← tambah schema baru
 export const UpdateDisposalHeaderSchema = z.object({
   memo_date: z.coerce.date(),
   subject: z.string().min(1),

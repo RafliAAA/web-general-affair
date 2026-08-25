@@ -36,7 +36,7 @@ interface AvailableAsset {
   serial_number: string;
   condition: string;
   status: string;
-  asset_category?: {     // ← tambah ini
+  asset_category?: {
     category_name: string;
   } | null;
 }
@@ -47,13 +47,19 @@ interface PendingItem {
   asset_code: string;
   method: string;
   notes: string;
+  recipient_name: string; 
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onSubmit: (
-    items: { asset_id: string; method: string; notes?: string }[],
+    items: {
+      asset_id: string;
+      method: string;
+      notes?: string;
+      recipient_name?: string;
+    }[], 
   ) => Promise<void>;
   excludedIds: string[];
 }
@@ -128,15 +134,17 @@ const AddDisposalItemModal = ({
         asset_code: a.asset_code,
         method: "",
         notes: "",
+        recipient_name: "", // TAMBAHKAN INI
       })),
     ]);
     setChecked(new Set());
     setStep("configure");
   };
 
+  // UBAH PARAMETER AGAR BISA MENERIMA recipient_name
   const handleItemChange = (
     index: number,
-    field: "method" | "notes",
+    field: "method" | "notes" | "recipient_name",
     value: string,
   ) => {
     setItems((prev) => {
@@ -168,6 +176,7 @@ const AddDisposalItemModal = ({
           asset_id: i.asset_id,
           method: i.method,
           notes: i.notes || undefined,
+          recipient_name: i.recipient_name || undefined, 
         })),
       );
       reset();
@@ -241,7 +250,9 @@ const AddDisposalItemModal = ({
                           {asset.asset_name}
                         </TableCell>
                         <TableCell>{asset.asset_code}</TableCell>
-                        <TableCell>{asset.asset_category?.category_name || "—"}</TableCell>
+                        <TableCell>
+                          {asset.asset_category?.category_name || "—"}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             variant={conditionVariant(asset.condition)}
@@ -343,7 +354,7 @@ const AddDisposalItemModal = ({
                           </span>
                         </Label>
                         <Input
-                          placeholder="contoh: Hibah ke Kantor Pusat"
+                          placeholder="Kondisi"
                           value={item.notes}
                           onChange={(e) =>
                             handleItemChange(index, "notes", e.target.value)
@@ -351,6 +362,26 @@ const AddDisposalItemModal = ({
                         />
                       </div>
                     </div>
+
+                    {/* INPUT NAMA PENERIMA HANYA MUNCUL KALAU METODE = HIBAH */}
+                    {item.method === "Hibah" && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-muted-foreground">
+                          Nama Penerima Hibah
+                        </Label>
+                        <Input
+                          placeholder="Masukkan nama penerima..."
+                          value={item.recipient_name}
+                          onChange={(e) =>
+                            handleItemChange(
+                              index,
+                              "recipient_name",
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

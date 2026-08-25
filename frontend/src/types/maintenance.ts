@@ -2,9 +2,11 @@ export interface MaintenanceAsset {
   asset_id: string;
   asset_code: string;
   asset_name: string;
-  asset_type: string;
   condition: string;
   status: string;
+  asset_category?: {
+    category_name: string;
+  } | null;
 }
 
 export interface MaintenanceUser {
@@ -21,6 +23,7 @@ export interface Maintenance {
   verified_by: string | null;
   rejection_reason: string | null;
   verified_at: string | null;
+  source: string | null;
   taken_by: string | null;
   taken_at: string | null;
   resolution_notes: string | null;

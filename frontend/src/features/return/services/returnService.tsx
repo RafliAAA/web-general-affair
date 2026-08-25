@@ -5,7 +5,7 @@ export type { BorrowRequest };
 
 export interface CreateReturnPayload {
   borrow_id: string;
-  return_condition: "Baik" | "Cukup" | "Rusak";
+  return_condition: "Baik" | "Rusak";
   notes?: string;
 }
 

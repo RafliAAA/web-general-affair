@@ -83,8 +83,17 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./features/auth/pages/Login"));
 const Register = lazy(() => import("./features/auth/pages/Register"));
 const SOP = lazy(() => import("./features/SOP/pages/SOP"));
+const RoomPage = lazy(() => import("./features/rooms/pages/RoomPage"));
+const DetailRoomPage = lazy(
+  () => import("./features/rooms/pages/DetailRoomPage"),
+);
+const AdminBookingPage = lazy(
+  () => import("./features/bookings/admin/pages/AdminBookingPage"),
+);
+const UserBookingPage = lazy(
+  () => import("./features/bookings/user/pages/UserBookingPage"),
+);
 
-// KOMPONEN CEK HAK AKSES ROLE
 const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
   const { user } = useAuthStore();
 
@@ -135,17 +144,16 @@ function App() {
             element={!user ? <Register /> : <Navigate to="/" />}
           />
 
-          {/* 2. ROUTE PRIVAT (Wajib Login) */}
+          {/* 2. ROUTE PROTECTED */}
           <Route
             element={user ? <DashboardLayout /> : <Navigate to="/login" />}
           >
-            {/* ROUTE UNTUK SEMUA ROLE (ADMIN, IT, USER) */}
+            {/* ROUTE ALL ROLES */}
             <Route
               element={
                 <ProtectedRoute allowedRoles={["ADMIN", "IT", "USER"]} />
               }
             >
-              {/* PANGGIL KOMPONEN DINAMIS DI SINI */}
               <Route path="/" element={<RoleBasedDashboard />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/notifikasi" element={<NotificationPage />} />
@@ -153,7 +161,7 @@ function App() {
               <Route path="/sop" element={<SOP />} />
             </Route>
 
-            {/* ROUTE KHUSUS ADMIN */}
+            {/* ROUTE ADMIN */}
             <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
               <Route path="/pengadaan" element={<ProcurementPage />} />
               <Route
@@ -185,10 +193,16 @@ function App() {
               <Route path="/directorate" element={<DirectoratePage />} />
               <Route path="/aset-karyawan" element={<AdminDashboardPage />} />
               <Route path="/kendaraan" element={<AdminDashboardPage />} />
-              <Route path="/ruangan" element={<AdminDashboardPage />} />
+              <Route path="/ruangan" element={<RoomPage />} />
+              <Route path="/ruangan/:id" element={<DetailRoomPage />} />
+              <Route
+                path="/persetujuan-ruangan"
+                element={<AdminBookingPage />}
+              />
+              <Route path="/ruangan" element={<RoomPage />} />
             </Route>
 
-            {/* ROUTE KHUSUS IT */}
+            {/* ROUTE IT */}
             <Route element={<ProtectedRoute allowedRoles={["IT"]} />}>
               <Route path="/perbaikan" element={<ITMaintenancePage />} />
               <Route
@@ -196,8 +210,7 @@ function App() {
                 element={<ITMaintenanceDetailPage />}
               />
             </Route>
-
-            {/* ROUTE KHUSUS USER */}
+            {/* ROUTE USER */}
             <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
               <Route path="/lapor-kerusakan" element={<MyMaintenancePage />} />
               <Route
@@ -206,9 +219,9 @@ function App() {
               />
               <Route path="/pengajuan" element={<Borrow />} />
               <Route path="/aset-saya" element={<MyAssetPage />} />
+              <Route path="/peminjaman-ruangan" element={<UserBookingPage />} />
             </Route>
           </Route>
-
           {/* 3. FALLBACK / 404 NOT FOUND */}
           <Route path="*" element={<NotFound />} />
         </Routes>

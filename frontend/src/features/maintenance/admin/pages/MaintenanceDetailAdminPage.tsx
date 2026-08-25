@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useMaintenanceDetailIT } from "../../IT/hooks/useMaintenanceDetail";
-// GANTI IMPORT KE STATUS BADGE GLOBAL
 import { StatusBadge } from "../../../../components/shared/StatusBadge";
 import ActualizationPDF from "../../IT/components/ActualizationPDF";
 import CompleteExternalModal from "../components/CompleteExternalModal";
@@ -66,6 +65,22 @@ const MaintenanceDetailAdminPage = () => {
   const { maintenance, actualization, loading, error } =
     useMaintenanceDetailIT(id);
 
+  const isFromReturn = maintenance?.source === "PENGEMBALIAN_ASET";
+
+  // Cek apakah aset ini kendaraan
+  const isKendaraan =
+    maintenance?.asset.asset_category?.category_name === "Kendaraan";
+  const isSedangDikerjakan = maintenance?.status === "SedangDikerjakan";
+  const isTidakDapatDiperbaiki =
+    maintenance?.status === "TidakDapatDiperbaiki";
+
+  // Tombol Selesai Diperbaiki muncul kalau:
+  // 1. Aset Kendaraan & Sedang Dikerjakan (Langsung dibawa ke bengkel)
+  // 2. Aset Bukan Kendaraan & Tidak Dapat Diperbaiki (Dikerjakan IT tapi gagal, pindah ke vendor)
+  const showCompleteExternalBtn =
+    (isKendaraan && isSedangDikerjakan) ||
+    (!isKendaraan && isTidakDapatDiperbaiki);
+
   return (
     <>
       {loading ? (
@@ -103,7 +118,8 @@ const MaintenanceDetailAdminPage = () => {
                 {maintenance.asset.asset_name}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {maintenance.asset.asset_code} · {maintenance.asset.asset_type}
+                {maintenance.asset.asset_code} ·{" "}
+                {maintenance.asset.asset_category?.category_name}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -133,41 +149,47 @@ const MaintenanceDetailAdminPage = () => {
                   </PDFDownloadLink>
                 )}
 
-              {maintenance.status === "TidakDapatDiperbaiki" && (
+              {/* KONDISI TOMBOL SELESAI DIPERBAIKI */}
+              {showCompleteExternalBtn && (
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800"
+                  className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:text-green-800"
                   onClick={() => setIsExternalModalOpen(true)}
                 >
                   <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                   Selesai Diperbaiki
                 </Button>
               )}
+
               <StatusBadge status={maintenance.status} />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <SectionCard title="Informasi laporan">
+            <SectionCard
+              title={
+                isFromReturn ? "Informasi Pengembalian" : "Informasi Laporan"
+              }
+            >
               <InfoRow
                 icon={Calendar}
-                label="Tanggal lapor"
+                label={isFromReturn ? "Tanggal Pengembalian" : "Tanggal lapor"}
                 value={formatDate(maintenance.createdAt)}
               />
               <InfoRow
                 icon={User}
-                label="Dilaporkan oleh"
+                label={isFromReturn ? "Dikembalikan oleh" : "Dilaporkan oleh"}
                 value={maintenance.reporter?.profile?.name ?? "—"}
               />
               <InfoRow
                 icon={User}
-                label="Diverifikasi oleh"
+                label={isFromReturn ? "Diterima oleh" : "Diverifikasi oleh"}
                 value={maintenance.verifier?.profile?.name ?? "—"}
               />
               <InfoRow
                 icon={Calendar}
-                label="Tanggal verifikasi"
+                label={isFromReturn ? "Tanggal diterima" : "Tanggal verifikasi"}
                 value={formatDate(maintenance.verified_at)}
               />
             </SectionCard>
@@ -191,7 +213,13 @@ const MaintenanceDetailAdminPage = () => {
             </SectionCard>
           </div>
 
-          <SectionCard title="Deskripsi kerusakan">
+          <SectionCard
+            title={
+              isFromReturn
+                ? "Catatan Kerusakan Saat Dikembalikan"
+                : "Deskripsi kerusakan"
+            }
+          >
             <p className="text-sm text-muted-foreground leading-relaxed">
               {maintenance.description}
             </p>

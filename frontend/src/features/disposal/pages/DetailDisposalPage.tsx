@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -29,6 +28,7 @@ import { useDisposalDetail } from "../hooks/useDisposalDetail";
 import AddDisposalItemModal from "../components/AddDisposalItemModal";
 import UpdateDisposalMemoModal from "../components/UpdateDisposalMemoModal";
 import DisposalPDF from "../components/DisposalPdf";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -38,21 +38,6 @@ const formatDate = (dateStr: string) =>
     month: "long",
     year: "numeric",
   });
-
-const methodVariant = (method: string) => {
-  switch (method) {
-    case "Hibah":
-      return "secondary";
-    case "Jual":
-      return "success";
-    case "Musnahkan":
-      return "destructive";
-    case "Tukar Tambah":
-      return "outline";
-    default:
-      return "outline";
-  }
-};
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -130,6 +115,10 @@ const DetailDisposalPage = () => {
   } = useDisposalDetail(id);
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [editMemoOpen, setEditMemoOpen] = useState(false);
+
+  // Filter aset yang metodenya Hibah untuk ditampilkan di section bawah
+  const hibahItems =
+    disposal?.items?.filter((item: any) => item.method === "Hibah") || [];
 
   return (
     <>
@@ -217,7 +206,7 @@ const DetailDisposalPage = () => {
             </SectionCard>
           </div>
 
-          {/* Items */}
+          {/* Items Tabel Utama */}
           <div className="rounded-lg border bg-card">
             <div className="px-5 py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -252,7 +241,7 @@ const DetailDisposalPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {disposal.items.map((item) => (
+                    {disposal.items.map((item: any) => (
                       <TableRow key={item.disposal_item_id}>
                         <TableCell className="font-medium">
                           {item.asset.asset_name}
@@ -264,12 +253,7 @@ const DetailDisposalPage = () => {
                           {item.asset.asset_category?.category_name || "—"}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={methodVariant(item.method)}
-                            className="text-xs"
-                          >
-                            {item.method}
-                          </Badge>
+                          <StatusBadge status={item.method} />
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {item.notes || "—"}
@@ -296,12 +280,51 @@ const DetailDisposalPage = () => {
             )}
           </div>
 
+          {hibahItems.length > 0 && (
+            <div className="rounded-lg border bg-card">
+              <div className="px-5 py-4 border-b flex items-center gap-3">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Laporan Penerima Hibah
+                </p>
+                <span className="text-xs text-muted-foreground">
+                  {hibahItems.length} aset dihibah
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nama aset</TableHead>
+                      <TableHead>Kode aset</TableHead>
+                      <TableHead>Penerima Hibah</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {hibahItems.map((item: any) => (
+                      <TableRow key={item.disposal_item_id}>
+                        <TableCell className="font-medium">
+                          {item.asset.asset_name}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {item.asset.asset_code}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {item.recipient_name || "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
           {/* Add Item Modal */}
           <AddDisposalItemModal
             open={addItemOpen}
             onClose={() => setAddItemOpen(false)}
             onSubmit={handleAddItems}
-            excludedIds={disposal.items?.map((i) => i.asset_id) ?? []}
+            excludedIds={disposal.items?.map((i: any) => i.asset_id) ?? []}
           />
 
           {/* Edit Memo Modal */}

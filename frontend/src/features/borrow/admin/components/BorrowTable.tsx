@@ -1,7 +1,6 @@
 import { Check, X, RotateCcw } from "lucide-react";
 import { StatusBadge } from "../../../../components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; // <--- TAMBAHKAN INI
 import {
   Table,
   TableHeader,
@@ -40,11 +39,11 @@ const BorrowTable = ({ borrows, onApprove, onReject, onReturn }: Props) => {
   }
 
   return (
-    <Table>
+    <div className="overflow-x-auto">
+    <Table className="min-w-full">
       <TableHeader>
         <TableRow>
           <TableHead>Nama karyawan</TableHead>
-          <TableHead>Tipe Peminjaman</TableHead> {/* <--- KOLOM BARU */}
           <TableHead>Nama aset</TableHead>
           <TableHead>Alasan</TableHead>
           <TableHead>Tgl rencana kembali</TableHead>
@@ -63,18 +62,7 @@ const BorrowTable = ({ borrows, onApprove, onReject, onReturn }: Props) => {
               {b.user?.profile?.name ?? "—"}
             </TableCell>
             {/* <--- ISI KOLOM BARU --- */}
-            <TableCell>
-              {b.recipient_type && (
-                <Badge
-                  variant={
-                    b.recipient_type === "Divisi" ? "default" : "secondary"
-                  }
-                  className="text-xs"
-                >
-                  {b.recipient_type}
-                </Badge>
-              )}
-            </TableCell>
+           
             <TableCell>{b.asset.asset_name}</TableCell>
             <TableCell className="max-w-48 truncate">
               {b.borrow_reason}
@@ -127,6 +115,7 @@ const BorrowTable = ({ borrows, onApprove, onReject, onReturn }: Props) => {
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 };
 

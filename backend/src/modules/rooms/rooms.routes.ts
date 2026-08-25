@@ -4,7 +4,6 @@ import roomController from "./rooms.controller";
 
 const router = express.Router();
 
-// ─── Room ─────────────────────────────────────────────────────────────────────
 router.get("/", authMiddleware.protectRoute, roomController.getAllRooms);
 router.get("/:room_id", authMiddleware.protectRoute, roomController.getRoomById);
 router.get(

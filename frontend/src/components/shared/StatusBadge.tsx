@@ -7,7 +7,7 @@ interface StatusBadgeProps {
 }
 
 const statusStyles: Record<string, string> = {
-  // Procurement & Borrow (Shared Statuses)
+  // Procurement & Borrow & Booking(Shared Statuses)
   Menunggu:
     "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
   Disetujui: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
@@ -43,9 +43,13 @@ const statusStyles: Record<string, string> = {
   MenungguDikerjakan:
     "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100",
 
-  Aktif: "bg-blue-100 text-blue-700 border-blue-200",
+  // Handover Status
+  Aktif: "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100",
 
-
+  // Disposal Method
+  Jual: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100",
+  Hibah: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
+  Kirim: "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100",
 
 };
 

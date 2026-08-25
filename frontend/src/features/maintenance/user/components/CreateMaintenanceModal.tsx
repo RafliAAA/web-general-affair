@@ -14,8 +14,6 @@ import { Search, Check } from "lucide-react";
 import type { CreateMaintenancePayload } from "@/types/maintenance";
 import { useMyAssets } from "@/features/assets/hooks/useMyAssets";
 
-
-
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -30,18 +28,27 @@ const CreateMaintenanceModal = ({ open, onClose, onSubmit }: Props) => {
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-useEffect(() => {
-  if (!open) return;
+  useEffect(() => {
+    if (!open) return;
 
-  setAssetId("");
-  setSearch("");
-  setDescription("");
-}, [open]);
+    setAssetId("");
+    setSearch("");
+    setDescription("");
+  }, [open]);
 
+  // --- FILTER UTAMA ADA DI SINI ---
+  const filtered = assets.filter((a) => {
+    // 1. Filter berdasarkan search
+    const matchSearch = a.asset_name
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-  const filtered = assets.filter((a) =>
-    a.asset_name.toLowerCase().includes(search.toLowerCase()),
-  );
+    // 2. Filter berdasarkan kategori (Hanya Elektronik & IT)
+    const category = a.asset_category?.category_name ?? "";
+    const isElectronic = category === "Elektronik" || category === "IT";
+
+    return matchSearch && isElectronic;
+  });
 
   const isValid = assetId !== "" && description.trim() !== "";
 
@@ -61,7 +68,7 @@ useEffect(() => {
     } catch (err) {
       console.error(err);
     } finally {
-        setSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -98,7 +105,7 @@ useEffect(() => {
                 <div className="py-8 text-center text-sm text-muted-foreground">
                   {assets.length === 0
                     ? "Anda belum memiliki aset"
-                    : "Aset tidak ditemukan"}
+                    : "Hanya aset Elektronik/IT yang dapat dilaporkan kerusakannya."}
                 </div>
               ) : (
                 filtered.map((a) => {
@@ -116,7 +123,7 @@ useEffect(() => {
                       <div>
                         <p className="text-sm font-medium">{a.asset_name}</p>
                         <p className="text-xs text-muted-foreground">
-                           {a.asset_category?.category_name ?? "—"}
+                          {a.asset_category?.category_name ?? "—"}
                         </p>
                       </div>
                       {selected && (

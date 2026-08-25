@@ -8,31 +8,31 @@ import type { BorrowRequest, CreateReturnPayload } from "../../../return/service
 import { toast } from "sonner";
 
 // Komponen Section agar tampilannya rapi
+// Ubah bagian div pembungkus children di dalam Section
 const Section = ({ title, count, children }: { title: string, count: number, children: React.ReactNode }) => (
-  <div className="space-y-3">
+  <div className="space-y-3 w-full min-w-0"> {/* Tambahkan w-full min-w-0 */}
     <div className="flex items-center gap-2">
       <p className="text-sm font-medium">{title}</p>
       {count > 0 && (
         <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground">
           {count}
         </span>
+        
       )}
     </div>
-    <div className="rounded-lg border bg-card">
+    {/* Tambahkan overflow-x-auto di sini */}
+    <div className="rounded-lg border bg-card overflow-x-auto">
       {children}
     </div>
   </div>
 );
 
 const AdminBorrowPage = () => {
-  // Pastikan fetchBorrows ada di hook kamu untuk refresh data
   const { borrows, loading, error, handleApprove, handleReject, fetchBorrows } = useBorrowAdmin();
   
-  // State untuk modal return
   const [returnTarget, setReturnTarget] = useState<BorrowRequest | null>(null);
   const [isReturning, setIsReturning] = useState(false);
 
-  // Fungsi untuk handle pengembalian langsung di halaman ini
   const handleReturnSubmit = async (payload: CreateReturnPayload) => {
     setIsReturning(true);
     try {

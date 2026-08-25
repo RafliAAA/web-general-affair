@@ -25,6 +25,7 @@ const createDisposal = async (data: CreateDisposalInput) => {
         asset_id: item.asset_id,
         method: item.method,
         notes: item.notes,
+        recipient_name: item.recipient_name ? item.recipient_name : null
       })),
     });
 
@@ -142,6 +143,7 @@ const updateDisposal = async (
         asset_id: item.asset_id,
         method: item.method,
         notes: item.notes,
+        recipient_name: item.recipient_name ? item.recipient_name : null
       })),
     });
 
@@ -247,6 +249,7 @@ const addDisposalItems = async (
         asset_id: item.asset_id,
         method: item.method,
         notes: item.notes,
+        recipient_name: item.recipient_name ? item.recipient_name : null
       })),
     });
 

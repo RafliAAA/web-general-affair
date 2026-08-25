@@ -99,7 +99,6 @@ const AdminHandoverPage = () => {
     setDeleteId(null);
   };
 
-  // UBAH INI: Hapus DashboardLayout, langsung return Skeleton
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -131,10 +130,10 @@ const AdminHandoverPage = () => {
         </div>
 
         {/* Tabel */}
-        <div className="rounded-lg border overflow-hidden">
+        <div className="rounded-lg border bg-card overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50">
+              <TableRow>
                 <TableHead>Penerima</TableHead>
                 <TableHead>Entity</TableHead>
                 <TableHead>Direktorat</TableHead>
