@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Users, Clock, MapPin, AlertCircle } from "lucide-react";
-import type { CreateBookingPayload } from "../../admin/services/adminBookingService";
+import type { CreateBookingPayload } from "@/types/booking";
 import type { Room } from "../../../rooms/services/roomsService";
 
 interface Props {

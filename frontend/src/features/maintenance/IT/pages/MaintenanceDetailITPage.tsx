@@ -92,7 +92,8 @@ const MaintenanceDetailITPage = () => {
                 {maintenance.asset.asset_name}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {maintenance.asset.asset_code} · {maintenance.asset.asset_type}
+                {maintenance.asset.asset_code} .{" "}
+                {maintenance.asset.asset_category.category_name}
               </p>
             </div>
             <div className="flex items-center gap-2">

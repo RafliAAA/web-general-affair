@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Clock, DoorOpen } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { Booking } from "../../admin/services/adminBookingService";
+import type { Booking } from "@/types/booking";
 import type { Room } from "../../../rooms/services/roomsService";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
