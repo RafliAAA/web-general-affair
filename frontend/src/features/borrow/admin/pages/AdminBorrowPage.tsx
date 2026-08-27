@@ -85,7 +85,7 @@ const AdminBorrowPage = () => {
       {/* MODAL PENGEMBALIAN ASEET (Hanya muncul jika returnTarget ada) */}
       {returnTarget && (
         <ReturnModal
-          borrow={returnTarget}
+          target={returnTarget}
           onConfirm={handleReturnSubmit}
           onClose={() => setReturnTarget(null)}
           loading={isReturning}

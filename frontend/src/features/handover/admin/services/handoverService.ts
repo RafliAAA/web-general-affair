@@ -64,8 +64,8 @@ export interface AssetListResponse {
 }
 
 export const assetService = {
-  getAll: async (): Promise<AssetListResponse> => {
-    const res = await api.get<AssetListResponse>("/assets");
+  getAvailable: async (): Promise<AssetListResponse> => {
+    const res = await api.get<AssetListResponse>("/assets/available");
     return res.data;
   },
 };

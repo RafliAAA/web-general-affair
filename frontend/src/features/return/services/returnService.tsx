@@ -4,7 +4,8 @@ import type { BorrowRequest } from "../../borrow/admin/services/borrowService";
 export type { BorrowRequest };
 
 export interface CreateReturnPayload {
-  borrow_id: string;
+  borrow_id?: string;
+  handover_id?: string;
   return_condition: "Baik" | "Rusak";
   notes?: string;
 }

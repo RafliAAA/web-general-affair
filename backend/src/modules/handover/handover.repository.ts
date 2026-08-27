@@ -35,7 +35,6 @@ const createHandover = async (data: CreateHandoverDTO, created_by: string) => {
         handover_date: data.handover_date,
         entity_id: data.entity_id,
         directorate_id: data.directorate_id,
-        // TAMBAHKAN INI
         recipient_type: data.recipient_type || "Personal",
         items: {
           create: data.items.map((item) => ({

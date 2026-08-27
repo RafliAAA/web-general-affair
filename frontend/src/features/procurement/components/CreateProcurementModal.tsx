@@ -485,7 +485,7 @@ const CreateProcurementModal = ({ onCreate }: Props) => {
               </div>
             ))}
           </div>
-        </div>a
+        </div>
 
         <DialogFooter className="gap-2">
           <Button

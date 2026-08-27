@@ -44,8 +44,6 @@ import { cn } from "@/lib/utils";
 import { useAssets } from "../hooks/useAssets";
 import { useEffect, useState } from "react";
 import { useUserSearch } from "../../../user/hooks/useUserSearch";
-import { useEntity } from "../../../entity/hooks/useEntity";
-import { useDirectorate } from "../../../directorate/hooks/useDirectorate";
 import type { CreateHandoverPayload } from "@/types/handover";
 
 const itemSchema = z.object({
@@ -53,11 +51,10 @@ const itemSchema = z.object({
   notes: z.string().min(1, "Keterangan wajib diisi"),
 });
 
+// 🌟 HAPUS entity_id & directorate_id dari schema validasi
 const handoverSchema = z.object({
   user_id: z.string().min(1, "Penerima wajib dipilih"),
   handover_date: z.string().min(1, "Tanggal wajib diisi"),
-  entity_id: z.string().min(1, "Entity wajib dipilih"),
-  directorate_id: z.string().min(1, "Direktorat wajib diisi"),
   recipient_type: z.enum(["Personal", "Divisi"]),
   items: z.array(itemSchema).min(1, "Minimal 1 item aset"),
 });
@@ -79,8 +76,6 @@ const HandoverFormDialog = ({
 }: HandoverFormDialogProps) => {
   const { assets, isLoading: isLoadingAssets } = useAssets();
   const { users, isSearching: isLoadingUsers, searchUsers } = useUserSearch();
-  const { entities } = useEntity();
-  const { directorates, fetchDirectorates } = useDirectorate();
 
   const [userKeyword, setUserKeyword] = useState("");
   const [userPopoverOpen, setUserPopoverOpen] = useState(false);
@@ -90,9 +85,7 @@ const HandoverFormDialog = ({
     defaultValues: {
       user_id: "",
       handover_date: new Date().toISOString().split("T")[0],
-      entity_id: "",
-      directorate_id: "",
-      recipient_type: "Personal", // DEFAULT
+      recipient_type: "Personal",
       items: [{ asset_id: "", notes: "" }],
     },
   });
@@ -110,21 +103,19 @@ const HandoverFormDialog = ({
 
   const watchedItems = form.watch("items");
   const watchedUserId = form.watch("user_id");
-  const watchedEntityId = form.watch("entity_id");
-  const watchedRecipientType = form.watch("recipient_type"); // WATCH RECIPIENT TYPE
+  const watchedRecipientType = form.watch("recipient_type");
 
   const selectedAssetIds = watchedItems.map((i) => i.asset_id).filter(Boolean);
   const selectedUser = users.find((u) => u.user_id === watchedUserId);
 
-  useEffect(() => {
-    if (watchedEntityId) {
-      fetchDirectorates(watchedEntityId);
-      form.setValue("directorate_id", "");
-    }
-  }, [watchedEntityId, fetchDirectorates, form]);
-
   const handleSubmit = (values: HandoverFormValues) => {
-    onSubmit(values);
+    // 🌟 AMBIL ENTITY & DIRECTORATE OTOMATIS DARI USER YANG DIPILIH
+    const payload: CreateHandoverPayload = {
+      ...values,
+      entity_id: selectedUser?.profile?.entity_id || "",
+      directorate_id: selectedUser?.profile?.directorate_id || "",
+    };
+    onSubmit(payload);
     form.reset();
   };
 
@@ -152,7 +143,7 @@ const HandoverFormDialog = ({
                 control={form.control}
                 name="recipient_type"
                 render={({ field }) => (
-                  <FormItem className="col-span-2">
+                  <FormItem className="col-span-2 sm:col-span-1">
                     <FormLabel>Jenis Penerima</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
@@ -162,13 +153,27 @@ const HandoverFormDialog = ({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Personal">
-                          Personal (Individu)
+                          Personal 
                         </SelectItem>
                         <SelectItem value="Divisi">
-                          Divisi / Departemen
+                          Divisi
                         </SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="handover_date"
+                render={({ field }) => (
+                  <FormItem className="col-span-2 sm:col-span-1">
+                    <FormLabel>Tanggal handover</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -258,81 +263,17 @@ const HandoverFormDialog = ({
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="handover_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tanggal handover</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="entity_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Entity (Perusahaan)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih Entity" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {entities.map((ent) => (
-                          <SelectItem key={ent.entity_id} value={ent.entity_id}>
-                            {ent.entity_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="directorate_id"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>
-                      {watchedRecipientType === "Divisi"
-                        ? "Divisi Penerima"
-                        : "Direktorat"}
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={!watchedEntityId}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih Direktorat" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {directorates.map((dir) => (
-                          <SelectItem
-                            key={dir.directorate_id}
-                            value={dir.directorate_id}
-                          >
-                            {dir.directorate_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {/* 🌟 TAMPILKAN INFO ENTITY & DIRECTORATE SAAT USER DIPILIH */}
+                    {selectedUser && (
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/30 p-2 rounded-md border">
+                        <span>
+                          Entity: <strong className="text-foreground">{selectedUser.profile?.entity?.entity_name || "-"}</strong>
+                        </span>
+                        <span>
+                          Directorate: <strong className="text-foreground">{selectedUser.profile?.directorate?.directorate_name || "-"}</strong>
+                        </span>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -428,7 +369,7 @@ const HandoverFormDialog = ({
                                       return (
                                         <CommandItem
                                           key={asset.asset_id}
-                                          value={`${asset.asset_code} ${asset.asset_name}`}
+                                          value={`${asset.asset_name} ${asset.asset_code} ${asset.asset_id}`}
                                           onSelect={() => {
                                             if (!isUsedElsewhere)
                                               field.onChange(asset.asset_id);

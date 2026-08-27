@@ -258,10 +258,11 @@ model Handover {
   updatedAt     DateTime       @updatedAt
 
   items    HandoverItem[]
+  returns  Return[]
   receiver User  @relation("HandoverReceiver", fields: [user_id], references: [user_id])
   creator  User  @relation("HandoverCreator", fields: [created_by], references: [user_id])
   returner User? @relation("HandoverReturner", fields: [returned_by], references: [user_id])
-   entity       Entity       @relation(fields: [entity_id], references: [entity_id])
+  entity       Entity       @relation(fields: [entity_id], references: [entity_id])
   directorate  Directorate  @relation(fields: [directorate_id], references: [directorate_id])
 
   @@index([user_id])
@@ -302,14 +303,16 @@ model Borrow {
 
 model Return {
   return_id   String   @id @default(uuid())
-  borrow_id   String   @unique
+  borrow_id   String?   @unique
+  handover_id String?  @unique
   return_condition   String
   notes       String?
   approved_by String?
   return_date DateTime @default(now())
   createdAt   DateTime @default(now())
 
-  borrow   Borrow @relation(fields: [borrow_id], references: [borrow_id])
+  borrow   Borrow? @relation(fields: [borrow_id], references: [borrow_id])
+  handover Handover? @relation(fields: [handover_id], references: [handover_id])
   approver User?  @relation("ReturnApprover", fields: [approved_by], references: [user_id])
 
   @@index([borrow_id])

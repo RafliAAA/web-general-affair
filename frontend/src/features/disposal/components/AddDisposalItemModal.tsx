@@ -64,7 +64,7 @@ interface Props {
   excludedIds: string[];
 }
 
-const METHOD_OPTIONS = ["Hibah", "Jual", "Kirim"];
+const METHOD_OPTIONS = ["Hibah", "Jual"];
 
 const conditionVariant = (condition: string) => {
   switch (condition) {

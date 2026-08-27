@@ -10,9 +10,9 @@ export const useAssets = () => {
     const fetch = async () => {
       setIsLoading(true);
       try {
-        const res = await assetService.getAll();
-        // hanya tampilkan aset yang tersedia
-        setAssets(res.data.filter((a) => a.status === "Tersedia"));
+        const res = await assetService.getAvailable();
+
+        setAssets(res.data || res);
       } catch {
         toast.error("Gagal memuat daftar aset");
       } finally {

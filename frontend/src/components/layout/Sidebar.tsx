@@ -15,10 +15,9 @@ import {
   Trash2,
   FilePen,
   User,
-  // 🌟 Tambahkan ikon baru di sini
-  DoorOpen, 
-  CalendarCheck, 
-  CalendarDays,
+  // DoorOpen, 
+  // CalendarCheck, 
+  // CalendarDays,
 } from "lucide-react";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
@@ -43,12 +42,12 @@ const navigation: NavItem[] = [
     roles: ["ADMIN", "IT", "USER"],
   },
   
-  {
-    name: "Ruangan",
-    href: "/ruangan",
-    icon: DoorOpen,
-    roles: ["ADMIN", "IT", "USER"],
-  },
+  // {
+  //   name: "Ruangan",
+  //   href: "/ruangan",
+  //   icon: DoorOpen,
+  //   roles: ["ADMIN", "IT", "USER"],
+  // },
 
   {
     name: "Manajemen Aset",
@@ -83,12 +82,12 @@ const navigation: NavItem[] = [
     roles: ["ADMIN"],
   },
   
-  {
-    name: "Persetujuan Ruangan",
-    href: "/persetujuan-ruangan",
-    icon: CalendarCheck,
-    roles: ["ADMIN"],
-  },
+  // {
+  //   name: "Persetujuan Ruangan",
+  //   href: "/persetujuan-ruangan",
+  //   icon: CalendarCheck,
+  //   roles: ["ADMIN"],
+  // },
   
   {
     name: "Pemeliharaan",
@@ -119,12 +118,12 @@ const navigation: NavItem[] = [
   },
   { name: "Aset Saya", href: "/aset-saya", icon: Package, roles: ["USER"] },
   
-  {
-    name: "Peminjaman Ruangan",
-    href: "/peminjaman-ruangan",
-    icon: CalendarDays,
-    roles: ["USER"],
-  },
+  // {
+  //   name: "Peminjaman Ruangan",
+  //   href: "/peminjaman-ruangan",
+  //   icon: CalendarDays,
+  //   roles: ["USER"],
+  // },
 
   {
     name: "Manajemen User",

@@ -7,7 +7,9 @@ import {
   Calendar,
   RefreshCw,
   CornerDownLeft,
+  FileText, // 🌟 TAMBAHKAN IKON INI
 } from "lucide-react";
+import { toast } from "sonner"; // 🌟 IMPORT TOAST
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -19,7 +21,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { useHandoverDetail } from "../hooks/useHandoverDetail";
-import ReturnHandoverDialog from "../components/ReturnHandoverDialog";
+import ReturnModal from "../../../return/components/ReturnModal";
+import { createReturn } from "../../../return/services/returnService";
 import HandoverStatusBadge from "../components/HandoverStatusBadge";
 
 const formatDate = (dateStr: string | null) => {
@@ -94,11 +97,29 @@ const DetailHandoverPage = () => {
   const { id } = useParams<{ id: string }>();
 
   const navigate = useNavigate();
-  const { handover, loading, error, handleReturn } = useHandoverDetail(id);
+  const { handover, loading, error, fetchHandoverDetail } = useHandoverDetail(id); 
   const [returnOpen, setReturnOpen] = useState(false);
   const [returning, setReturning] = useState(false);
 
   if (!id) return null;
+
+  const handleReturnSubmit = async (payload: any) => {
+    try {
+      setReturning(true);
+      await createReturn(payload);
+      
+      toast.success("Aset berhasil dikembalikan!");
+      
+      setReturnOpen(false);
+      fetchHandoverDetail(); 
+    } catch (err: any) {
+      console.error("Failed to return handover", err);
+      
+      toast.error(err.response?.data?.message || "Gagal mengembalikan aset");
+    } finally {
+      setReturning(false);
+    }
+  };
 
   return (
     <>
@@ -203,8 +224,12 @@ const DetailHandoverPage = () => {
                 label="Diproses oleh"
                 value={handover.returner?.profile?.name ?? "—"}
               />
-              <div className="flex items-start justify-between py-2">
-                <span className="text-sm text-muted-foreground">Catatan</span>
+              {/* 🌟 TAMBAHKAN IKON FILETEXT DI CATATAN */}
+              <div className="flex items-start justify-between py-2 border-b last:border-0">
+                <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileText className="h-3.5 w-3.5" />
+                  Catatan
+                </span>
                 <span className="text-sm font-medium text-right max-w-xs">
                   {handover.return_notes || "—"}
                 </span>
@@ -262,24 +287,15 @@ const DetailHandoverPage = () => {
             )}
           </div>
 
-          {/* Return Modal */}
-          <ReturnHandoverDialog
-            open={returnOpen}
-            handoverId={id}
-            onClose={() => setReturnOpen(false)}
-            onSubmit={async (_handover_id, payload) => {
-              try {
-                setReturning(true);
-                await handleReturn(payload);
-                setReturnOpen(false);
-              } catch (err) {
-                console.error("Failed to return handover", err);
-              } finally {
-                setReturning(false);
-              }
-            }}
-            isSubmitting={returning}
-          />
+          {/* MODAL PENGEMBALALIAN (YANG SUDAH DISATUKAN) */}
+          {returnOpen && (
+            <ReturnModal
+              target={handover}
+              onConfirm={handleReturnSubmit}
+              onClose={() => setReturnOpen(false)}
+              loading={returning}
+            />
+          )}
         </div>
       )}
     </>

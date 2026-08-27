@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   User,
-  Users, // <--- TAMBAHKAN IKON INI
+  Users, 
   Calendar,
   Package,
   CheckCircle,
@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBorrowDetail } from "../hooks/useBorrowDetail";
-import { StatusBadge } from "../../../../components/shared/StatusBadge"; // Sesuaikan path
+import { StatusBadge } from "../../../../components/shared/StatusBadge"; 
 
 const formatDate = (dateStr: string | null) =>
   dateStr
