@@ -10,6 +10,7 @@ import {
   Trash2,
   MoreHorizontal,
 } from "lucide-react";
+import { toast } from "sonner"; // 🌟 Import toast
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,37 +41,34 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import HandoverStatusBadge from "../components/HandoverStatusBadge";
 import HandoverFormDialog from "../components/HandoverFormDialog";
-import ReturnHandoverDialog from "../components/ReturnHandoverDialog";
+import ReturnModal from "../../../return/components/ReturnModal"; 
+import { createReturn } from "../../../return/services/returnService";
 import {
   useAdminHandovers,
   useCreateHandover,
-  useReturnHandover,
   useDeleteHandover,
 } from "../hooks/useAdminHandover";
-import type {
-  CreateHandoverPayload,
-  ReturnHandoverPayload,
-} from "@/types/handover";
+import type { CreateHandoverPayload } from "@/types/handover";
 
 const AdminHandoverPage = () => {
   const navigate = useNavigate();
   const { handovers, isLoading, fetchHandovers } = useAdminHandovers();
   const [search, setSearch] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
-  const [returnId, setReturnId] = useState<string | null>(null);
+  
+  const [returnTarget, setReturnTarget] = useState<any | null>(null);
+  const [isReturning, setIsReturning] = useState(false);
+  
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { isSubmitting: isCreating, createHandover } =
-    useCreateHandover(fetchHandovers);
-  const { isSubmitting: isReturning, returnHandover } =
-    useReturnHandover(fetchHandovers);
+  const { isSubmitting: isCreating, createHandover } = useCreateHandover(fetchHandovers);
   const { isDeleting, deleteHandover } = useDeleteHandover(fetchHandovers);
 
   useEffect(() => {
     fetchHandovers();
   }, [fetchHandovers]);
 
-    const filtered = handovers.filter((h) => {
+  const filtered = handovers.filter((h) => {
     const q = search.toLowerCase();
     return (
       h.entity?.entity_name?.toLowerCase().includes(q) || 
@@ -88,9 +86,18 @@ const AdminHandoverPage = () => {
     setOpenCreate(false);
   };
 
-  const handleReturn = async (id: string, payload: ReturnHandoverPayload) => {
-    await returnHandover(id, payload);
-    setReturnId(null);
+  const handleReturnSubmit = async (payload: any) => {
+    setIsReturning(true);
+    try {
+      await createReturn(payload);
+      toast.success("Aset handover berhasil dikembalikan!");
+      setReturnTarget(null); 
+      fetchHandovers(); 
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Gagal mengembalikan aset");
+    } finally {
+      setIsReturning(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -161,14 +168,14 @@ const AdminHandoverPage = () => {
                     <TableCell className="font-medium">
                       {h.receiver.profile.name}
                     </TableCell>
-                     <TableCell>
-                  <p className="text-sm">{h.entity?.entity_name ?? "—"}</p> 
-                </TableCell>
-                <TableCell>
-                  <p className="text-xs text-muted-foreground">
-                    {h.directorate?.directorate_name ?? "—"} 
-                  </p>
-                </TableCell>
+                    <TableCell>
+                      <p className="text-sm">{h.entity?.entity_name ?? "—"}</p> 
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-xs text-muted-foreground">
+                        {h.directorate?.directorate_name ?? "—"} 
+                      </p>
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {fmt(h.handover_date)}
                     </TableCell>
@@ -206,7 +213,8 @@ const AdminHandoverPage = () => {
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  onClick={() => setReturnId(h.handover_id)}
+                                  // 🌟 UBAH: setReturnTarget(h) bukan setReturnId
+                                  onClick={() => setReturnTarget(h)}
                                   className="text-blue-600 focus:text-blue-600"
                                 >
                                   <RotateCcw className="w-4 h-4 mr-2" />
@@ -241,13 +249,15 @@ const AdminHandoverPage = () => {
         onSubmit={handleCreate}
         isSubmitting={isCreating}
       />
-      <ReturnHandoverDialog
-        open={!!returnId}
-        handoverId={returnId}
-        onClose={() => setReturnId(null)}
-        onSubmit={handleReturn}
-        isSubmitting={isReturning}
-      />
+
+      {returnTarget && (
+        <ReturnModal
+          target={returnTarget}
+          onConfirm={handleReturnSubmit}
+          onClose={() => setReturnTarget(null)}
+          loading={isReturning}
+        />
+      )}
 
       {/* Konfirmasi Hapus */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

@@ -54,7 +54,7 @@ const ReturnPage = () => {
       {/* Return Modal */}
       {selectedBorrow && (
         <ReturnModal
-          borrow={selectedBorrow}
+          target={selectedBorrow}
           onConfirm={handleConfirm}
           onClose={() => setSelectedBorrow(null)}
           loading={submitting}
