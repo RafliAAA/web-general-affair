@@ -38,7 +38,6 @@ import api from "@/lib/axios";
 import { useUserSearch } from "../../user/hooks/useUserSearch";
 import type { CreateProcurementPayload } from "../../../types/procurement";
 
-// a
 
 interface Props {
   onCreate: (payload: CreateProcurementPayload) => Promise<unknown>;

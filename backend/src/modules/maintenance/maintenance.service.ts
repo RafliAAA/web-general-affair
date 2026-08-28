@@ -66,6 +66,12 @@ const cannotRepair = async (data: CannotRepairDTO) => {
   return maintenance;
 };
 
+const getAllActualizations = async () => {
+  const result = await maintenanceRepository.getAllActualizations();
+  if (!result) throw new Error("Failed to fetch actualizations");
+  return result;
+};
+
 const getActualizationForm = async (maintenance_id: string) => {
   const form = await maintenanceRepository.getActualizationForm(maintenance_id);
   if (!form) throw new Error("Actualization form not found");
@@ -82,5 +88,6 @@ export default {
   completeMaintenance,
   completeMaintenanceExternal,
   cannotRepair,
+  getAllActualizations,
   getActualizationForm
 };

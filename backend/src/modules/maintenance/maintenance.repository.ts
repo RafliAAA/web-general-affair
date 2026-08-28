@@ -503,6 +503,19 @@ const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
   });
 };
 
+const getAllActualizations = async () => {
+  return await prisma.actualizationForm.findMany({
+    include: {
+      maintenance: {
+        select: {
+          asset: { select: { asset_name: true } }
+        }
+      }
+    },
+    orderBy: { form_date: "desc" },
+  });
+};
+
 const getActualizationForm = async (maintenance_id: string) => {
   return await prisma.actualizationForm.findUnique({
     where: { maintenance_id },
@@ -519,5 +532,6 @@ export default {
   completeMaintenance,
   completeMaintenanceExternal,
   cannotRepair,
+  getAllActualizations,
   getActualizationForm,
 };

@@ -8,7 +8,7 @@ import {
   verifyMaintenanceSchema,
 } from "./maintenance.dto";
 import { AuthRequest } from "../../middleware/auth";
-import notificationService from "../notifications/notification.service"; // Import notif service
+import notificationService from "../notifications/notification.service"; 
 
 const createMaintenance = async (req: AuthRequest, res: Response) => {
   try {
@@ -287,6 +287,16 @@ const cannotRepair = async (req: AuthRequest, res: Response) => {
   }
 };
 
+const getAllActualizations = async (req: Request, res: Response) => {
+  try {
+    const result  = await maintenanceService.getAllActualizations();
+    res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 const getActualizationForm = async (req: Request, res: Response) => {
   try {
     const { maintenance_id } = req.params;
@@ -323,5 +333,6 @@ export default {
   completeMaintenance,
   completeMaintenanceExternal,
   cannotRepair,
+  getAllActualizations,
   getActualizationForm,
 };

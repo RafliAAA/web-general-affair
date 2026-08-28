@@ -7,6 +7,11 @@ const router = express.Router()
 router.post("/", authMiddleware.protectRoute, maintenanceController.createMaintenance)
 router.get("/", authMiddleware.protectRoute, maintenanceController.getAllMaintenance)
 router.get("/me", authMiddleware.protectRoute, maintenanceController.getMyMaintenance)
+router.get(
+  "/actualizations",
+  authMiddleware.protectRoute,
+  maintenanceController.getAllActualizations,
+);
 router.get("/:maintenance_id", authMiddleware.protectRoute, maintenanceController.getMaintenanceById)
 router.get(
   "/:maintenance_id/actualization",
