@@ -270,6 +270,17 @@ const getMyAssets = async (user_id: string, excludeMaintenance = false) => {
   });
 };
 
+const getBorrowableAssets = async () => {
+  return await prisma.asset.findMany({
+    where: {
+      status: { in: [AssetStatus.Tersedia, AssetStatus.Dipinjam] },
+      deletedAt: null, 
+    },
+    orderBy: { asset_name: "asc" },
+    include: { asset_category: true },
+  });
+};
+
 // ─── Asset Category ───────────────────────────────────────────────────────────
 
 const findAllCategories = async () => {
@@ -327,6 +338,7 @@ export default {
   getAvailableAssets,
   getBorrowedAssets,
   getMyAssets,
+  getBorrowableAssets,
   findAllCategories,
   findCategoryById,
   createCategory,

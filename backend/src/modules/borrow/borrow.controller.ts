@@ -1,3 +1,4 @@
+import { success } from "zod";
 import { AuthRequest } from "../../middleware/auth";
 import notificationService from "../notifications/notification.service";
 import { CreateBorrowSchema } from "./borrow.dto";
@@ -295,6 +296,34 @@ const rejectBorrowRequest = async (req: AuthRequest, res: Response) => {
   }
 }
 
+const markAsTaken = async (req: Request, res: Response) => {
+  try {
+    const { borrow_id } = req.params
+
+    if(!borrow_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Borrow ID is required"
+      })
+    }
+
+    const result = await borrowService.markAsTaken(borrow_id)
+
+    return res.status(200).json({
+      success: true,
+      message: "Borrow marked as taken successfully",
+      data: result
+    })
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to mark borrow as taken",
+      error: error.message,
+    })
+  }
+}
+
 export default {
   createBorrowRequest,
   cancelBorrowRequest,
@@ -305,4 +334,5 @@ export default {
   getMyBorrows,
   approveBorrowRequest,
   rejectBorrowRequest,
+  markAsTaken,
 };

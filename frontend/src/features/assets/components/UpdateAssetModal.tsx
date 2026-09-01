@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea"; // 🌟 IMPORT TEXTAREA
 import {
   Select,
   SelectContent,
@@ -31,7 +32,7 @@ interface Props {
   onClose: () => void;
 }
 
-const KONDISI_OPTIONS = ["Baik", "Cukup", "Rusak"];
+const KONDISI_OPTIONS = ["Baik", "Rusak"];
 
 const UpdateAssetModal = ({ asset, onUpdate, onClose }: Props) => {
   const [categories, setCategories] = useState<AssetCategory[]>([]);
@@ -40,6 +41,7 @@ const UpdateAssetModal = ({ asset, onUpdate, onClose }: Props) => {
   const [form, setForm] = useState({
     asset_name: asset.asset_name,
     serial_number: asset.serial_number,
+    specification: asset.specification || "", 
     asset_category_id: asset.asset_category_id || "",
     condition: asset.condition,
     warranty_date: asset.warranty_date
@@ -109,11 +111,26 @@ const UpdateAssetModal = ({ asset, onUpdate, onClose }: Props) => {
 
           {/* Serial Number */}
           <div className="space-y-1.5">
-            <Label className="text-sm text-muted-foreground">Serial number</Label>
+            <Label className="text-sm text-muted-foreground">
+              Serial number
+            </Label>
             <Input
               placeholder="ABC-123456"
               value={form.serial_number}
               onChange={(e) => handleChange("serial_number", e.target.value)}
+            />
+          </div>
+
+          {/* Spesifikasi Aset  */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">
+              Spesifikasi{" "}
+            </Label>
+            <Textarea
+              placeholder="Contoh: Intel Core i5, 8GB RAM, 256GB SSD"
+              value={form.specification}
+              onChange={(e) => handleChange("specification", e.target.value)}
+              rows={3}
             />
           </div>
 

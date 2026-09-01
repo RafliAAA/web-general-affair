@@ -253,6 +253,15 @@ const rejectBorrowRequest = async (borrow_id: string, approved_by: string) => {
   });
 };
 
+const markAsTaken = async (borrow_id: string) => {
+  return await prisma.borrow.update({
+    where: { borrow_id},
+    data:  {
+      taken_date: new Date(),
+    }
+  })
+}
+
 export default {
   createBorrowRequest,
   cancelBorrowRequest,
@@ -263,4 +272,5 @@ export default {
   approveBorrowRequest,
   rejectBorrowRequest,
   getBorrowById,
+  markAsTaken,
 };

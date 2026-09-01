@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea"; // 🌟 IMPORT TEXTAREA
 import {
   Select,
   SelectContent,
@@ -20,7 +21,6 @@ import { Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import api from "../../../lib/axios";
 import type { Asset } from "../../../types/inventory";
-import AddCategoryDialog from "./AddCategoryDialog";
 
 interface AssetCategory {
   asset_category_id: string;
@@ -32,11 +32,12 @@ interface Props {
   onCreate: (data: Asset) => void;
 }
 
-const KONDISI_OPTIONS = ["Baik", "Cukup", "Rusak"];
+const KONDISI_OPTIONS = ["Baik", "Rusak"];
 
 const initialForm = {
   asset_name: "",
   serial_number: "",
+  specification: "", 
   asset_category_id: "",
   condition: "",
   purchase_date: "",
@@ -127,6 +128,20 @@ const CreateAssetModal = ({ onCreate }: Props) => {
             />
           </div>
 
+          {/* Spesifikasi Aset 🌟 */}
+          <div className="space-y-1.5">
+            <Label className="text-sm text-muted-foreground">
+              Spesifikasi{" "}
+              <span className="text-muted-foreground/60"></span>
+            </Label>
+            <Textarea
+              placeholder="Contoh: Intel Core i5, 8GB RAM, 256GB SSD"
+              value={form.specification}
+              onChange={(e) => handleChange("specification", e.target.value)}
+              rows={3}
+            />
+          </div>
+
           {/* Kategori & Kondisi */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -157,12 +172,6 @@ const CreateAssetModal = ({ onCreate }: Props) => {
                     ))}
                   </SelectContent>
                 </Select>
-                <AddCategoryDialog
-                  onCreated={(newCat) => {
-                    setCategories((prev) => [...prev, newCat]);
-                    handleChange("asset_category_id", newCat.asset_category_id);
-                  }}
-                />
               </div>
             </div>
             <div className="space-y-1.5">

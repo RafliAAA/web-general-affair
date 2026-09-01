@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import type { Procurement } from "../../../types/procurement"
-import { StatusBadge } from "@/components/shared/StatusBadge";
 
 interface Props {
   procurements: Procurement[];
@@ -52,8 +51,6 @@ const ProcurementTable = ({ procurements, onEdit, onDelete }: Props) => {
           <TableHead>PR Date</TableHead>
           <TableHead>Due Date</TableHead>
           <TableHead>Remarks</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -70,9 +67,7 @@ const ProcurementTable = ({ procurements, onEdit, onDelete }: Props) => {
             <TableCell className="max-w-48 truncate text-muted-foreground text-sm">
               {p.remarks || "—"}
             </TableCell>
-            <TableCell className="max-w-48 truncate text-muted-foreground text-sm">
-               <StatusBadge status={p.status} />
-            </TableCell>
+           
             <TableCell
               className="text-center"
               onClick={(e) => e.stopPropagation()}

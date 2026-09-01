@@ -170,6 +170,7 @@ model Asset {
   asset_category_id String?
   purchase_date DateTime
   warranty_date DateTime?
+  specification String? 
   photo         String?
   status        AssetStatus   @default(Tersedia)
   condition     AssetCondition @default(Baik)
@@ -291,6 +292,7 @@ model Borrow {
   expected_return_date DateTime?
   directorate_id      String?
   status              BorrowStatus  @default(Menunggu)
+  taken_date          DateTime?
   approved_by         String?
   createdAt           DateTime @default(now())          
 

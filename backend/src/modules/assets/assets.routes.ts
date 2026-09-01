@@ -6,6 +6,11 @@ const router = express.Router()
 
 router.post("/", authMiddleware.protectRoute, assetsController.createAsset)
 router.get("/", authMiddleware.protectRoute, assetsController.getAllAssets)
+router.get(
+  "/borrowable",
+  authMiddleware.protectRoute,
+  assetsController.getBorrowableAssets,
+);
 router.get("/categories", authMiddleware.protectRoute, assetsController.findAllCategories)
 router.get("/categories/:asset_category_id", authMiddleware.protectRoute, assetsController.findCategoryById)
 router.post("/categories", authMiddleware.protectRoute, assetsController.createCategory)

@@ -9,19 +9,22 @@ import {
   RefreshCw,
   ShieldCheck,
   User,
+  Printer, // 🌟 Import ikon Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAssetDetail } from "../hooks/useAssetDetail";
 import DetailAssetSkeleton from "../components/DetailAssetSkeleton";
 import UpdateAssetModal from "../components/UpdateAssetModal";
-import { useState } from "react";
+import AssetLabel from "../components/AssetLabel"; // 🌟 Import komponen Label
+import { useState, useRef } from "react";
+import { useReactToPrint } from "react-to-print"; // 🌟 Import hook print
 import type { Borrow } from "@/types/inventory";
 import BorrowHistoryTable from "../components/BorrowHistoryTable";
 import MaintenanceHistoryTable from "../components/MaintenanceHistoryTable";
 import HandoverHistoryTable from "../components/HandoverHistoryTable";
 import type { HandoverItem } from "@/types/handover";
 import { StatusBadge } from "../../../components/shared/StatusBadge";
-import { useAuthStore } from "@/features/auth/stores/useAuthStore"; 
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "—";
@@ -64,8 +67,13 @@ const DetailAsset = () => {
   const maintenances = asset?.maintenances || [];
   const handoverItems = asset?.handoverItems || [];
 
-  // CEK APAKAH USER PUNYA AKSES UNTUK MELIHAT RIWAYAT & EDIT
   const canManageAsset = user?.role === "ADMIN" || user?.role === "IT";
+
+  const labelRef = useRef(null);
+  const handlePrintLabel = useReactToPrint({
+    contentRef: labelRef, 
+    documentTitle: `Label-${asset?.asset_code}`,
+  });
 
   return (
     <>
@@ -102,6 +110,12 @@ const DetailAsset = () => {
             </div>
 
             <div className="flex gap-2">
+              {/* 🌟 TOMBOL PRINT LABEL */}
+              <Button variant="outline" size="sm" onClick={handlePrintLabel}>
+                <Printer className="h-4 w-4 mr-1.5" />
+                Print Label
+              </Button>
+
               {/* HANYA ADMIN & IT YANG BISA LIHAT TOMBOL EDIT */}
               {canManageAsset && (
                 <Button
@@ -229,6 +243,10 @@ const DetailAsset = () => {
               onClose={() => setEditOpen(false)}
             />
           )}
+
+          <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+            <AssetLabel ref={labelRef} asset={asset} />
+          </div>
         </div>
       )}
     </>

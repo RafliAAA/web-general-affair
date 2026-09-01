@@ -14,6 +14,7 @@ router.get("/:borrow_id", authMiddleware.protectRoute, borrowController.getBorro
 
 router.patch("/:borrow_id/cancel", authMiddleware.protectRoute, borrowController.cancelBorrowRequest);
 router.patch("/:borrow_id/approve", authMiddleware.protectRoute, borrowController.approveBorrowRequest);
+router.patch("/:borrow_id/taken", authMiddleware.protectRoute, borrowController.markAsTaken);
 router.patch("/:borrow_id/reject", authMiddleware.protectRoute, borrowController.rejectBorrowRequest);
 
 export default router;

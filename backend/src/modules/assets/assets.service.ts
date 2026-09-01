@@ -64,6 +64,12 @@ const getMyAssets = async(user_id: string, excludeMaintenance: boolean) => {
   return assets
 }
 
+const getBorrowableAssets = async () => {
+  const result = await assetsRepository.getBorrowableAssets();
+  if (!result) throw new Error("Failed to fetch borrowable assets");
+  return result;
+};
+
 const findAllCategories = async () => {
   const categories = await assetsRepository.findAllCategories();
   if (!categories) throw new Error("No categories found");
@@ -103,6 +109,7 @@ export default {
   getAvailableAssets,
   getBorrowedAssets,
   getMyAssets,
+  getBorrowableAssets,
   findAllCategories,
   findCategoryById,
   createCategory,

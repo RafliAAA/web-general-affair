@@ -218,6 +218,24 @@ const getMyAssets = async (req: AuthRequest, res: Response ) => {
   }
 }
 
+const getBorrowableAssets = async (req: Request, res: Response) => {
+  try {
+    const data = await assetsService.getBorrowableAssets();
+    return res.status(200).json({
+      success: true,
+      message: "Borrowable assets fetched successfully",
+      data,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch borrowable assets",
+      error: error.message,
+    });
+  }
+};
+
+
 const findAllCategories = async (req: Request, res: Response) => {
   try {
     const result = await assetsService.findAllCategories();
@@ -348,6 +366,7 @@ export default {
   getAvailableAssets,
   getBorrowedAssets,
   getMyAssets,
+  getBorrowableAssets,
   findAllCategories,
   findCategoryById,
   createCategory,

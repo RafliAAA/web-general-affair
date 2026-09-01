@@ -2,7 +2,7 @@ import api from "../../../../lib/axios";
 import type { Asset, Borrow } from "../../../../types/inventory";
 
 export const getAvailableAssets = async (): Promise<Asset[]> => {
-  const res = await api.get("/assets/available");
+  const res = await api.get("/assets/borrowable");
   return res.data.data;
 };
 
@@ -10,7 +10,6 @@ export const getMyBorrows = async (): Promise<Borrow[]> => {
   const res = await api.get("/borrow/me");
   return res.data.data;
 };
-
 
 export const createBorrowRequest = async (
   asset_id: string,

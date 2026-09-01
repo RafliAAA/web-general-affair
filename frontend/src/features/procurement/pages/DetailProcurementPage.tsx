@@ -8,7 +8,6 @@ import {
   FileText,
   Hash,
   FileDown,
-  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,8 +23,6 @@ import { useProcurementDetail } from "../hooks/useProcurementDetail";
 import { updateProcurement } from "../services/ProcurementService";
 import UpdateProcurementModal from "../components/UpdateProcurementModal";
 import type { CreateProcurementPayload } from "../../../types/procurement";
-import ApproveProcurementModal from "../components/ApproveProcurementModal";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -104,17 +101,9 @@ const DetailSkeleton = () => (
 
 const DetailProcurementPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [approveOpen, setApproveOpen] = useState(false);
   const navigate = useNavigate();
-  const {
-    procurement,
-    loading,
-    error,
-    handleUpdate,
-    handleExport,
-    exporting,
-    fetchProcurement,
-  } = useProcurementDetail(id);
+  const { procurement, loading, error, handleUpdate, handleExport, exporting } =
+    useProcurementDetail(id);
   const [editOpen, setEditOpen] = useState(false);
 
   const handleSave = async (
@@ -168,18 +157,6 @@ const DetailProcurementPage = () => {
                 <FileDown className="h-4 w-4 mr-1.5" />
                 {exporting ? "Generating..." : "Export PDF"}
               </Button>
-
-              {procurement.status === "Menunggu" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:text-blue-800"
-                  onClick={() => setApproveOpen(true)}
-                >
-                  <CheckCircle className="h-4 w-4 mr-1.5" />
-                  Proses Pengadaan
-                </Button>
-              )}
 
               {/* HANYA MUNCUL KALAU STATUS MASIH MENUNGGU */}
               {procurement.status === "Menunggu" && (
@@ -273,90 +250,12 @@ const DetailProcurementPage = () => {
             )}
           </div>
 
-          {procurement.status === "Disetujui" && (
-            <div className="rounded-lg border bg-card">
-              <div className="px-5 py-4 border-b flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Aset yang diapprove
-                </p>
-                <span className="text-xs text-muted-foreground">
-                  {procurement.items?.reduce(
-                    (acc, item) => acc + (item.assets?.length || 0),
-                    0,
-                  ) ?? 0}{" "}
-                  aset
-                </span>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kode Aset</TableHead>
-                    <TableHead>Nama Aset</TableHead>
-                    <TableHead>Kondisi</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {procurement.items?.map((item) =>
-                    item.assets?.map((asset) => (
-                      <TableRow key={asset.asset_id}>
-                        <TableCell
-                          className="font-medium  cursor-pointer"
-                          onClick={() =>
-                            navigate(`/aset-perusahaan/${asset.asset_id}`)
-                          }
-                        >
-                          {asset.asset_code}
-                        </TableCell>
-                        <TableCell>{asset.asset_name}</TableCell>
-                        <TableCell>{asset.condition}</TableCell>
-                        <TableCell>
-                          {" "}
-                          <StatusBadge status={procurement.status} />
-                        </TableCell>
-                      </TableRow>
-                    )),
-                  )}
-                  {procurement.items?.every(
-                    (item) => !item.assets || item.assets.length === 0,
-                  ) && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={4}
-                        className="text-center text-muted-foreground py-8"
-                      >
-                        Tidak ada aset yang diapprove.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-
           {/* Edit Modal */}
           {editOpen && (
             <UpdateProcurementModal
               procurement={procurement}
               onUpdate={handleSave}
               onClose={() => setEditOpen(false)}
-            />
-          )}
-
-          {/* MODAL PROSES PENGADAAN */}
-          {procurement && (
-            <ApproveProcurementModal
-              open={approveOpen}
-              onClose={() => setApproveOpen(false)}
-              procurementId={procurement.procurement_id}
-              initialItems={procurement.items || []}
-              initialData={{
-                pr_date: procurement.pr_date,
-                due_date: procurement.due_date,
-                end_user: procurement.end_user,
-                remarks: procurement.remarks,
-              }}
-              onSuccess={fetchProcurement}
             />
           )}
         </div>

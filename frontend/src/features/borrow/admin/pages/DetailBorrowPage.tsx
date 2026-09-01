@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   User,
-  Users, 
+  Users,
   Calendar,
   Package,
   CheckCircle,
@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBorrowDetail } from "../hooks/useBorrowDetail";
-import { StatusBadge } from "../../../../components/shared/StatusBadge"; 
+import { StatusBadge } from "../../../../components/shared/StatusBadge";
 
 const formatDate = (dateStr: string | null) =>
   dateStr
@@ -121,7 +121,6 @@ const DetailBorrowPage = () => {
             label="Dipinjam oleh"
             value={borrow.user?.profile?.name ?? "—"}
           />
-          {/* <--- TAMBAHKAN BARIS INI --- */}
           <InfoRow
             icon={Users}
             label="Tipe Peminjaman"
@@ -132,6 +131,12 @@ const DetailBorrowPage = () => {
             icon={Calendar}
             label="Tanggal Pinjam"
             value={formatDate(borrow.createdAt)}
+          />
+          {/* 🌟 TAMBAHKAN BARIS TANGGAL DIAMBIL DI SINI */}
+          <InfoRow
+            icon={Calendar}
+            label="Tanggal Diambil"
+            value={formatDate(borrow.taken_date)}
           />
           <InfoRow
             icon={Calendar}

@@ -5,22 +5,21 @@ import BorrowTableSkeleton from "../components/BorrowTableSkeleton";
 import ReturnModal from "../../../return/components/ReturnModal"; 
 import { createReturn } from "../../../return/services/returnService";
 import type { BorrowRequest, CreateReturnPayload } from "../../../return/services/returnService";
+// 🌟 IMPORT markAsTaken DARI SERVICE
+import { markAsTaken } from "../services/borrowService"; 
 import { toast } from "sonner";
 
 // Komponen Section agar tampilannya rapi
-// Ubah bagian div pembungkus children di dalam Section
 const Section = ({ title, count, children }: { title: string, count: number, children: React.ReactNode }) => (
-  <div className="space-y-3 w-full min-w-0"> {/* Tambahkan w-full min-w-0 */}
+  <div className="space-y-3 w-full min-w-0">
     <div className="flex items-center gap-2">
       <p className="text-sm font-medium">{title}</p>
       {count > 0 && (
         <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground">
           {count}
         </span>
-        
       )}
     </div>
-    {/* Tambahkan overflow-x-auto di sini */}
     <div className="rounded-lg border bg-card overflow-x-auto">
       {children}
     </div>
@@ -44,6 +43,17 @@ const AdminBorrowPage = () => {
       toast.error(error.response?.data?.message || "Gagal mengembalikan aset");
     } finally {
       setIsReturning(false);
+    }
+  };
+
+  // 🌟 UBAH INI: Pakai fungsi dari service, BUKAN api.patch manual
+  const handleMarkAsTaken = async (borrow_id: string) => {
+    try {
+      await markAsTaken(borrow_id);
+      toast.success("Aset berhasil ditandai sudah diambil!");
+      fetchBorrows(); 
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Gagal mengupdate data");
     }
   };
 
@@ -73,6 +83,7 @@ const AdminBorrowPage = () => {
           <BorrowTable 
             borrows={active} 
             onReturn={(b) => setReturnTarget(b)} 
+            onMarkAsTaken={handleMarkAsTaken}
           />
         </Section>
 

@@ -69,6 +69,14 @@ const rejectBorrowRequest= async( borrow_id: string, approved_by: string) => {
     return borrow
 }
 
+const markAsTaken = async (borrow_id: string) => {
+  const borrow = await borrowRepository.markAsTaken(borrow_id)
+
+  if (!borrow) throw new Error("Failed to mark borrow as taken")
+
+    return borrow;
+}
+
 export default {
   createBorrowRequest,
   cancelBorrowRequest,
@@ -79,4 +87,5 @@ export default {
   getMyBorrows,
   approveBorrowRequest,
   rejectBorrowRequest,
+  markAsTaken,
 };

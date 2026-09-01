@@ -6,6 +6,7 @@ export interface BorrowRequest {
   asset_id: string;
   borrow_reason: string;
   expected_return_date: string;
+  taken_date?: string | null;
   status: "Menunggu" | "Disetujui" | "Ditolak" | "Dibatalkan" | "Dikembalikan";
   approved_by: string | null;
   createdAt: string;
@@ -55,5 +56,10 @@ export const approveBorrowRequest = async (borrow_id: string) => {
 
 export const rejectBorrowRequest = async (borrow_id: string) => {
   const res = await api.patch(`/borrow/${borrow_id}/reject`);
+  return res.data.data;
+};
+
+export const markAsTaken = async (borrow_id: string) => {
+  const res = await api.patch(`/borrow/${borrow_id}/taken`);
   return res.data.data;
 };

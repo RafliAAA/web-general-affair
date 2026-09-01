@@ -17,6 +17,7 @@ export interface Asset {
   purchase_date: string | null;  
   warranty_date: string | null;
   photo: string | null;         
+  specification: string | null; 
   createdAt: string;             
   updatedAt: string;      
   borrow: Borrow[];       

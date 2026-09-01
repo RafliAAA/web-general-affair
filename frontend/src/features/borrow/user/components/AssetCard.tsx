@@ -1,8 +1,8 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { categoryIconMap } from "@/lib/utils";
 import type { Asset } from "../../../../types/inventory";
 import { Package } from "lucide-react";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 interface Props {
   asset: Asset;
@@ -28,12 +28,7 @@ const AssetCard = ({ asset, onSelect }: Props) => {
           </p>
           <p className="text-xs text-muted-foreground">({asset.asset_code})</p>
         </div>
-        <Badge
-          variant="outline"
-          className="bg-green-50 text-green-700 border-green-200 text-[10px] font-medium shrink-0"
-        >
-          Tersedia
-        </Badge>
+        <StatusBadge status={asset.status} />
       </div>
 
       {/* Bagian Bawah: Kategori (Kiri) & Tombol Pinjam (Kanan) */}
