@@ -136,7 +136,7 @@ const DetailBorrowPage = () => {
           <InfoRow
             icon={Calendar}
             label="Tanggal Diambil"
-            value={formatDate(borrow.taken_date)}
+            value={formatDate(borrow.taken_date ?? null)}
           />
           <InfoRow
             icon={Calendar}
