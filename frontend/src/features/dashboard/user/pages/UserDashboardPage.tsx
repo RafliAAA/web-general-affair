@@ -51,7 +51,7 @@ const UserDashboardPage = () => {
           colorClass="bg-yellow-100 text-yellow-600"
         />
         <StatCard
-          label="Laporan Kendala"
+          label="Laporan Kerusakan"
           value={data.myMaintenance.proses}
           icon={Wrench}
           colorClass="bg-orange-100 text-orange-600"

@@ -5,7 +5,7 @@ import { generateEmailTemplate } from "../helper/email.template"; // 🌟 SESUAI
 
 export const startReminderJob = () => {
   // Jalankan setiap hari jam 08:00 Pagi (00 08 * * *)
-  cron.schedule("00 08 * * *", async () => {
+  cron.schedule("* * * * *", async () => {
     console.log("⏰ [CRON JOB] Running asset return reminder...");
 
     try {
