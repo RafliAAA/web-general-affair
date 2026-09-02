@@ -23,5 +23,15 @@ router.patch("/:maintenance_id/take", authMiddleware.protectRoute, maintenanceCo
 router.patch("/:maintenance_id/complete", authMiddleware.protectRoute, maintenanceController.completeMaintenance)
 router.patch("/:maintenance_id/complete-external", authMiddleware.protectRoute, maintenanceController.completeMaintenanceExternal)
 router.patch("/:maintenance_id/cannot-repair", authMiddleware.protectRoute, maintenanceController.cannotRepair)
+router.patch(
+  "/:maintenance_id/bak-data",
+  authMiddleware.protectRoute,
+  maintenanceController.updateBakData,
+);
+router.patch(
+  "/:maintenance_id/upload-bak",
+  authMiddleware.protectRoute,
+  maintenanceController.updateSignedBakUrl,
+);
 
 export default router

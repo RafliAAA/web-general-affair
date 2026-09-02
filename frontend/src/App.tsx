@@ -37,6 +37,12 @@ const ProcurementPage = lazy(
 const ProcurementDetailPage = lazy(
   () => import("./features/procurement/pages/DetailProcurementPage"),
 );
+const UserProcurementPage = lazy(
+  () => import("./features/procurement/user/pages/UserProcurementPage")
+)
+const UserDetailProcurementPage = lazy(
+  () => import("./features/procurement/user/pages/UserDetailProcurementPage")
+)
 const AdminHandoverPage = lazy(
   () => import("./features/handover/admin/pages/AdminHandoverPage"),
 );
@@ -218,6 +224,8 @@ function App() {
                 element={<MaintenanceDetailPage />}
               />
               <Route path="/pengajuan" element={<Borrow />} />
+              <Route path="/pengajuan-aset" element={<UserProcurementPage />} />
+              <Route path="/pengajuan-aset/:id" element={<UserDetailProcurementPage />} />
               <Route path="/aset-saya" element={<MyAssetPage />} />
               <Route path="/peminjaman-ruangan" element={<UserBookingPage />} />
             </Route>

@@ -9,12 +9,13 @@ export interface BorrowRequest {
   taken_date?: string | null;
   status: "Menunggu" | "Disetujui" | "Ditolak" | "Dibatalkan" | "Dikembalikan";
   approved_by: string | null;
+  approved_at?: string | null;
   createdAt: string;
-  recipient_type?: "Personal" | "Divisi"; 
+  recipient_type?: "Personal" | "Divisi";
 
   asset: {
     asset_name: string;
-    asset_code: string; 
+    asset_code: string;
     serial_number: string;
     asset_category?: { category_name: string } | null;
   };

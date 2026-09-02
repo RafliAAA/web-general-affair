@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -14,7 +15,7 @@ import { useMaintenanceDetailIT } from "../../IT/hooks/useMaintenanceDetail";
 import { StatusBadge } from "../../../../components/shared/StatusBadge";
 import ActualizationPDF from "../../IT/components/ActualizationPDF";
 import CompleteExternalModal from "../components/CompleteExternalModal";
-import { useState } from "react";
+import BakFormSection from "../../user/components/BakFormSection";
 
 const formatDate = (dateStr: string | null) =>
   dateStr
@@ -62,8 +63,19 @@ const MaintenanceDetailAdminPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isExternalModalOpen, setIsExternalModalOpen] = useState(false);
-  const { maintenance, actualization, loading, error } =
-    useMaintenanceDetailIT(id);
+
+  // 🌟 Tambahkan state lokal agar bisa di-update oleh komponen BAK
+  const {
+    maintenance: initialMaintenance,
+    actualization,
+    loading,
+    error,
+  } = useMaintenanceDetailIT(id);
+  const [maintenance, setMaintenance] = useState(initialMaintenance);
+
+  useEffect(() => {
+    setMaintenance(initialMaintenance);
+  }, [initialMaintenance]);
 
   const isFromReturn = maintenance?.source === "PENGEMBALIAN_ASET";
 
@@ -71,8 +83,7 @@ const MaintenanceDetailAdminPage = () => {
   const isKendaraan =
     maintenance?.asset.asset_category?.category_name === "Kendaraan";
   const isSedangDikerjakan = maintenance?.status === "SedangDikerjakan";
-  const isTidakDapatDiperbaiki =
-    maintenance?.status === "TidakDapatDiperbaiki";
+  const isTidakDapatDiperbaiki = maintenance?.status === "TidakDapatDiperbaiki";
 
   // Tombol Selesai Diperbaiki muncul kalau:
   // 1. Aset Kendaraan & Sedang Dikerjakan (Langsung dibawa ke bengkel)
@@ -270,6 +281,13 @@ const MaintenanceDetailAdminPage = () => {
               />
             </SectionCard>
           )}
+
+          {/* 🌟 PASANG KOMPONEN FORM BAK DI BAGIAN BAWAH INI (READ-ONLY) */}
+          <BakFormSection
+            maintenance={maintenance}
+            onUpdate={setMaintenance}
+            isReadOnly={true}
+          />
         </div>
       )}
       <CompleteExternalModal

@@ -78,6 +78,18 @@ const getActualizationForm = async (maintenance_id: string) => {
   return form;
 };
 
+const updateBakData = async (maintenance_id: string, data: any) => {
+  const result = await maintenanceRepository.updateBakData(maintenance_id, data);
+  if (!result) throw new Error("Failed to update BAK data");
+  return result;
+};
+
+const updateSignedBakUrl = async (maintenance_id: string, url: string) => {
+  const result = await maintenanceRepository.updateSignedBakUrl(maintenance_id, url);
+  if (!result) throw new Error("Failed to upload signed BAK");
+  return result;
+};
+
 export default {
   createMaintenance,
   getAllMaintenances,
@@ -89,5 +101,7 @@ export default {
   completeMaintenanceExternal,
   cannotRepair,
   getAllActualizations,
-  getActualizationForm
+  getActualizationForm,
+   updateBakData,
+  updateSignedBakUrl,
 };

@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, Wrench, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMaintenanceDetail } from "../hooks/useMaintenanceDetail";
 import { StatusBadge } from "../../../../components/shared/StatusBadge";
+import BakFormSection from "../components/BakFormSection";
 
 const formatDate = (dateStr: string | null) =>
   dateStr
@@ -50,7 +52,18 @@ const SectionCard = ({
 const MaintenanceDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { maintenance, loading, error } = useMaintenanceDetail(id);
+  const {
+    maintenance: initialMaintenance,
+    loading,
+    error,
+  } = useMaintenanceDetail(id);
+
+  // 🌟 Tambahkan state lokal agar bisa di-update langsung saat BAK disimpan/upload
+  const [maintenance, setMaintenance] = useState(initialMaintenance);
+
+  useEffect(() => {
+    setMaintenance(initialMaintenance);
+  }, [initialMaintenance]);
 
   return (
     <>
@@ -89,7 +102,8 @@ const MaintenanceDetailPage = () => {
                 {maintenance.asset.asset_name}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {maintenance.asset.asset_code} · {maintenance.asset.asset_category?.category_name}
+                {maintenance.asset.asset_code} ·{" "}
+                {maintenance.asset.asset_category?.category_name}
               </p>
             </div>
             <StatusBadge status={maintenance.status} />
@@ -123,7 +137,7 @@ const MaintenanceDetailPage = () => {
               <InfoRow
                 icon={Wrench}
                 label="Dikerjakan oleh"
-                value={maintenance.handler?.profile?.name ?? "—"} // BUG FIX: Ambil dari handler (teknisi)
+                value={maintenance.handler?.profile?.name ?? "—"}
               />
               <InfoRow
                 icon={Calendar}
@@ -159,6 +173,11 @@ const MaintenanceDetailPage = () => {
               </p>
             </SectionCard>
           )}
+
+          <BakFormSection
+            maintenance={maintenance}
+            onUpdate={(updatedData) => setMaintenance(updatedData)}
+          />
         </div>
       )}
     </>

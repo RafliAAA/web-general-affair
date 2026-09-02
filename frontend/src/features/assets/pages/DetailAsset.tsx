@@ -146,6 +146,11 @@ const DetailAsset = () => {
                   value: asset.serial_number,
                 },
                 {
+                  icon: Hash,
+                  label: "Spesifikasi",
+                  value: asset.specification,
+                },
+                {
                   icon: Package,
                   label: "Kategori",
                   value: asset.asset_category?.category_name ?? "—",

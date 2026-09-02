@@ -116,6 +116,12 @@ const navigation: NavItem[] = [
     icon: FilePen,
     roles: ["USER"],
   },
+  // {
+  //   name: "Pengajuan Aset",
+  //   href: "/pengajuan-aset",
+  //   icon: FilePen,
+  //   roles: ["USER"],
+  // },
   { name: "Aset Saya", href: "/aset-saya", icon: Package, roles: ["USER"] },
   
   // {

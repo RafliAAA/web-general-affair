@@ -1,29 +1,34 @@
-import { MoreHorizontal, SquarePen, Trash2, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Table,
-  TableHeader,
-  TableRow,
-  TableHead,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal, Eye, Check, Edit, Trash2 } from "lucide-react";
+import { StatusBadge } from "../../../components/shared/StatusBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
-import type { Procurement } from "../../../types/procurement"
+import type { Procurement } from "../../../types/procurement";
 
+// 🌟 PASTIKAN onApprove ADA DI SINI
 interface Props {
   procurements: Procurement[];
-  onEdit: (procurement: Procurement) => void;
-  onDelete: (id: string) => void;
+  onView?: (id: string) => void;
+  onApprove?: (procurement: Procurement) => void;
+  onEdit?: (procurement: Procurement) => void;
+  onDelete?: (id: string) => void;
 }
 
 const formatDate = (dateStr: string) => {
+  if (!dateStr) return "—";
   return new Date(dateStr).toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
@@ -31,78 +36,110 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-const ProcurementTable = ({ procurements, onEdit, onDelete }: Props) => {
-  const navigate = useNavigate();
-
+// 🌟 PASTIKAN onApprove DITANGKAP DI PARAMETER INI
+const ProcurementTable = ({
+  procurements,
+  onView,
+  onApprove,
+  onEdit,
+  onDelete,
+}: Props) => {
   if (procurements.length === 0) {
     return (
-      <div className="py-12 text-center text-sm text-muted-foreground">
-        Tidak ada data purchase request
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        Tidak ada data
       </div>
     );
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nomor PR</TableHead>
-          <TableHead>End user</TableHead>
-          <TableHead>PR Date</TableHead>
-          <TableHead>Due Date</TableHead>
-          <TableHead>Remarks</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {procurements.map((p) => (
-          <TableRow
-            key={p.procurement_id}
-            className="cursor-pointer hover:bg-muted/50"
-            onClick={() => navigate(`/pengadaan/${p.procurement_id}`)}
-          >
-            <TableCell className="font-medium">{p.pr_number}</TableCell>
-            <TableCell>{p.end_user}</TableCell>
-            <TableCell>{formatDate(p.pr_date)}</TableCell>
-            <TableCell>{formatDate(p.due_date)}</TableCell>
-            <TableCell className="max-w-48 truncate text-muted-foreground text-sm">
-              {p.remarks || "—"}
-            </TableCell>
-           
-            <TableCell
-              className="text-center"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => navigate(`/pengadaan/${p.procurement_id}`)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Detail
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => onEdit(p)}>
-                    <SquarePen className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-red-600"
-                    onClick={() => onDelete(p.procurement_id)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Hapus
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
+    <div className="overflow-x-auto">
+      <Table className="min-w-full">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nomor PR</TableHead>
+            <TableHead>End User</TableHead>
+            <TableHead>Tanggal</TableHead>
+            <TableHead>Jatuh Tempo</TableHead>
+            {/* <TableHead>Status</TableHead> */}
+            <TableHead className="text-right">Aksi</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {procurements.map((p) => (
+            <TableRow key={p.procurement_id}>
+              <TableCell className="font-medium">{p.pr_number}</TableCell>
+              <TableCell>{p.end_user}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {formatDate(p.pr_date)}
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {formatDate(p.due_date)}
+              </TableCell>
+              {/* <TableCell>
+                <StatusBadge status={p.status} />
+              </TableCell> */}
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {onView && (
+                      <DropdownMenuItem
+                        onClick={() => onView(p.procurement_id)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Detail
+                      </DropdownMenuItem>
+                    )}
+
+                    {/* 🌟 INI BAGIAN APPROVE NYA */}
+                    {onApprove && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-green-600 focus:text-green-600"
+                          onClick={() => onApprove(p)}
+                        >
+                          <Check className="h-4 w-4 mr-2" />
+                          Approve
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {onEdit && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => onEdit(p)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                      </>
+                    )}
+
+                    {onDelete && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-600"
+                          onClick={() => onDelete(p.procurement_id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

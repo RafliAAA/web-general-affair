@@ -505,6 +505,9 @@ const completeMaintenanceExternal = async (data: CompleteMaintenanceDTO) => {
 
 const getAllActualizations = async () => {
   return await prisma.actualizationForm.findMany({
+    where: {
+      procurement: null 
+    },
     include: {
       maintenance: {
         select: {
@@ -522,6 +525,45 @@ const getActualizationForm = async (maintenance_id: string) => {
   });
 };
 
+const updateBakData = async (maintenance_id: string, data: any) => {
+  const existing = await prisma.maintenance.findUnique({
+    where: { maintenance_id },
+  });
+  let bakNumber = existing?.bak_number;
+
+  // Generate nomor BAK jika belum ada
+  if (!bakNumber) {
+    const date = new Date();
+    bakNumber = `BAK-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}-${date.getTime().toString().slice(-4)}`;
+  }
+
+  return await prisma.maintenance.update({
+    where: { maintenance_id },
+    data: {
+      bak_number: bakNumber,
+      bak_incident_date: data.bak_incident_date
+        ? new Date(data.bak_incident_date)
+        : null,
+      bak_location: data.bak_location,
+      bak_chronology: data.bak_chronology,
+      bak_cause: data.bak_cause,
+      bak_action: data.bak_action,
+      bak_witness_1: data.bak_witness_1,
+      bak_witness_2: data.bak_witness_2,
+    },
+    include: {
+      asset: { include: { asset_category: true } },
+      reporter: { select: { profile: { select: { name: true } } } },
+    },
+  });
+};
+
+const updateSignedBakUrl = async (maintenance_id: string, url: string) => {
+  return await prisma.maintenance.update({
+    where: { maintenance_id },
+    data: { signed_bak_url: url },
+  });
+};
 export default {
   createMaintenance,
   getAllMaintenance,
@@ -534,4 +576,6 @@ export default {
   cannotRepair,
   getAllActualizations,
   getActualizationForm,
+   updateBakData,         // 🌟 Tambahkan ini
+  updateSignedBakUrl,
 };

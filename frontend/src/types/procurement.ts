@@ -6,6 +6,7 @@ export interface ProcurementAsset {
   asset_name: string;
   status: string;
   condition: string;
+  asset_category?: { category_name: string } | null; 
 }
 
 export interface ProcurementItem {
@@ -32,6 +33,17 @@ export interface Procurement {
   createdAt: string;
   updatedAt: string;
   items: ProcurementItem[];
+  actualization?: {
+    actualization_id: string;
+    form_number: string;
+    user_name: string;
+    form_date: string;
+    duration_minutes: number;
+    description: string;
+    issue: string;
+    handling: string;
+    recommendation: string;
+  } | null;
 }
 
 export interface CreateProcurementPayload {

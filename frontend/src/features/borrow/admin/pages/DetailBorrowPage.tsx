@@ -132,7 +132,11 @@ const DetailBorrowPage = () => {
             label="Tanggal Pinjam"
             value={formatDate(borrow.createdAt)}
           />
-          {/* 🌟 TAMBAHKAN BARIS TANGGAL DIAMBIL DI SINI */}
+          <InfoRow
+            icon={Calendar}
+            label="Tanggal Disetujui"
+            value={formatDate(borrow.approved_at ?? null)}
+          />
           <InfoRow
             icon={Calendar}
             label="Tanggal Diambil"
@@ -143,18 +147,29 @@ const DetailBorrowPage = () => {
             label="Rencana Kembali"
             value={formatDate(borrow.expected_return_date)}
           />
+
+          {/* 🌟 TAMBAHKAN TANGGAL APPROVE/REJECT DI SINI */}
           {borrow.status === "Ditolak" ? (
-            <InfoRow
-              icon={XCircle}
-              label="Ditolak oleh"
-              value={borrow.approver?.profile?.name ?? "—"}
-            />
+            <>
+              <InfoRow
+                icon={Calendar}
+                label="Tanggal Ditolak"
+                value={formatDate(borrow.approved_at ?? null)}
+              />
+              <InfoRow
+                icon={XCircle}
+                label="Ditolak oleh"
+                value={borrow.approver?.profile?.name ?? "—"}
+              />
+            </>
           ) : (
-            <InfoRow
-              icon={CheckCircle}
-              label="Disetujui oleh"
-              value={borrow.approver?.profile?.name ?? "—"}
-            />
+            <>
+              <InfoRow
+                icon={CheckCircle}
+                label="Disetujui oleh"
+                value={borrow.approver?.profile?.name ?? "—"}
+              />
+            </>
           )}
         </SectionCard>
       </div>

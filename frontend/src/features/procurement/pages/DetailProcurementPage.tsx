@@ -8,6 +8,8 @@ import {
   FileText,
   Hash,
   FileDown,
+  Clock,
+  PackageCheck, // 🌟 Import ikon baru
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,16 +26,12 @@ import { updateProcurement } from "../services/ProcurementService";
 import UpdateProcurementModal from "../components/UpdateProcurementModal";
 import type { CreateProcurementPayload } from "../../../types/procurement";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 const InfoRow = ({
   icon: Icon,
@@ -97,8 +95,6 @@ const DetailSkeleton = () => (
   </div>
 );
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
 const DetailProcurementPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -113,6 +109,11 @@ const DetailProcurementPage = () => {
     const updated = await updateProcurement(procId, payload);
     handleUpdate(updated);
   };
+
+  // 🌟 CEK APAKAH SUDAH ADA ASET YANG DIBUAT
+  const hasGeneratedAssets = procurement?.items?.some(
+    (item) => item.assets && item.assets.length > 0,
+  );
 
   return (
     <>
@@ -129,7 +130,6 @@ const DetailProcurementPage = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Back */}
           <button
             onClick={() => navigate(-1)}
             className="flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -138,7 +138,6 @@ const DetailProcurementPage = () => {
             Kembali
           </button>
 
-          {/* Header */}
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-xl font-medium">{procurement.pr_number}</h1>
@@ -158,7 +157,6 @@ const DetailProcurementPage = () => {
                 {exporting ? "Generating..." : "Export PDF"}
               </Button>
 
-              {/* HANYA MUNCUL KALAU STATUS MASIH MENUNGGU */}
               {procurement.status === "Menunggu" && (
                 <Button
                   variant="outline"
@@ -172,7 +170,6 @@ const DetailProcurementPage = () => {
             </div>
           </div>
 
-          {/* Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <SectionCard title="Informasi PR">
               <InfoRow
@@ -206,7 +203,7 @@ const DetailProcurementPage = () => {
             </SectionCard>
           </div>
 
-          {/* Items */}
+          {/* Items Pengadaan */}
           <div className="rounded-lg border bg-card">
             <div className="px-5 py-4 border-b flex items-center justify-between">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -250,7 +247,107 @@ const DetailProcurementPage = () => {
             )}
           </div>
 
-          {/* Edit Modal */}
+          {/* 🌟 SECTION ASET YANG DIAPPROVE / DIBUAT */}
+          {hasGeneratedAssets && (
+            <div className="rounded-lg border bg-card">
+              <div className="px-5 py-4 border-b flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                  <PackageCheck className="h-3.5 w-3.5" />
+                  Aset yang Diapprove
+                </p>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No</TableHead>
+                    <TableHead>Kode Aset</TableHead>
+                    <TableHead>Nama Aset</TableHead>
+                    <TableHead>Kondisi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {procurement.items.flatMap((item, itemIndex) =>
+                    (item.assets || []).map((asset, assetIndex) => (
+                      <TableRow key={asset.asset_id}>
+                        <TableCell className="text-muted-foreground">
+                          {assetIndex + 1}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {asset.asset_code}
+                        </TableCell>
+                        <TableCell>{asset.asset_name}</TableCell>
+                       
+                        <TableCell>{asset.condition}</TableCell>
+                      </TableRow>
+                    )),
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {/* SECTION DETAIL AKTUALISASI (SVC) */}
+          {procurement.actualization && (
+            <div className="rounded-lg border bg-card p-5 space-y-4">
+              <div className="flex items-center gap-2 border-b pb-3">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Form Aktualisasi (SVC) Terkait
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InfoRow
+                  icon={Hash}
+                  label="Nomor SVC"
+                  value={procurement.actualization.form_number}
+                />
+                <InfoRow
+                  icon={User}
+                  label="Pelapor"
+                  value={procurement.actualization.user_name}
+                />
+                <InfoRow
+                  icon={Calendar}
+                  label="Tanggal Form"
+                  value={formatDate(procurement.actualization.form_date)}
+                />
+                <InfoRow
+                  icon={Clock}
+                  label="Durasi Penanganan"
+                  value={`${procurement.actualization.duration_minutes} Menit`}
+                />
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                    Deskripsi Kerusakan
+                  </p>
+                  <div className="border p-3 rounded-md text-sm">
+                    {procurement.actualization.description || "-"}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                    Tindakan yang Dilakukan (Issue)
+                  </p>
+                  <div className="border p-3 rounded-md text-sm">
+                    {procurement.actualization.issue || "-"}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                    Rekomendasi
+                  </p>
+                  <div className="border p-3 rounded-md text-sm">
+                    {procurement.actualization.recommendation || "-"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {editOpen && (
             <UpdateProcurementModal
               procurement={procurement}

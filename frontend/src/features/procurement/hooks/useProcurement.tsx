@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   getProcurements,
   createProcurement,
@@ -12,12 +12,24 @@ export const useProcurement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    getProcurements()
-      .then(setProcurements)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+  // 1. FUNGSI FETCH PROCUREMENTS DIBUAT DI SINI
+  const fetchProcurements = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getProcurements();
+      setProcurements(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Gagal memuat data");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // 2. FUNGSI DIPANGGIL DI USE EFFECT
+  useEffect(() => {
+    fetchProcurements();
+  }, [fetchProcurements]);
 
   const handleCreate = async (payload: CreateProcurementPayload) => {
     const result = await createProcurement(payload);
@@ -48,5 +60,6 @@ export const useProcurement = () => {
     handleCreate,
     handleUpdate,
     handleDelete,
+    fetchProcurements, 
   };
 };

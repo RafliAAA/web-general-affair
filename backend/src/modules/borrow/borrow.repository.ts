@@ -212,7 +212,7 @@ const approveBorrowRequest = async (borrow_id: string, approved_by: string) => {
 
     const approved = await tx.borrow.update({
       where: { borrow_id },
-      data: { status: BorrowStatus.Disetujui, approved_by },
+      data: { status: BorrowStatus.Disetujui, approved_by, approved_at: new Date() },
       include: {
         approver: {
           select: {
@@ -248,7 +248,7 @@ const rejectBorrowRequest = async (borrow_id: string, approved_by: string) => {
 
     return await tx.borrow.update({
       where: { borrow_id },
-      data: { status: BorrowStatus.Ditolak, approved_by },
+      data: { status: BorrowStatus.Ditolak, approved_by, approved_at: new Date() },
     });
   });
 };
@@ -258,6 +258,7 @@ const markAsTaken = async (borrow_id: string) => {
     where: { borrow_id},
     data:  {
       taken_date: new Date(),
+      approved_at: new Date(),
     }
   })
 }

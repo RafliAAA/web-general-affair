@@ -9,6 +9,7 @@ import {
 } from "./maintenance.dto";
 import { AuthRequest } from "../../middleware/auth";
 import notificationService from "../notifications/notification.service"; 
+import { supabase } from "../../config/supabase";
 
 const createMaintenance = async (req: AuthRequest, res: Response) => {
   try {
@@ -323,6 +324,49 @@ const getActualizationForm = async (req: Request, res: Response) => {
   }
 };
 
+const updateBakData = async (req: AuthRequest, res: Response) => {
+  try {
+    const { maintenance_id } = req.params;
+
+    if(!maintenance_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Maintenance ID is required"
+      })
+    }
+    const result = await maintenanceService.updateBakData(
+      maintenance_id,
+      req.body,
+    );
+    return res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const updateSignedBakUrl = async (req: AuthRequest, res: Response) => {
+  try {
+    const { maintenance_id } = req.params;
+
+     if(!maintenance_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Maintenance ID is required"
+      })
+    }
+    
+    const { url } = req.body; 
+
+    const result = await maintenanceService.updateSignedBakUrl(
+      maintenance_id,
+      url,
+    );
+    return res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export default {
   createMaintenance,
   getAllMaintenance,
@@ -335,4 +379,6 @@ export default {
   cannotRepair,
   getAllActualizations,
   getActualizationForm,
+  updateBakData, 
+  updateSignedBakUrl,
 };

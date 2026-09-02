@@ -294,6 +294,7 @@ model Borrow {
   status              BorrowStatus  @default(Menunggu)
   taken_date          DateTime?
   approved_by         String?
+  approved_at         DateTime?
   createdAt           DateTime @default(now())          
 
   user     User     @relation(fields: [user_id], references: [user_id])
@@ -337,6 +338,16 @@ model Maintenance {
   resolution_notes String?
   completed_at     DateTime?
   source MaintenanceSource @default(LAPORAN_KARYAWAN)
+
+  bak_number         String?
+  bak_incident_date  DateTime?
+  bak_location       String?
+  bak_chronology     String?
+  bak_cause          String?
+  bak_action         String?
+  bak_witness_1      String? 
+  bak_witness_2      String?  
+  signed_bak_url     String?
 
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
