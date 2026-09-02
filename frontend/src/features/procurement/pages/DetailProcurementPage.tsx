@@ -266,7 +266,7 @@ const DetailProcurementPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {procurement.items.flatMap((item, itemIndex) =>
+                  {procurement.items.flatMap((item) =>
                     (item.assets || []).map((asset, assetIndex) => (
                       <TableRow key={asset.asset_id}>
                         <TableCell className="text-muted-foreground">

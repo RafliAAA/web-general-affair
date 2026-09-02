@@ -43,11 +43,11 @@ const UserProcurementPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   // 🌟 Dummy handler untuk Edit & Hapus
-  const handleEdit = (id: string) => {
+  const handleEdit = () => {
     toast.info("Fitur edit akan datang!");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = () => {
     toast.info("Fitur hapus akan datang!");
   };
 
@@ -126,7 +126,7 @@ const UserProcurementPage = () => {
                               Detail
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleEdit(p.procurement_id)}
+                              onClick={() => handleEdit()}
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
@@ -134,7 +134,7 @@ const UserProcurementPage = () => {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-red-600 focus:text-red-600"
-                              onClick={() => handleDelete(p.procurement_id)}
+                              onClick={() => handleDelete()}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Hapus

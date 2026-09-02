@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Eye, Check, Edit, Trash2 } from "lucide-react";
-import { StatusBadge } from "../../../components/shared/StatusBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
