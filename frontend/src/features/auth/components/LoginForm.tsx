@@ -31,7 +31,7 @@ const LoginForm = () => {
       <div className="flex flex-col items-start gap-4 mb-8">
         <img src={LogoSyaamil} alt="Logo Syaamil" className="w-auto h-15" />
         <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Masuk ke Akun Anda
           </h1>
           <p className="text-sm text-muted-foreground">

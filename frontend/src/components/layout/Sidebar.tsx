@@ -15,6 +15,7 @@ import {
   Trash2,
   FilePen,
   User,
+  // DoorOpen,
   // DoorOpen, 
   // CalendarCheck, 
   // CalendarDays,
@@ -55,11 +56,11 @@ const navigation: NavItem[] = [
     roles: ["ADMIN"],
     children: [
       {
-        name: "Aset Perusahaan",
+        name: "Data Aset",
         href: "/aset-perusahaan",
         roles: ["ADMIN"],
       },
-      { name: "Kategori Aset", href: "/kategori-aset", roles: ["ADMIN"] },
+      { name: "Data Kategori", href: "/kategori-aset", roles: ["ADMIN"] },
     ],
   },
 
